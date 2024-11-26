@@ -13,7 +13,7 @@ int yydebug = 1;
 Node* root;
 extern char *yytext;
 %}
-
+%token TYPE IDENT NUM EQ ORDER ADDSUB DIVSTAR STATIC IF ELSE OR AND WHILE RETURN VOID CHARACTER
 
 %%
 Prog:  DeclVars DeclFoncts

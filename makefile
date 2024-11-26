@@ -2,7 +2,7 @@ CC := gcc
 CFLAGS := -Wall 
 LDFLAGS := -Wall -lfl -ly
 BISON := parser
-LEX := lexx
+LEX := lex
 TREE := tree
 OUTPUT := out
 
