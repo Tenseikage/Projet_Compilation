@@ -4,10 +4,41 @@ typedef enum {
   E,
   T,
   divstar,
-  id
-  /* list all other node labels, if any */
-  /* The list must coincide with the string array in tree.c */
-  /* To avoid listing them twice, see https://stackoverflow.com/a/10966395 */
+  id,
+  Prog,
+  DeclVars,
+  Declarateurs,
+  DeclFoncts,
+  DeclFonct,
+  EnTeteFonct,
+  Parametres,
+  ListTypVar,
+  Corps,
+  SuiteInstr,
+  Instr,
+  Exp,
+  TB,
+  FB,
+  M,
+  F,
+  Arguments,
+  ListExp,
+  type,
+  ident,
+  Void,
+  If,
+  Else,
+  While,
+  Return,
+  Or,
+  And,
+  Eq,
+  Order,
+  Addsub,
+  Num,
+  Character,
+  Static
+  /* Ajoutez d'autres labels si nécessaire */
 } label_t;
 
 typedef struct Node {

@@ -1,118 +1,143 @@
 %{
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "tree.h"
 
-// Déclaration des fonctions générées par Bison et Flex
-int yyparse(void);
-int yylex(void);
+// Déclaration explicite de yyin
+extern FILE *yyin;
+
 void yyerror(const char *s);
-int yydebug = 1;
+
 Node* root;
 extern char *yytext;
 extern int lineno;
 extern int yylineno;
-
-
+int yylex(void);
 %}
-%token TYPE IDENT NUM EQ ORDER ADDSUB DIVSTAR STATIC IF ELSE OR AND WHILE RETURN VOID CHARACTER
 
+%union {
+  Node *node;
+}
+%left OR AND
+%left ADDSUB
+%left NOT
+%left DIVSTAR
+%left EQ ORDER
+
+%token TYPE IDENT VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR NUM CHARACTER STATIC
+%type <node> Prog DeclVars Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 
 %%
-//Programme pricipal
-Prog:  DeclVars DeclFoncts
+
+Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$, $2); root = $$;}
     ;
-//Déclarations globales
+
 DeclVars:
-       DeclVars TYPE Declarateurs ';'
-    |  STATIC TYPE Declarateurs';' 
+       DeclVars TYPE Declarateurs ';' { $$ = makeNode(DeclVars); addChild($$, $1); addChild($$, makeNode(type)); addChild($$, $3); }
+    |  { $$ = makeNode(DeclVars); }
     ;
-// Liste des déclarateurs
+
 Declarateurs:
-       Declarateurs ',' IDENT
-    |  IDENT
+       Declarateurs ',' IDENT { $$ = $1; addSibling($$, makeNode(ident)); }
+    |  IDENT '=' CHARACTER { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Character)); }
+    |  IDENT '=' NUM       { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Num)); }
+    |  IDENT               { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); }
     ;
-//Déclarations de fonctions
+
 DeclFoncts:
-       DeclFoncts DeclFonct
-    |  DeclFonct
+       DeclFoncts DeclFonct { $$ = $1; addSibling($$, $2); }
+    |  DeclFonct { $$ = $1; }
     ;
-// Déclaration d'une fonction
+
 DeclFonct:
-       EnTeteFonct Corps
+       EnTeteFonct Corps { $$ = makeNode(DeclFonct); addChild($$, $1); addChild($$, $2); }
     ;
-// En tête d'une fonction
+
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')'
-    |  VOID IDENT '(' Parametres ')'
+       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(type)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
+    |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
     ;
-// Paramètres d'une fonction
+
 Parametres:
-       VOID
-    |  ListTypVar
+       VOID { $$ = makeNode(Parametres); addChild($$, makeNode(VOID)); }
+    |  ListTypVar { $$ = $1; }
+    |  {$$ = NULL;}
     ;
-// Liste déclarations de variables typées
+
 ListTypVar:
-       ListTypVar ',' TYPE IDENT
-    |  TYPE IDENT
+       ListTypVar ',' TYPE IDENT { $$ = $1; addSibling($$, makeNode(TYPE)); addSibling($$, makeNode(IDENT)); }
+    |  TYPE IDENT { $$ = makeNode(ListTypVar); addChild($$, makeNode(TYPE)); addChild($$, makeNode(IDENT)); }
     ;
-//Corps d'une fonction
-Corps: '{'DeclVars SuiteInstr '}' 
+
+Corps:
+    '{' DeclVars SuiteInstr '}' { $$ = makeNode(Corps); addChild($$, $2); addChild($$, $3); }
     ;
-// Liste d'instructions
+
 SuiteInstr:
-       SuiteInstr Instr
-    |
+       SuiteInstr Instr { $$ = $1; addSibling($$, $2); }
+    | /* vide */ { $$ = makeNode(SuiteInstr); }
     ;
-// Instruction
+
 Instr:
-       IDENT '=' Exp ';'
-    |  IF '(' Exp ')' Instr
-    |  IF '(' Exp ')' Instr ELSE Instr
-    |  WHILE '(' Exp ')' Instr
-    |  IDENT '(' Arguments  ')' ';'
-    |  RETURN Exp ';'
-    |  RETURN ';'
-    |  '{' SuiteInstr '}'
-    |  ';'
+       IDENT '=' Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
+    |  IF '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); }
+    |  IF '(' Exp ')' Instr ELSE Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(ELSE)); addChild($$, $7); }
+    |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(WHILE)); addChild($$, $3); addChild($$, $5); }
+    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
+    |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(RETURN)); addChild($$, $2); }
+    |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(RETURN)); }
+    |  '{' SuiteInstr '}' { $$ = $2; }
+    |  ';' { $$ = makeNode(Instr); }
     ;
-//Exprerssion
-Exp :  Exp OR TB
-    |  TB
+
+Exp:
+    Exp OR TB { $$ = makeNode(Exp); addChild($$, $1); addChild($$, makeNode(OR)); addChild($$, $3); }
+    |  TB { $$ = $1; }
     ;
-TB  :  TB AND FB
-    |  FB
+
+TB:
+    TB AND FB { $$ = makeNode(TB); addChild($$, $1); addChild($$, makeNode(AND)); addChild($$, $3); }
+    |  FB { $$ = $1; }
     ;
-FB  :  FB EQ M
-    |  M
+
+FB:
+    FB EQ M { $$ = makeNode(FB); addChild($$, $1); addChild($$, makeNode(EQ)); addChild($$, $3); }
+    |  M { $$ = $1; }
     ;
-M   :  M ORDER E
-    |  E
+
+M:
+    M ORDER E { $$ = makeNode(M); addChild($$, $1); addChild($$, makeNode(ORDER)); addChild($$, $3); }
+    |  E { $$ = $1; }
     ;
-E   :  E ADDSUB T
-    |  T
-    ;    
-T   :  T DIVSTAR F 
-    |  F
+
+E:
+    E ADDSUB T { $$ = makeNode(E); addChild($$, $1); addChild($$, makeNode(ADDSUB)); addChild($$, $3); }
+    |  T { $$ = $1; }
     ;
-F   :  ADDSUB F
-    |  '!' F
-    |  '(' Exp ')'
-    |  NUM
-    |  CHARACTER
-    |  IDENT
-    |  IDENT '(' Arguments  ')'
+
+T:
+    T DIVSTAR F { $$ = makeNode(T); addChild($$, $1); addChild($$, makeNode(DIVSTAR)); addChild($$, $3); }
+    |  F { $$ = $1; }
     ;
+
+F:
+    ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(ADDSUB)); addChild($$, $2); }
+    |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
+    |  '(' Exp ')' { $$ = $2; }
+    |  NUM { $$ = makeNode(F); addChild($$, makeNode(NUM)); }
+    |  IDENT { $$ = makeNode(F); addChild($$, makeNode(IDENT)); }
+    ;
+
 Arguments:
-       ListExp
-    |
+    ListExp { $$ = $1; }
+    | /* vide */ { $$ = makeNode(Arguments); }
     ;
+
 ListExp:
-       ListExp ',' Exp
-    |  Exp
+    ListExp ',' Exp { $$ = $1; addSibling($$, $3); }
+    |  Exp { $$ = $1; }
     ;
+
 %%
 
 void yyerror(const char *s) {
@@ -125,7 +150,8 @@ void yyerror(const char *s) {
     }
 }
 
-int main(){
+int main(int argc, char **argv) {
     yyparse();
+    printTree(root);
     return 0;
 }

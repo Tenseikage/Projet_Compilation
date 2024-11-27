@@ -1,6 +1,6 @@
 CC := gcc
 CFLAGS := -Wall 
-LDFLAGS := -Wall -lfl -ly
+LDFLAGS := -lfl -ly
 BISON := parser
 LEX := lex
 TREE := tree
@@ -19,7 +19,7 @@ $(TREE).o: $(TREE).c $(TREE).h
 
 # Génération des fichiers Bison
 $(BISON).tab.c $(BISON).tab.h: $(BISON).y
-	bison -d $(BISON).y
+	bison -d -Wcounterexamples $(BISON).y
 
 # Compilation du fichier Bison
 $(BISON).tab.o: $(BISON).tab.c $(TREE).h
