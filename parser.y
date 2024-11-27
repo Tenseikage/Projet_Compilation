@@ -84,8 +84,8 @@ Instr:
     |  IF '(' Exp ')' Instr ELSE Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(ELSE)); addChild($$, $7); }
     |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(WHILE)); addChild($$, $3); addChild($$, $5); }
     |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
-    |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(RETURN)); addChild($$, $2); }
-    |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(RETURN)); }
+    |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
+    |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); }
     |  '{' SuiteInstr '}' { $$ = $2; }
     |  ';' { $$ = makeNode(Instr); }
     ;
@@ -124,8 +124,8 @@ F:
     ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(ADDSUB)); addChild($$, $2); }
     |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
     |  '(' Exp ')' { $$ = $2; }
-    |  NUM { $$ = makeNode(F); addChild($$, makeNode(NUM)); }
-    |  IDENT { $$ = makeNode(F); addChild($$, makeNode(IDENT)); }
+    |  NUM { $$ = makeNode(F); addChild($$, makeNode(Num)); }
+    |  IDENT { $$ = makeNode(F); addChild($$, makeNode(ident)); }
     ;
 
 Arguments:

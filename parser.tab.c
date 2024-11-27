@@ -1330,13 +1330,13 @@ yyreduce:
 
   case 27: /* Instr: RETURN Exp ';'  */
 #line 87 "parser.y"
-                      { (yyval.node) = makeNode(Instr); addChild((yyval.node), makeNode(RETURN)); addChild((yyval.node), (yyvsp[-1].node)); }
+                      { (yyval.node) = makeNode(Instr); addChild((yyval.node), makeNode(Return)); addChild((yyval.node), (yyvsp[-1].node)); }
 #line 1335 "parser.tab.c"
     break;
 
   case 28: /* Instr: RETURN ';'  */
 #line 88 "parser.y"
-                  { (yyval.node) = makeNode(Instr); addChild((yyval.node), makeNode(RETURN)); }
+                  { (yyval.node) = makeNode(Instr); addChild((yyval.node), makeNode(Return)); }
 #line 1341 "parser.tab.c"
     break;
 
@@ -1444,13 +1444,13 @@ yyreduce:
 
   case 46: /* F: NUM  */
 #line 127 "parser.y"
-           { (yyval.node) = makeNode(F); addChild((yyval.node), makeNode(NUM)); }
+           { (yyval.node) = makeNode(F); addChild((yyval.node), makeNode(Num)); }
 #line 1449 "parser.tab.c"
     break;
 
   case 47: /* F: IDENT  */
 #line 128 "parser.y"
-             { (yyval.node) = makeNode(F); addChild((yyval.node), makeNode(IDENT)); }
+             { (yyval.node) = makeNode(F); addChild((yyval.node), makeNode(ident)); }
 #line 1455 "parser.tab.c"
     break;
 
