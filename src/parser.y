@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include "tree.h"
+#include "../inc/tree.h"
 
 // Déclaration explicite de yyin
 extern FILE *yyin;
