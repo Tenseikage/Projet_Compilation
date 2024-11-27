@@ -1,5 +1,5 @@
 %{
-#include "tree.h"
+#include "../inc/tree.h"
 #include "parser.tab.h" // Inclut les définitions générées par Bison
 #include <stdio.h>
 int lineno;
