@@ -19,7 +19,7 @@ $(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Compilation du fichier tree
-$(OBJ)/$(TREE).o: $(SRC)/$(TREE).c $(INC)/$(TREE).h
+./obj/tree.o: ./src/tree.c ./inc/tree.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Génération des fichiers Bison
@@ -37,7 +37,6 @@ $(OBJ)/$(LEX).yy.o: $(SRC)/$(LEX).yy.c $(INC)/$(TREE).h
 # Génération du fichier Flex
 $(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l $(INC)/$(BISON).tab.h
 	flex -o $@ $<
-
 
 # Nettoyage
 clean:
