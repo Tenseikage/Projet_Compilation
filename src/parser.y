@@ -4,6 +4,8 @@
 #include "../inc/tree.h"
 
 // Déclaration explicite de yyin
+// IDENT '=' CHARACTER { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Character)); }
+// |  IDENT '=' NUM       { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Num)); }
 extern FILE *yyin;
 
 void yyerror(const char *s);
@@ -17,6 +19,8 @@ int yylex(void);
 
 %union {
   Node *node;
+  char ident[64];
+  int num;
 }
 %left OR AND
 %left ADDSUB
@@ -24,7 +28,8 @@ int yylex(void);
 %left DIVSTAR
 %left EQ ORDER
 
-%token TYPE IDENT VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR NUM CHARACTER STATIC
+%token TYPE VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR NUM CHARACTER STATIC
+%token <ident> IDENT
 %type <node> Prog DeclVars Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 
 %%
@@ -33,14 +38,12 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$,
     ;
 
 DeclVars:
-       DeclVars TYPE Declarateurs ';' { $$ = makeNode(DeclVars); addChild($$, $1); addChild($$, makeNode(type)); addChild($$, $3); }
+       DeclVars TYPE Declarateurs ';' { $$=$1; addChild($$, makeNode(type)); addChild($$, $3); }
     |  { $$ = makeNode(DeclVars); }
     ;
 
 Declarateurs:
        Declarateurs ',' IDENT { $$ = $1; addSibling($$, makeNode(ident)); }
-    |  IDENT '=' CHARACTER { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Character)); }
-    |  IDENT '=' NUM       { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Num)); }
     |  IDENT               { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); }
     ;
 
@@ -54,7 +57,8 @@ DeclFonct:
     ;
 
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(type)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
+       TYPE IDENT '(' Parametres ')' { 
+        Node* typed_func = makeNode(EnTeteFonct); addChild(typed, makeNode(type)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
     |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
     ;
 

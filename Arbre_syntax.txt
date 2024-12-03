@@ -1,0 +1,24 @@
+Prog
+├── DeclVars
+│   ├── type
+│   └── Declarateurs
+│       └── ident
+└── DeclFonct
+    ├── EnTeteFonct
+    │   ├── type
+    │   ├── ident
+    │   └── Parametres
+    └── Corps
+        ├── DeclVars
+        │   ├── type
+        │   └── Declarateurs
+        │       └── ident
+        ├── SuiteInstr
+        ├── Instr
+        │   ├── (null)
+        │   └── F
+        │       └── Num
+        └── Instr
+            ├── Return
+            └── F
+                └── Num

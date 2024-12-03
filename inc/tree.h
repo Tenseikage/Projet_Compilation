@@ -44,6 +44,7 @@ typedef enum {
 typedef struct Node {
   label_t label;
   struct Node *firstChild, *nextSibling;
+  char* value;
   int lineno;
 } Node;
 

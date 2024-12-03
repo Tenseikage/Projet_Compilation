@@ -51,8 +51,6 @@ DeclVars:
 // Liste des déclarateurs
 Declarateurs:
        Declarateurs ',' IDENT
-    |  IDENT '=' CHARACTER {printf("Affectation caractère \n");}
-    |  IDENT '=' NUM    {printf("Affectation numérque \n");}
     |  IDENT
     ;
 //Déclarations de fonctions
