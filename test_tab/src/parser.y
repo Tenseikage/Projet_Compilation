@@ -56,7 +56,6 @@ EnTeteFonct:
 Parametres:
        VOID 
     |  ListTypVar 
-    |
     ;
 
 ListTypVar:

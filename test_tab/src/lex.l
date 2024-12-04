@@ -41,15 +41,17 @@ void yyerror(const char* s);
 "="             {  return '='; }
 ";"             { return ';'; }
 "+"|"-"         {  return ADDSUB; }
-"*"|"/"         {  return DIVSTAR; }
+"*"|"/"|"%"        {  return DIVSTAR; }
 "&&"            {  return AND; }
 "||"            {  return OR; }
+"=="|"!="       { return EQ;}
+"<"|">"|"<="|">=" {return ORDER;}
 \'[^\']\'       {  return CHARACTER;}
 \n              { yylineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
                     yyerror("Caractère invalide détecté");
-                    return 0;  // Retourner 0 pour signaler l'erreur
+                    return 1;  // Retourner 1 pour signaler l'erreur
                 }
 
 %%
