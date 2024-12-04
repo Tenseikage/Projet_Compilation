@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-// 72,52/100
+// 77.88/100
 
 void yyerror(const char *s);
 

@@ -1,0 +1,3 @@
+void localVar(void){ 
+	int x = 0; 
+}

@@ -40,6 +40,7 @@ void yyerror(const char* s);
 
 "="             {  return '='; }
 ";"             { return ';'; }
+","             { return ',';}
 "+"|"-"         {  return ADDSUB; }
 "*"|"/"|"%"        {  return DIVSTAR; }
 "&&"            {  return AND; }
