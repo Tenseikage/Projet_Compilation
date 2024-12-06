@@ -1,145 +1,145 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+// 77.88/100
 #include "../inc/tree.h"
-
-// Déclaration explicite de yyin
-// IDENT '=' CHARACTER { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Character)); }
-// |  IDENT '=' NUM       { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); addChild($$, makeNode(Num)); }
-extern FILE *yyin;
 
 void yyerror(const char *s);
 
-Node* root;
+
 extern char *yytext;
 extern int lineno;
 extern int yylineno;
 int yylex(void);
 %}
 
-%union {
-  Node *node;
-  char ident[64];
-  int num;
-}
+
 %left OR AND
 %left ADDSUB
 %left NOT
 %left DIVSTAR
 %left EQ ORDER
 
-%token TYPE VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR NUM CHARACTER STATIC
-%token <ident> IDENT
-%type <node> Prog DeclVars Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
-
+%token TYPE VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR NUM CHARACTER STATIC IDENT
+%expect 1
 %%
 
-Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$, $2); root = $$;}
+//Programme principal
+Prog:  DeclVars DeclFoncts 
     ;
 
+//Déclaration de variables locales
 DeclVars:
-       DeclVars TYPE Declarateurs ';' { $$=$1; addChild($$, makeNode(type)); addChild($$, $3); }
-    |  { $$ = makeNode(DeclVars); }
+       DeclVars TYPE Declarateurs ';' //{ printf("Variable globale\n"); }
+    |  DeclVars STATIC TYPE Declarateurs ';' {yyerror("Variable globale statique"); return 1;};
+    |
     ;
 
 Declarateurs:
-       Declarateurs ',' IDENT { $$ = $1; addSibling($$, makeNode(ident)); }
-    |  IDENT               { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); }
+       Declarateurs ',' IDENT 
+    |  IDENT             
     ;
 
 DeclFoncts:
-       DeclFoncts DeclFonct { $$ = $1; addSibling($$, $2); }
-    |  DeclFonct { $$ = $1; }
+       DeclFoncts DeclFonct 
+    |  DeclFonct 
     ;
 
 DeclFonct:
-       EnTeteFonct Corps { $$ = makeNode(DeclFonct); addChild($$, $1); addChild($$, $2); }
+       EnTeteFonct Corps 
     ;
 
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')' { 
-        Node* typed_func = makeNode(EnTeteFonct); addChild(typed, makeNode(type)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
-    |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
+       TYPE IDENT '(' Parametres ')' 
+    |  VOID IDENT '(' Parametres ')' 
     ;
 
 Parametres:
-       VOID { $$ = makeNode(Parametres); addChild($$, makeNode(VOID)); }
-    |  ListTypVar { $$ = $1; }
-    |  {$$ = NULL;}
+       VOID 
+    |  ListTypVar 
     ;
 
 ListTypVar:
-       ListTypVar ',' TYPE IDENT { $$ = $1; addSibling($$, makeNode(TYPE)); addSibling($$, makeNode(IDENT)); }
-    |  TYPE IDENT { $$ = makeNode(ListTypVar); addChild($$, makeNode(TYPE)); addChild($$, makeNode(IDENT)); }
+       ListTypVar ',' TYPE IDENT 
+    |  TYPE IDENT 
     ;
 
 Corps:
-    '{' DeclVars SuiteInstr '}' { $$ = makeNode(Corps); addChild($$, $2); addChild($$, $3); }
+    '{' DeclVarsLocale SuiteInstr '}' 
     ;
 
+//Déclaration de variable locales
+DeclVarsLocale:
+        DeclVarsLocale STATIC TYPE Declarateurs ';' //{ printf("Variable locale statique\\n"); }
+    |   DeclVarsLocale TYPE Declarateurs ';'
+    |
+;
+
 SuiteInstr:
-       SuiteInstr Instr { $$ = $1; addSibling($$, $2); }
-    | /* vide */ { $$ = makeNode(SuiteInstr); }
+       SuiteInstr Instr 
+    | 
     ;
 
 Instr:
-       IDENT '=' Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
-    |  IF '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); }
-    |  IF '(' Exp ')' Instr ELSE Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(ELSE)); addChild($$, $7); }
-    |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(WHILE)); addChild($$, $3); addChild($$, $5); }
-    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
-    |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
-    |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); }
-    |  '{' SuiteInstr '}' { $$ = $2; }
-    |  ';' { $$ = makeNode(Instr); }
+       IDENT '=' Exp ';' 
+    |  IF '(' Exp ')' Instr 
+    |  IF '(' Exp ')' Instr ELSE Instr 
+    |  WHILE '(' Exp ')' Instr 
+    |  IDENT '(' Arguments ')' ';' 
+    |  RETURN Exp ';' 
+    |  RETURN ';' 
+    |  '{' SuiteInstr '}' 
+    |  ';' 
     ;
 
 Exp:
-    Exp OR TB { $$ = makeNode(Exp); addChild($$, $1); addChild($$, makeNode(OR)); addChild($$, $3); }
-    |  TB { $$ = $1; }
+    Exp OR TB 
+    |  TB 
     ;
 
 TB:
-    TB AND FB { $$ = makeNode(TB); addChild($$, $1); addChild($$, makeNode(AND)); addChild($$, $3); }
-    |  FB { $$ = $1; }
+    TB AND FB 
+    |  FB 
     ;
 
 FB:
-    FB EQ M { $$ = makeNode(FB); addChild($$, $1); addChild($$, makeNode(EQ)); addChild($$, $3); }
-    |  M { $$ = $1; }
+    FB EQ M 
+    |  M 
     ;
 
 M:
-    M ORDER E { $$ = makeNode(M); addChild($$, $1); addChild($$, makeNode(ORDER)); addChild($$, $3); }
-    |  E { $$ = $1; }
+    M ORDER E 
+    |  E 
     ;
 
 E:
-    E ADDSUB T { $$ = makeNode(E); addChild($$, $1); addChild($$, makeNode(ADDSUB)); addChild($$, $3); }
-    |  T { $$ = $1; }
+    E ADDSUB T 
+    |  T 
     ;
 
 T:
-    T DIVSTAR F { $$ = makeNode(T); addChild($$, $1); addChild($$, makeNode(DIVSTAR)); addChild($$, $3); }
-    |  F { $$ = $1; }
+    T DIVSTAR F 
+    |  F 
     ;
 
 F:
-    ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(ADDSUB)); addChild($$, $2); }
-    |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
-    |  '(' Exp ')' { $$ = $2; }
-    |  NUM { $$ = makeNode(F); addChild($$, makeNode(Num)); }
-    |  IDENT { $$ = makeNode(F); addChild($$, makeNode(ident)); }
+    ADDSUB F 
+    |  '!' F 
+    |  '(' Exp ')' 
+    |  NUM 
+    |  IDENT 
+    |  CHARACTER
+    |  IDENT '(' Arguments ')'
     ;
 
 Arguments:
-    ListExp { $$ = $1; }
-    | /* vide */ { $$ = makeNode(Arguments); }
+    ListExp 
+    | 
     ;
 
 ListExp:
-    ListExp ',' Exp { $$ = $1; addSibling($$, $3); }
-    |  Exp { $$ = $1; }
+    ListExp ',' Exp 
+    |  Exp 
     ;
 
 %%
@@ -155,7 +155,5 @@ void yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
-    yyparse();
-    printTree(root);
-    return 0;
+    return yyparse();
 }

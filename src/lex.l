@@ -48,7 +48,7 @@ void yyerror(const char* s);
 "||"            {  return OR; }
 "=="|"!="       { return EQ;}
 "<"|">"|"<="|">=" {return ORDER;}
-\'[^\']\'       {  return CHARACTER;}
+'(\\[a-z]|[^\'])' {  return CHARACTER;}
 \n              { yylineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
