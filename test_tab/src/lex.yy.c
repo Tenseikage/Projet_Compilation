@@ -352,8 +352,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 33
-#define YY_END_OF_BUFFER 34
+#define YY_NUM_RULES 34
+#define YY_END_OF_BUFFER 35
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -363,12 +363,12 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[77] =
     {   0,
-        0,    0,    0,    0,   34,   32,   31,   30,   32,   24,
-       32,   32,   14,   15,   23,   22,   24,   19,   21,   28,
-       20,   28,   18,   18,   18,   18,   18,   18,   18,   18,
-       16,   32,   17,    5,    4,    5,   31,   27,   25,    0,
-        2,    1,   19,   28,   18,   18,   18,   10,   18,   18,
-       18,   18,   18,   26,    3,   29,    1,   18,   18,    6,
+        0,    0,    0,    0,   35,   33,   32,   31,   21,   25,
+       33,   33,   14,   15,   24,   23,   25,   19,   22,   29,
+       20,   29,   18,   18,   18,   18,   18,   18,   18,   18,
+       16,   33,   17,    5,    4,    5,   32,   28,   26,    0,
+        2,    1,   19,   29,   18,   18,   18,   10,   18,   18,
+       18,   18,   18,   27,    3,   30,    1,   18,   18,    6,
        18,   18,   18,   18,    8,   11,   18,   18,    9,   18,
        18,   18,   12,   13,    7,    0
     } ;
@@ -883,74 +883,79 @@ YY_RULE_SETUP
 case 21:
 YY_RULE_SETUP
 #line 42 "src/lex.l"
-{ return ';'; }
+{ return '!';} /*Pas sur*/
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 43 "src/lex.l"
-{ return ',';}
+{ return ';'; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 44 "src/lex.l"
-{  return ADDSUB; }
+{ return ',';}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 45 "src/lex.l"
-{  return DIVSTAR; }
+{  return ADDSUB; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 46 "src/lex.l"
-{  return AND; }
+{  return DIVSTAR; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 47 "src/lex.l"
-{  return OR; }
+{  return AND; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 48 "src/lex.l"
-{ return EQ;}
+{  return OR; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 49 "src/lex.l"
-{return ORDER;}
+{ return EQ;}
 	YY_BREAK
 case 29:
-/* rule 29 can match eol */
 YY_RULE_SETUP
 #line 50 "src/lex.l"
-{  return CHARACTER;}
+{return ORDER;}
 	YY_BREAK
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
 #line 51 "src/lex.l"
-{ yylineno++; } // Incrément du numéro de ligne
+{  return CHARACTER;}
 	YY_BREAK
 case 31:
+/* rule 31 can match eol */
 YY_RULE_SETUP
 #line 52 "src/lex.l"
-{ /* Ignore espaces et tabulations */ }
+{ yylineno++; } // Incrément du numéro de ligne
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 53 "src/lex.l"
+{ /* Ignore espaces et tabulations */ }
+	YY_BREAK
+case 33:
+YY_RULE_SETUP
+#line 54 "src/lex.l"
 { 
                     yyerror("Caractère invalide détecté");
                     return 1;  // Retourner 1 pour signaler l'erreur
                 }
 	YY_BREAK
-case 33:
+case 34:
 YY_RULE_SETUP
-#line 58 "src/lex.l"
+#line 59 "src/lex.l"
 ECHO;
 	YY_BREAK
-#line 954 "src/lex.yy.c"
+#line 959 "src/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -1919,7 +1924,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 58 "src/lex.l"
+#line 59 "src/lex.l"
 
 
 

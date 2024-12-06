@@ -39,6 +39,7 @@ void yyerror(const char* s);
 [0-9]+                 {  return NUM; }   // Nombres entiers
 
 "="             {  return '='; }
+"!"             { return '!';} /*Pas sur*/
 ";"             { return ';'; }
 ","             { return ',';}
 "+"|"-"         {  return ADDSUB; }

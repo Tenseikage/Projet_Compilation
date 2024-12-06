@@ -1,3 +1,7 @@
+char z;
 void maFonction(void) {
+	char b;
+	z = 'b';
+	z=z;
 
 }
