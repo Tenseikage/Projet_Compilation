@@ -1,8 +1,7 @@
 %{
-#include "../inc/tree.h"
 #include "parser.tab.h" // Inclut les définitions générées par Bison
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 int lineno;
 void yyerror(const char* s);
 
@@ -11,22 +10,24 @@ void yyerror(const char* s);
 }*/
 %}
 
+%option noinput
+%option nounput
+
 
 %x COMMENT
-
 %%
+
 "//".*          ; /* Ignorer les commentaires de type C */
 "/*"            { BEGIN(COMMENT); } /* Commencer un commentaire de type C */
 <COMMENT>"*/"   { BEGIN(INITIAL); } /* Finir un commentaire de type C */
 <COMMENT>\n     { yylineno++; } /* Incrémenter le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
 <COMMENT>.      ; /* Ignorer les autres caractères dans un commentaire */
-
-"static"        {strcpy(yylval.ident,yytext);return STATIC; }
-"int"           {strcpy(yylval.ident,yytext);return TYPE; }
-"char"          {strcpy(yylval.ident,yytext);return TYPE;}
-"void"          {strcpy(yylval.ident,yytext);return VOID; }
-"if"            {strcpy(yylval.ident,yytext);return IF; }
-"else"          { return ELSE; }
+"int"           { return TYPE; }
+"static"        { return STATIC;}
+"char"          {return TYPE ;}
+"void"          { return VOID; }
+"if"            { return IF; }
+"else"          {  return ELSE; }
 "while"         {  return WHILE; }
 "return"        {  return RETURN; }
 "("             { return '(';}
@@ -34,22 +35,27 @@ void yyerror(const char* s);
 "{"             { return '{';}
 "}"             { return '}';}
 
-[a-zA-Z_][a-zA-Z0-9_]* { strcpy(yylval.ident,yytext); return IDENT; } // Identificateurs
-[0-9]+                 {yylval.num = atoi(yytext);return NUM; }   // Nombres entiers
+[a-zA-Z_][a-zA-Z0-9_]* {  return IDENT; } // Identificateurs
+[0-9]+                 {  return NUM; }   // Nombres entiers
 
 "="             {  return '='; }
+"!"             { return '!';} /*Pas sur*/
 ";"             { return ';'; }
+","             { return ',';}
 "+"|"-"         {  return ADDSUB; }
-"*"|"/"         {  return DIVSTAR; }
+"*"|"/"|"%"        {  return DIVSTAR; }
 "&&"            {  return AND; }
 "||"            {  return OR; }
-\'[^\']\'       {return CHARACTER;}
+"=="|"!="       { return EQ;}
+"<"|">"|"<="|">=" {return ORDER;}
+\'[^\']\'       {  return CHARACTER;}
 \n              { yylineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
                     yyerror("Caractère invalide détecté");
-                    return 0;  // Retourner 0 pour signaler l'erreur
+                    return 1;  // Retourner 1 pour signaler l'erreur
                 }
 
 %%
+
 
