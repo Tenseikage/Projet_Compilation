@@ -1,6 +1,12 @@
 int a;
+int b;
 int main(void){
-	int a;
-	a = 0;
+	static int a;
+	if(a){
+		a = 1;
+		a = a + 1;
+	} else {
+		return 0;
+	}
 	return 0;
 }
