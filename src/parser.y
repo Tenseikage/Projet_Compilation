@@ -56,22 +56,22 @@ DeclFonct:
     ;
 
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(type)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
+       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
     |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
     ;
 
 Parametres:
-       VOID { $$ = makeNode(Parametres); addChild($$, makeNode(VOID)); }
+       VOID { $$ = makeNode(Parametres); addChild($$, makeNode(Void)); }
     |  ListTypVar { $$ = $1; }
     ;
 
 ListTypVar:
-       ListTypVar ',' TYPE IDENT { $$ = $1; addSibling($$, makeNode(TYPE)); addSibling($$, makeNode(IDENT)); }
-    |  TYPE IDENT { $$ = makeNode(ListTypVar); addChild($$, makeNode(TYPE)); addChild($$, makeNode(IDENT)); }
+       ListTypVar ',' TYPE IDENT { $$ = $1; addSibling($$, makeNode(type)); addSibling($$, makeNode(type)); }
+    |  TYPE IDENT { $$ = makeNode(ListTypVar); addChild($$, makeNode(type)); addChild($$, makeNode(ident)); }
     ;
 
 Corps:
-    '{' DeclVarsLocale SuiteInstr '}' { $$ = makeNode(Corps); addChild($$, $2); addChild($$, $3); }
+    '{' DeclVarsLocale SuiteInstr '}' {$$ = makeNode(Corps); addChild($$, $2); addChild($$, $3); }
     ;
 
 DeclVarsLocale:
@@ -89,11 +89,11 @@ SuiteInstr:
     ;
 
 Instr:
-       IDENT '=' Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
-    |  IF '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); }
-    |  IF '(' Exp ')' Instr ELSE Instr { $$ = makeNode(Instr); addChild($$, makeNode(IF)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(ELSE)); addChild($$, $7); }
-    |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(WHILE)); addChild($$, $3); addChild($$, $5); }
-    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); addChild($$, makeNode(IDENT)); addChild($$, $3); }
+       IDENT '=' Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(ident)); addChild($$, $3); }
+    |  IF '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
+    |  IF '(' Exp ')' Instr ELSE Instr { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(ELSE)); addChild($$, $7); }
+    |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(While)); addChild($$, $3); addChild($$, $5); }
+    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); addChild($$, makeNode(ident)); addChild($$, $3); }
     |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
     |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); }
     |  '{' SuiteInstr '}' { $$ = $2; }
