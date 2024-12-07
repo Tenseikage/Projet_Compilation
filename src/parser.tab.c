@@ -1370,7 +1370,7 @@ yyreduce:
 
   case 32: /* Exp: Exp OR TB  */
 #line 107 "src/parser.y"
-              { (yyval.node) = makeNode(Exp); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(OR)); addChild((yyval.node), (yyvsp[0].node)); }
+              { (yyval.node) = makeNode(Exp); (yyval.node) = (yyvsp[-2].node); addChild((yyval.node), makeNode(Or)); addChild((yyval.node), (yyvsp[0].node)); }
 #line 1375 "./src/parser.tab.c"
     break;
 
@@ -1382,7 +1382,7 @@ yyreduce:
 
   case 34: /* TB: TB AND FB  */
 #line 112 "src/parser.y"
-              { (yyval.node) = makeNode(TB); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(AND)); addChild((yyval.node), (yyvsp[0].node)); }
+              { (yyval.node) = makeNode(TB); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(And)); addChild((yyval.node), (yyvsp[0].node)); }
 #line 1387 "./src/parser.tab.c"
     break;
 
@@ -1394,7 +1394,7 @@ yyreduce:
 
   case 36: /* FB: FB EQ M  */
 #line 117 "src/parser.y"
-            { (yyval.node) = makeNode(FB); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(EQ)); addChild((yyval.node), (yyvsp[0].node)); }
+            { (yyval.node) = makeNode(FB); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(Eq)); addChild((yyval.node), (yyvsp[0].node)); }
 #line 1399 "./src/parser.tab.c"
     break;
 
@@ -1406,7 +1406,7 @@ yyreduce:
 
   case 38: /* M: M ORDER E  */
 #line 122 "src/parser.y"
-              { (yyval.node) = makeNode(M); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(ORDER)); addChild((yyval.node), (yyvsp[0].node)); }
+              { (yyval.node) = makeNode(M); addChild((yyval.node), (yyvsp[-2].node)); addChild((yyval.node), makeNode(Order)); addChild((yyval.node), (yyvsp[0].node)); }
 #line 1411 "./src/parser.tab.c"
     break;
 

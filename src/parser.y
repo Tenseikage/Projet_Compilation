@@ -104,22 +104,22 @@ Instr:
     ;
 
 Exp:
-    Exp OR TB { $$ = makeNode(Exp); addChild($$, $1); addChild($$, makeNode(OR)); addChild($$, $3); }
+    Exp OR TB { $$ = makeNode(Exp); $$ = $1; addChild($$, makeNode(Or)); addChild($$, $3); }
     |  TB { $$ = $1; }
     ;
 
 TB:
-    TB AND FB { $$ = makeNode(TB); addChild($$, $1); addChild($$, makeNode(AND)); addChild($$, $3); }
+    TB AND FB { $$ = makeNode(TB); addChild($$, $1); addChild($$, makeNode(And)); addChild($$, $3); }
     |  FB { $$ = $1; }
     ;
 
 FB:
-    FB EQ M { $$ = makeNode(FB); addChild($$, $1); addChild($$, makeNode(EQ)); addChild($$, $3); }
+    FB EQ M { $$ = makeNode(FB); addChild($$, $1); addChild($$, makeNode(Eq)); addChild($$, $3); }
     |  M { $$ = $1; }
     ;
 
 M:
-    M ORDER E { $$ = makeNode(M); addChild($$, $1); addChild($$, makeNode(ORDER)); addChild($$, $3); }
+    M ORDER E { $$ = makeNode(M); addChild($$, $1); addChild($$, makeNode(Order)); addChild($$, $3); }
     |  E { $$ = $1; }
     ;
 
