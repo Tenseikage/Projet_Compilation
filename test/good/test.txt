@@ -1,15 +1,13 @@
 int a;
 int b;
+int c;
+
+int add(int a, int b){
+	return a + b;
+}
 int main(void){
-	static int a;
-	if(a){
-		a = 1;
-		a = a + 1;
-	} else {
-		return 0;
-	}
-	if (a && a){
-		a = 1;
-	}
+	a = 0;
+	b = 1;
+	add(a,b);
 	return 0;
 }

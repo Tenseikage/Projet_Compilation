@@ -18,6 +18,9 @@ void yyerror(const char *s);
 
 %union {
   Node *node;
+  char type[10];
+  char ident[64];
+  int num;
 }
 %expect 1 
 %left OR AND
@@ -27,7 +30,10 @@ void yyerror(const char *s);
 %left EQ ORDER
 
 
-%token TYPE IDENT VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR NUM CHARACTER STATIC
+%token VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR CHARACTER STATIC
+%token<type> TYPE
+%token<ident> IDENT
+%token<num> NUM
 %type <node> Prog DeclVars DeclVarsLocale Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 
 %%
@@ -37,14 +43,14 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$,
 
 DeclVars:
        DeclVars TYPE Declarateurs ';' { $$ = makeNode(DeclVars); 
-       addChild($$, $1); addChild($$, makeNode(type)); addChild($$, $3); }
+       addChild($$,$1); addChild($$, makeNode(type)); addChild($$, $3); }
     |  DeclVars STATIC TYPE Declarateurs {yyerror("Variable globale statique"); return 1;}
     |  { $$ = NULL; }
     ;
 
 Declarateurs:
        Declarateurs ',' IDENT { $$ = $1; addSibling($$, makeNode(ident)); }
-    |  IDENT               { $$ = makeNode(Declarateurs); addChild($$, makeNode(ident)); }
+    |  IDENT               { $$ = makeNode(ident); }
     ;
 
 DeclFoncts:
@@ -62,7 +68,7 @@ EnTeteFonct:
     ;
 
 Parametres:
-       VOID { $$ = makeNode(Parametres); addChild($$, makeNode(Void)); }
+       VOID {$$ = makeNode(Parametres); addChild($$, makeNode(Void)); }
     |  ListTypVar { $$ = $1; }
     ;
 
@@ -137,7 +143,9 @@ F:
     ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(Addsub)); addChild($$, $2); }
     |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
     |  '(' Exp ')' { $$ = $2; }
-    |  NUM { $$ = makeNode(F); addChild($$, makeNode(Num)); }
+    |  NUM { $$ = makeNode(F); 
+       Node* value = makeNode(Num);
+       addChild($$, value);}
     |  IDENT { $$ = makeNode(F); addChild($$, makeNode(ident)); }
     ;
 

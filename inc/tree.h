@@ -46,6 +46,8 @@ typedef struct Node {
   label_t label;
   struct Node *firstChild, *nextSibling;
   int lineno;
+  char* arg; // Argument string
+  int value; // Valeur d'une instruction
 } Node;
 
 Node *makeNode(label_t label);

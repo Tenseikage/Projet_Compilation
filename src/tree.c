@@ -56,6 +56,8 @@ Node *makeNode(label_t label) {
   node->label = label;
   node-> firstChild = node->nextSibling = NULL;
   node->lineno=lineno;
+  node->arg = NULL;
+  node->value = 0;
   return node;
 }
 
@@ -95,8 +97,13 @@ void printTree(Node *node) {
   if (depth > 0) { // 2514 = L form; 2500 = horizontal line; 251c = vertical line and right horiz 
     printf(rightmost[depth] ? "\u2514\u2500\u2500 " : "\u251c\u2500\u2500 ");
   }
-  printf("%s", StringFromLabel[node->label]);
-  printf("\n");
+  if(node->firstChild){
+    printf("%s", StringFromLabel[node->label]);
+    printf("\n");
+  } else {
+    printf("%s : ", StringFromLabel[node->label]);
+    printf("\n");
+  }
   depth++;
   for (Node *child = node->firstChild; child != NULL; child = child->nextSibling) {
     rightmost[depth] = (child->nextSibling) ? false : true;

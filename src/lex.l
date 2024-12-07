@@ -37,7 +37,7 @@ void yyerror(const char* s);
 "}"             { return '}';}
 
 [a-zA-Z_][a-zA-Z0-9_]* {  return IDENT; } // Identificateurs
-[0-9]+                 {  return NUM; }   // Nombres entiers
+[0-9]+                 {yylval.num = atoi(yytext);  return NUM; }   // Nombres entiers
 
 "="             {  return '='; }
 "!"             { return '!';} /*Pas sur*/
