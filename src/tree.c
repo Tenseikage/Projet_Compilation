@@ -9,7 +9,6 @@ static const char *StringFromLabel[] = {
   "E",
   "T",
   "divstar",
-  "id"
   "id",
   "Prog",
   "DeclVars",
@@ -28,6 +27,7 @@ static const char *StringFromLabel[] = {
   "M",
   "F",
   "Arguments",
+  "DeclVarsLocale",
   "ListExp",
   "type",
   "ident",

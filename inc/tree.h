@@ -8,6 +8,7 @@ typedef enum {
   Prog,
   DeclVars,
   Declarateurs,
+  DeclVarsLocale,
   DeclFoncts,
   DeclFonct,
   EnTeteFonct,
@@ -44,7 +45,6 @@ typedef enum {
 typedef struct Node {
   label_t label;
   struct Node *firstChild, *nextSibling;
-  char* value;
   int lineno;
 } Node;
 

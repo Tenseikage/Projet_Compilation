@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall 
+CFLAGS := -Wall -g
 LDFLAGS := -lfl -ly
 BIN := ./bin
 BUILD := ./build
@@ -24,7 +24,7 @@ $(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o
 
 # Génération des fichiers Bison
 $(SRC)/$(BISON).tab.c $(INC)/$(BISON).tab.h: $(SRC)/$(BISON).y
-	bison -d -Wcounterexamples -o $(SRC)/$(BISON).tab.c $<
+	bison -d -o $(SRC)/$(BISON).tab.c $<
 
 # Compilation du fichier Bison
 $(OBJ)/$(BISON).tab.o: $(SRC)/$(BISON).tab.c $(INC)/$(TREE).h
