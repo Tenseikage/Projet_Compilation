@@ -42,13 +42,15 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$,
     ;
 
 DeclVars:
-       DeclVars TYPE Declarateurs ';' { $$ = makeNode(DeclVars);
+       DeclVars TYPE Declarateurs ';' { /*$$ = makeNode(DeclVars);*/
+       $$ = $1;
+       // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
        nodeType1->arg = $2;
        printf("types : %s \n", nodeType1->arg);
-       addChild($$,$1); addChild($$, nodeType1); addChild($$, $3); }
+       addChild($$, nodeType1); addChild($$, $3); }
     |  DeclVars STATIC TYPE Declarateurs {yyerror("Variable globale statique"); return 1;}
-    |  { $$ = NULL; }
+    |  { $$ = makeNode(DeclVars); }
     ;
 
 Declarateurs:
@@ -97,21 +99,19 @@ Corps:
     ;
 
 DeclVarsLocale:
-        DeclVarsLocale STATIC TYPE Declarateurs ';' { $$ = makeNode(DeclVarsLocale);
-        addChild($$,$1);
+        DeclVarsLocale STATIC TYPE Declarateurs ';' { $$ = $1;
         Node* elem = makeNode(Static);
         Node* nodeType = makeNode(type);
         nodeType->arg = $3;
         addSibling(elem,nodeType);
         addChild($$,elem);
         addChild($$,$4);}
-    |   DeclVarsLocale TYPE Declarateurs ';' { $$ = makeNode(DeclVarsLocale); 
-        addChild($$, $1); 
+    |   DeclVarsLocale TYPE Declarateurs ';' { $$ = $1;  
         Node* nodeType = makeNode(type);
         nodeType->arg = $2;
         addChild($$, nodeType); 
         addChild($$, $3); }
-    |   {$$ = NULL;}
+    |   {$$ = makeNode(DeclVarsLocale);}
 ;
 
 SuiteInstr:
@@ -166,12 +166,12 @@ F:
     |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
     |  '(' Exp ')' { $$ = $2; }
     |  NUM { 
-        $$ = makeNode(F); 
-        Node* value = makeNode(Num);
-        value->value = $1; 
-        addChild($$, value);
+        $$ = makeNode(Num); 
+        $$->value = $1; 
+        
     }
-    |  IDENT { $$ = makeNode(F); addChild($$, makeNode(ident)); }
+    |  CHARACTER {$$ = makeNode(Character);}
+    |  IDENT { $$ = makeNode(ident); }
     ;
 
 Arguments:
@@ -199,5 +199,6 @@ void yyerror(const char *s) {
 int main(int argc, char **argv) {
     yyparse();
     printTree(root);
+    deleteTree(root);
     return 0;
 }

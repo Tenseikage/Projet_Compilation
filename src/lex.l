@@ -50,7 +50,7 @@ void yyerror(const char* s);
 "||"            {  return OR; }
 "=="|"!="       { return EQ;}
 "<"|">"|"<="|">=" {return ORDER;}
-'(\\[a-z]|[^\'])' {return CHARACTER;}
+'(\\[a-z]|[^\'])' {printf("oui\n");return CHARACTER;}
 \n              { yylineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
