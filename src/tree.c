@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../inc/tree.h"
+#include "tree.h"
 extern int lineno;       /* from lexer */
 
 static const char *StringFromLabel[] = {
@@ -41,7 +41,7 @@ static const char *StringFromLabel[] = {
     "Eq",
     "Order",
     "Addsub",
-    "Num",
+    "Value",
     "Character",
     "Static"
     /* Ajoutez d'autres labels si nécessaire */
@@ -100,8 +100,16 @@ void printTree(Node *node) {
   if(node->firstChild){
     printf("%s", StringFromLabel[node->label]);
     printf("\n");
-  } else {
-    printf("%s : ", StringFromLabel[node->label]);
+    
+  } else if (node->label == Num){
+    printf("%s : %d", StringFromLabel[node->label], node->value);
+    printf("\n");
+
+  } else if(node->label == type){
+    printf("%s : %s", StringFromLabel[node->label], node->arg);
+    printf("\n");
+  }else {
+    printf("%s", StringFromLabel[node->label]);
     printf("\n");
   }
   depth++;

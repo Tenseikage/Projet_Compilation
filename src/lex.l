@@ -1,8 +1,9 @@
 %{
-#include "../inc/tree.h"
+#include "tree.h"
 #include "parser.tab.h" // Inclut les définitions générées par Bison
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 int lineno;
 void yyerror(const char* s);
 
@@ -23,10 +24,10 @@ void yyerror(const char* s);
 <COMMENT>"*/"   { BEGIN(INITIAL); } /* Finir un commentaire de type C */
 <COMMENT>\n     { yylineno++; } /* Incrémenter le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
 <COMMENT>.      ; /* Ignorer les autres caractères dans un commentaire */
-"int"           { return TYPE; }
+"int"           {strcpy(yylval.type,yytext); return TYPE; }
 "static"        { return STATIC;}
-"char"          {return TYPE ;}
-"void"          { return VOID; }
+"char"          {strcpy(yylval.type,yytext); return TYPE ;}
+"void"          {strcpy(yylval.type,yytext); return VOID; }
 "if"            { return IF; }
 "else"          {  return ELSE; }
 "while"         {  return WHILE; }
@@ -36,8 +37,8 @@ void yyerror(const char* s);
 "{"             { return '{';}
 "}"             { return '}';}
 
-[a-zA-Z_][a-zA-Z0-9_]* {  return IDENT; } // Identificateurs
-[0-9]+                 {yylval.num = atoi(yytext);  return NUM; }   // Nombres entiers
+[a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident,yytext);  return IDENT; } // Identificateurs
+[0-9]+                 {yylval.num = atoi(yytext); /*printf("valeur : %d \n",yylval.num);*/ return NUM; }   // Nombres entiers
 
 "="             {  return '='; }
 "!"             { return '!';} /*Pas sur*/
@@ -49,7 +50,7 @@ void yyerror(const char* s);
 "||"            {  return OR; }
 "=="|"!="       { return EQ;}
 "<"|">"|"<="|">=" {return ORDER;}
-'(\\[a-z]|[^\'])' {  return CHARACTER;}
+'(\\[a-z]|[^\'])' {return CHARACTER;}
 \n              { yylineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 

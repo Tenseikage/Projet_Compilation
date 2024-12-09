@@ -19,23 +19,23 @@ $(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Compilation du fichier tree
-./obj/tree.o: ./src/tree.c ./inc/tree.h
+$(OBJ)/$(TREE).o: $(SRC)/$(TREE).c  $(SRC)/$(TREE).h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Génération des fichiers Bison
-$(SRC)/$(BISON).tab.c $(INC)/$(BISON).tab.h: $(SRC)/$(BISON).y
+$(SRC)/$(BISON).tab.c $(SRC)/$(BISON).tab.h: $(SRC)/$(BISON).y
 	bison -d -o $(SRC)/$(BISON).tab.c $<
 
 # Compilation du fichier Bison
-$(OBJ)/$(BISON).tab.o: $(SRC)/$(BISON).tab.c $(INC)/$(TREE).h
+$(OBJ)/$(BISON).tab.o: $(SRC)/$(BISON).tab.c $(SRC)/$(TREE).h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation du fichier Flex
-$(OBJ)/$(LEX).yy.o: $(SRC)/$(LEX).yy.c $(INC)/$(TREE).h
+$(OBJ)/$(LEX).yy.o: $(SRC)/$(LEX).yy.c $(SRC)/$(TREE).h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Génération du fichier Flex
-$(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l $(INC)/$(BISON).tab.h
+$(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l $(SRC)/$(BISON).tab.h
 	flex -o $@ $<
 
 # Nettoyage

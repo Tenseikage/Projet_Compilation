@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include "../inc/tree.h"
+#include "tree.h"
 
 // Déclaration explicite de yyin
 extern FILE *yyin;
@@ -42,14 +42,18 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$,
     ;
 
 DeclVars:
-       DeclVars TYPE Declarateurs ';' { $$ = makeNode(DeclVars); 
-       addChild($$,$1); addChild($$, makeNode(type)); addChild($$, $3); }
+       DeclVars TYPE Declarateurs ';' { $$ = makeNode(DeclVars);
+       Node* nodeType1 = makeNode(type);
+       nodeType1->arg = $2;
+       printf("types : %s \n", nodeType1->arg);
+       addChild($$,$1); addChild($$, nodeType1); addChild($$, $3); }
     |  DeclVars STATIC TYPE Declarateurs {yyerror("Variable globale statique"); return 1;}
     |  { $$ = NULL; }
     ;
 
 Declarateurs:
-       Declarateurs ',' IDENT { $$ = $1; addSibling($$, makeNode(ident)); }
+       Declarateurs ',' IDENT { $$ = $1; 
+       addSibling($$, makeNode(ident)); }
     |  IDENT               { $$ = makeNode(ident); }
     ;
 
@@ -63,7 +67,12 @@ DeclFonct:
     ;
 
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(type)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
+       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
+       Node* nodeType = makeNode(type);
+       nodeType->arg = $1;
+       addChild($$, nodeType); 
+       addChild($$, makeNode(ident)); 
+       addChild($$, makeNode(Parametres)); }
     |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
     ;
 
@@ -73,8 +82,14 @@ Parametres:
     ;
 
 ListTypVar:
-       ListTypVar ',' TYPE IDENT { $$ = $1; addSibling($$, makeNode(type)); addSibling($$, makeNode(type)); }
-    |  TYPE IDENT { $$ = makeNode(ListTypVar); addChild($$, makeNode(type)); addChild($$, makeNode(ident)); }
+       ListTypVar ',' TYPE IDENT { $$ = $1;
+       Node* nodeType = makeNode(type);
+       nodeType->arg = $3; 
+       addSibling($$, nodeType); addSibling($$, makeNode(ident)); }
+    |  TYPE IDENT { $$ = makeNode(ListTypVar); 
+       Node* nodeType = makeNode(type);
+       nodeType->arg = $1;
+       addChild($$, nodeType); addChild($$, makeNode(ident)); }
     ;
 
 Corps:
@@ -85,10 +100,17 @@ DeclVarsLocale:
         DeclVarsLocale STATIC TYPE Declarateurs ';' { $$ = makeNode(DeclVarsLocale);
         addChild($$,$1);
         Node* elem = makeNode(Static);
-        addSibling(elem,makeNode(type));
+        Node* nodeType = makeNode(type);
+        nodeType->arg = $3;
+        addSibling(elem,nodeType);
         addChild($$,elem);
         addChild($$,$4);}
-    |   DeclVarsLocale TYPE Declarateurs ';' { $$ = makeNode(DeclVarsLocale); addChild($$, $1); addChild($$, makeNode(type)); addChild($$, $3); }
+    |   DeclVarsLocale TYPE Declarateurs ';' { $$ = makeNode(DeclVarsLocale); 
+        addChild($$, $1); 
+        Node* nodeType = makeNode(type);
+        nodeType->arg = $2;
+        addChild($$, nodeType); 
+        addChild($$, $3); }
     |   {$$ = NULL;}
 ;
 
@@ -143,9 +165,12 @@ F:
     ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(Addsub)); addChild($$, $2); }
     |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
     |  '(' Exp ')' { $$ = $2; }
-    |  NUM { $$ = makeNode(F); 
-       Node* value = makeNode(Num);
-       addChild($$, value);}
+    |  NUM { 
+        $$ = makeNode(F); 
+        Node* value = makeNode(Num);
+        value->value = $1; 
+        addChild($$, value);
+    }
     |  IDENT { $$ = makeNode(F); addChild($$, makeNode(ident)); }
     ;
 
