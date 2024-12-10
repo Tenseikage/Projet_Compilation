@@ -54,7 +54,7 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$,
     ;
 
 DeclVars:
-       DeclVars TYPE Declarateurs ';' { /*$$ = makeNode(DeclVars);*/
+       DeclVars TYPE Declarateurs ';' { 
        $$ = $1;
        // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
@@ -120,7 +120,7 @@ ListTypVar:
     ;
 
 Corps:
-    '{' DeclVarsLocale SuiteInstr '}' {$$ = makeNode(Corps); 
+    '{' DeclVarsLocale SuiteInstr '}' { $$ = makeNode(Corps); 
     if ($2->firstChild == NULL){
         addChild($$, NULL);
     } else {
@@ -163,7 +163,7 @@ Instr:
        Node* nodeIdent = makeNode(ident);
        nodeIdent->ident = strdup($1);
        addChild($$, nodeIdent); addChild($$, $3); }
-    |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
+    |  RETURN Exp ';' {  $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
     |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); }
     |  '{' SuiteInstr '}' { $$ = $2; }
     |  ';' { $$ = makeNode(Instr); }
@@ -211,11 +211,13 @@ F:
     |  CHARACTER {$$ = makeNode(Character);}
     |  IDENT { $$ = makeNode(ident);
                $$->ident = strdup($1); }
+    |  IDENT '(' Arguments ')' {$$ = makeNode(ident);
+       $$->ident = strdup($1);}
     ;
 
 Arguments:
     ListExp { $$ = $1; }
-    | /* vide */ { $$ = makeNode(Arguments); }
+    | { $$ = makeNode(Arguments); }
     ;
 
 ListExp:
@@ -236,8 +238,8 @@ void yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
-    yyparse();
+    // Afficher l'arbre fait planter le bac à sable
     printTree(root);
     deleteTree(root);
-    return 0;
+    return yyparse();
 }
