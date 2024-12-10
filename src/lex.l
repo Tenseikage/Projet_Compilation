@@ -51,7 +51,7 @@ void yyerror(const char* s);
 "=="|"!="       { return EQ;}
 "<"|">"|"<="|">=" {return ORDER;}
 '(\\[a-z]|[^\'])' {printf("oui\n");return CHARACTER;}
-\n              { yylineno++; } // Incrément du numéro de ligne
+\n              { lineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
                     yyerror("Caractère invalide détecté");

@@ -228,10 +228,10 @@ ListExp:
 %%
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Erreur de syntaxe à la ligne %d : %s", yylineno, s);
-    // Afficher le caractère qui a provoqué l'erreur
+    fprintf(stderr, "Erreur de syntaxe à la ligne %d : %s", lineno, s);
+    // Afficher le lexème ou caractère qui a provoqué l'erreur
     if (yytext[0] != '\0') {
-        fprintf(stderr, " - Caractère : '%s'\n", yytext);
+        fprintf(stderr, " - lexème : '%s'\n", yytext);
     } else {
         fprintf(stderr, "\n");
     }
