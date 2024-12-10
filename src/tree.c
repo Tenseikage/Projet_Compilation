@@ -9,7 +9,6 @@ static const char *StringFromLabel[] = {
     "Expression",
     "T",
     "divstar",
-    "id",
     "Prog",
     "DeclVars",
     "Declarateurs",
@@ -30,7 +29,7 @@ static const char *StringFromLabel[] = {
     "Arguments",
     "ListExp",
     "type",
-    "ident",
+    "identifiant",
     "Void",
     "If",
     "Else",
@@ -41,7 +40,7 @@ static const char *StringFromLabel[] = {
     "Eq",
     "Order",
     "Addsub",
-    "Value",
+    "valeur",
     "Character",
     "Static"
     /* Ajoutez d'autres labels si nécessaire */
@@ -56,7 +55,8 @@ Node *makeNode(label_t label) {
   node->label = label;
   node-> firstChild = node->nextSibling = NULL;
   node->lineno=lineno;
-  node->arg = NULL;
+  node->type = NULL;
+  node->ident = NULL;
   node->value = 0;
   return node;
 }
@@ -106,9 +106,12 @@ void printTree(Node *node) {
     printf("\n");
 
   } else if(node->label == type){
-    printf("%s : %s", StringFromLabel[node->label], node->arg);
+    printf("%s : %s", StringFromLabel[node->label], node->type);
     printf("\n");
-  }else {
+  } else if(node->label == ident){
+    printf("%s : %s", StringFromLabel[node->label], node->ident);
+    printf("\n");
+  } else {
     printf("%s", StringFromLabel[node->label]);
     printf("\n");
   }

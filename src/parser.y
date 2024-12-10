@@ -1,6 +1,7 @@
-%{
+%{   
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tree.h"
 
 // Déclaration explicite de yyin
@@ -14,6 +15,16 @@ extern int lineno;
 extern int yylineno;
 int yylex(void);
 void yyerror(const char *s);
+
+// Ajout aux feuilles de l'arbre leur valeur
+char *strdup(const char *s) {
+    size_t len = strlen(s);
+    char *dup = malloc(len + 1);
+    if (dup != NULL) {
+        strcpy(dup, s);
+    }
+    return dup;
+}
 %}
 
 %union {
@@ -22,7 +33,8 @@ void yyerror(const char *s);
   char ident[64];
   int num;
 }
-%expect 1 
+%precedence IF 
+%precedence ELSE 
 %left OR AND
 %left ADDSUB
 %left NOT
@@ -46,17 +58,19 @@ DeclVars:
        $$ = $1;
        // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
-       nodeType1->arg = $2;
-       printf("types : %s \n", nodeType1->arg);
+       nodeType1->type = strdup($2);
        addChild($$, nodeType1); addChild($$, $3); }
     |  DeclVars STATIC TYPE Declarateurs {yyerror("Variable globale statique"); return 1;}
     |  { $$ = makeNode(DeclVars); }
     ;
 
 Declarateurs:
-       Declarateurs ',' IDENT { $$ = $1; 
-       addSibling($$, makeNode(ident)); }
-    |  IDENT               { $$ = makeNode(ident); }
+       Declarateurs ',' IDENT { $$ = $1;
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($3);
+       addSibling($$, nodeIdent); }
+    |  IDENT  { $$ = makeNode(ident);
+       $$->ident = strdup($1); }
     ;
 
 DeclFoncts:
@@ -71,11 +85,18 @@ DeclFonct:
 EnTeteFonct:
        TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
        Node* nodeType = makeNode(type);
-       nodeType->arg = $1;
+       nodeType->type = strdup($1);
        addChild($$, nodeType); 
-       addChild($$, makeNode(ident)); 
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($2);
+       addChild($$, nodeIdent); 
        addChild($$, makeNode(Parametres)); }
-    |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); addChild($$, makeNode(Void)); addChild($$, makeNode(ident)); addChild($$, makeNode(Parametres)); }
+    |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
+       addChild($$, makeNode(Void)); 
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($2);
+       addChild($$,nodeIdent); 
+       addChild($$, makeNode(Parametres)); }
     ;
 
 Parametres:
@@ -86,29 +107,40 @@ Parametres:
 ListTypVar:
        ListTypVar ',' TYPE IDENT { $$ = $1;
        Node* nodeType = makeNode(type);
-       nodeType->arg = $3; 
-       addSibling($$, nodeType); addSibling($$, makeNode(ident)); }
+       nodeType->type = strdup($3); 
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($4);
+       addSibling($$, nodeType); addSibling($$, nodeIdent); }
     |  TYPE IDENT { $$ = makeNode(ListTypVar); 
        Node* nodeType = makeNode(type);
-       nodeType->arg = $1;
-       addChild($$, nodeType); addChild($$, makeNode(ident)); }
+       nodeType->type = strdup($1);
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($2);
+       addChild($$, nodeType); addChild($$, nodeIdent); }
     ;
 
 Corps:
-    '{' DeclVarsLocale SuiteInstr '}' {$$ = makeNode(Corps); addChild($$, $2); addChild($$, $3); }
+    '{' DeclVarsLocale SuiteInstr '}' {$$ = makeNode(Corps); 
+    if ($2->firstChild == NULL){
+        addChild($$, NULL);
+    } else {
+         addChild($$, $2);
+    }
+    addChild($$, $3); }
     ;
 
 DeclVarsLocale:
         DeclVarsLocale STATIC TYPE Declarateurs ';' { $$ = $1;
         Node* elem = makeNode(Static);
         Node* nodeType = makeNode(type);
-        nodeType->arg = $3;
+        nodeType->type = strdup($3);
         addSibling(elem,nodeType);
         addChild($$,elem);
         addChild($$,$4);}
-    |   DeclVarsLocale TYPE Declarateurs ';' { $$ = $1;  
+    |   DeclVarsLocale TYPE Declarateurs ';' { 
+        $$ = $1;  
         Node* nodeType = makeNode(type);
-        nodeType->arg = $2;
+        nodeType->type = strdup($2);
         addChild($$, nodeType); 
         addChild($$, $3); }
     |   {$$ = makeNode(DeclVarsLocale);}
@@ -120,11 +152,17 @@ SuiteInstr:
     ;
 
 Instr:
-       IDENT '=' Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(ident)); addChild($$, $3); }
-    |  IF '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
-    |  IF '(' Exp ')' Instr ELSE Instr { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
+       IDENT '=' Exp ';' { $$ = makeNode(Instr); 
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($1);
+       addChild($$, nodeIdent); addChild($$, $3); }
+    |  IF '(' Exp ')' Instr %prec IF { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
+    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
     |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(While)); addChild($$, $3); addChild($$, $5); }
-    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); addChild($$, makeNode(ident)); addChild($$, $3); }
+    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); 
+       Node* nodeIdent = makeNode(ident);
+       nodeIdent->ident = strdup($1);
+       addChild($$, nodeIdent); addChild($$, $3); }
     |  RETURN Exp ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
     |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); }
     |  '{' SuiteInstr '}' { $$ = $2; }
@@ -171,7 +209,8 @@ F:
         
     }
     |  CHARACTER {$$ = makeNode(Character);}
-    |  IDENT { $$ = makeNode(ident); }
+    |  IDENT { $$ = makeNode(ident);
+               $$->ident = strdup($1); }
     ;
 
 Arguments:

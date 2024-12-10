@@ -1,5 +1,5 @@
 
-
+int a;
 
 int add(int a, int b){
 	return a + b;
@@ -9,5 +9,6 @@ int main(void){
 	char a;
 	static int b;
 	a = 'b';
+	a =  a - a;
 	return 0;
 }

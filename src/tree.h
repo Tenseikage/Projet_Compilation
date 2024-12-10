@@ -4,7 +4,6 @@ typedef enum {
   E,
   T,
   divstar,
-  id,
   Prog,
   DeclVars,
   Declarateurs,
@@ -46,7 +45,8 @@ typedef struct Node {
   label_t label;
   struct Node *firstChild, *nextSibling;
   int lineno;
-  char* arg; // Argument string
+  char* type; // Argument string
+  char* ident;
   int value; // Valeur d'une instruction
 } Node;
 
