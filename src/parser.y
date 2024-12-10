@@ -239,7 +239,12 @@ void yyerror(const char *s) {
 
 int main(int argc, char **argv) {
     // Afficher l'arbre fait planter le bac à sable
-    printTree(root);
-    deleteTree(root);
-    return yyparse();
+    if (!yyparse()){
+        printTree(root);
+        deleteTree(root);
+        return 0;
+    } else {
+        return 1;
+    }
+    
 }
