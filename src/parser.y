@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "args.h"
 #include "tree.h"
+
 
 // Déclaration explicite de yyin
 extern FILE *yyin;
@@ -254,14 +256,10 @@ void yyerror(const char *s) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc,char *argv[]) {
     // Afficher l'arbre fait planter le bac à sable
-    if (!yyparse()){
-        printTree(root);
-        deleteTree(root);
-        return 0;
-    } else {
-        return 1;
-    }
+    
+
+    return yyparse();    
     
 }
