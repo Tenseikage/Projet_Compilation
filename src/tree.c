@@ -8,7 +8,7 @@ extern int lineno;       /* from lexer */
 static const char *StringFromLabel[] = {
     "Expression",
     "T",
-    "divstar",
+    "Divstar",
     "Prog",
     "DeclVars",
     "Declarateurs",
@@ -31,13 +31,13 @@ static const char *StringFromLabel[] = {
     "type",
     "identifiant",
     "Void",
-    "If",
+    "Si",
     "Else",
     "While",
     "Return",
     "Or",
     "And",
-    "Eq",
+    "Egalité",
     "Order",
     "Addsub",
     "valeur",
@@ -110,6 +110,15 @@ void printTree(Node *node) {
     printf("\n");
   } else if(node->label == ident){
     printf("%s : %s", StringFromLabel[node->label], node->ident);
+    printf("\n");
+  } 
+
+  else if(node->label == Addsub){
+    printf("%s : %s", StringFromLabel[node->label], node->sign);
+    printf("\n");
+
+  } else if(node->label == divstar){
+    printf("%s : %s", StringFromLabel[node->label], node->sign);
     printf("\n");
   } else {
     printf("%s", StringFromLabel[node->label]);

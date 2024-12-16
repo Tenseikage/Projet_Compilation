@@ -44,11 +44,11 @@ void yyerror(const char* s);
 "!"             { return '!';} /*Pas sur*/
 ";"             { return ';'; }
 ","             { return ',';}
-"+"|"-"         {  return ADDSUB; }
-"*"|"/"|"%"        {  return DIVSTAR; }
+"+"|"-"         { strcpy(yylval.byte,yytext); return ADDSUB; }
+"*"|"/"|"%"        {strcpy(yylval.byte,yytext);  return DIVSTAR; }
 "&&"            {  return AND; }
 "||"            {  return OR; }
-"=="|"!="       { return EQ;}
+"=="|"!="       { strcpy(yylval.byte,yytext); return EQ;}
 "<"|">"|"<="|">=" {return ORDER;}
 '(\\[a-z]|[^\'])' {printf("oui\n");return CHARACTER;}
 \n              { lineno++; } // Incrément du numéro de ligne

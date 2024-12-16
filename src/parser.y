@@ -31,6 +31,7 @@ char *strdup(const char *s) {
   Node *node;
   char type[10];
   char ident[64];
+  char byte[1];
   int num;
 }
 %precedence IF 
@@ -42,15 +43,22 @@ char *strdup(const char *s) {
 %left EQ ORDER
 
 
-%token VOID IF ELSE WHILE RETURN OR AND EQ ORDER ADDSUB DIVSTAR CHARACTER STATIC
+%token VOID IF ELSE WHILE RETURN OR AND EQ ORDER CHARACTER STATIC
 %token<type> TYPE
 %token<ident> IDENT
 %token<num> NUM
+%token <byte> ADDSUB DIVSTAR
 %type <node> Prog DeclVars DeclVarsLocale Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 
 %%
 
-Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); addChild($$, $1); addChild($$, $2); root = $$;}
+Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); 
+    if($1->firstChild == NULL){
+         addChild($$, NULL);
+    } else {
+        addChild($$, $1);
+    }
+    addChild($$, $2); root = $$;}
     ;
 
 DeclVars:
@@ -74,7 +82,7 @@ Declarateurs:
     ;
 
 DeclFoncts:
-       DeclFoncts DeclFonct { $$ = $1; addSibling($$, $2); }
+       DeclFoncts DeclFonct { $$ = makeNode(DeclFoncts); addChild($$,$1); addChild($$, $2); }
     |  DeclFonct { $$ = $1; }
     ;
 
@@ -90,18 +98,18 @@ EnTeteFonct:
        Node* nodeIdent = makeNode(ident);
        nodeIdent->ident = strdup($2);
        addChild($$, nodeIdent); 
-       addChild($$, makeNode(Parametres)); }
+       addChild($$, $4); }
     |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
        addChild($$, makeNode(Void)); 
        Node* nodeIdent = makeNode(ident);
        nodeIdent->ident = strdup($2);
        addChild($$,nodeIdent); 
-       addChild($$, makeNode(Parametres)); }
+       addChild($$, $4); }
     ;
 
 Parametres:
        VOID {$$ = makeNode(Parametres); addChild($$, makeNode(Void)); }
-    |  ListTypVar { $$ = $1; }
+    |  ListTypVar { $$ = makeNode(Parametres); addChild($$, $1); }
     ;
 
 ListTypVar:
@@ -110,7 +118,7 @@ ListTypVar:
        nodeType->type = strdup($3); 
        Node* nodeIdent = makeNode(ident);
        nodeIdent->ident = strdup($4);
-       addSibling($$, nodeType); addSibling($$, nodeIdent); }
+       addChild($$, nodeType); addChild($$, nodeIdent); }
     |  TYPE IDENT { $$ = makeNode(ListTypVar); 
        Node* nodeType = makeNode(type);
        nodeType->type = strdup($1);
@@ -190,12 +198,18 @@ M:
     ;
 
 E:
-    E ADDSUB T { $$ = makeNode(E); addChild($$, $1); addChild($$, makeNode(Addsub)); addChild($$, $3); }
+    E ADDSUB T { $$ = makeNode(E); addChild($$, $1);
+    Node* operator = makeNode(Addsub);
+    operator->sign = strdup($2);
+    addChild($$, operator); addChild($$, $3); }
     |  T { $$ = $1; }
     ;
 
 T:
-    T DIVSTAR F { $$ = makeNode(T); addChild($$, $1); addChild($$, makeNode(divstar)); addChild($$, $3); }
+    T DIVSTAR F { $$ = makeNode(T); addChild($$, $1); 
+    Node* operator = makeNode(divstar);
+    operator->sign = strdup($2);
+    addChild($$, operator); addChild($$, $3); }
     |  F { $$ = $1; }
     ;
 

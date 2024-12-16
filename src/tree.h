@@ -46,7 +46,8 @@ typedef struct Node {
   struct Node *firstChild, *nextSibling;
   int lineno;
   char* type; // Argument string
-  char* ident;
+  char* ident; // identifiant
+  char* sign; // signe d'opération (+,/-,*)
   int value; // Valeur d'une instruction
 } Node;
 
