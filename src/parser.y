@@ -35,6 +35,7 @@ char *strdup(const char *s) {
   char ident[64];
   char byte[1];
   char letter[1];
+  char order[2];
   int num;
 }
 %precedence IF 
@@ -46,12 +47,13 @@ char *strdup(const char *s) {
 %left EQ ORDER
 
 
-%token VOID IF ELSE WHILE RETURN OR AND EQ ORDER STATIC
+%token VOID IF ELSE WHILE RETURN OR AND EQ STATIC
 %token<type> TYPE
 %token<ident> IDENT
 %token<num> NUM
 %token <byte> ADDSUB DIVSTAR
 %token<letter> CHARACTER
+%token<order> ORDER 
 %type <node> Prog DeclVars DeclVarsLocale Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 %%
 
@@ -168,7 +170,8 @@ Instr:
        nodeIdent->ident = strdup($1);
        addChild($$, nodeIdent); addChild($$, $3); }
     |  IF '(' Exp ')' Instr %prec IF { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
-    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If)); 
+    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If));
+       //Node* exp = makeNode(Exp); 
        addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
     |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(While)); addChild($$, $3); addChild($$, $5); }
     |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); 
@@ -182,7 +185,7 @@ Instr:
     ;
 
 Exp:
-    Exp OR TB { $$ = $1; addChild($$, makeNode(Or)); addChild($$, $3); }
+    Exp OR TB { $$ = makeNode(Exp); addChild($$,$1); addChild($$, makeNode(Or)); addChild($$, $3); }
     |  TB { $$ = $1; }
     ;
 
@@ -197,7 +200,10 @@ FB:
     ;
 
 M:
-    M ORDER E { $$ = makeNode(M); addChild($$, $1); addChild($$, makeNode(Order)); addChild($$, $3); }
+    M ORDER E { $$ = makeNode(M); addChild($$, $1); 
+    Node* nodeOrder = makeNode(Order);
+    nodeOrder->order = strdup($2);
+    addChild($$, nodeOrder); addChild($$, $3); }
     |  E { $$ = $1; }
     ;
 

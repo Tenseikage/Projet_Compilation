@@ -49,7 +49,7 @@ void yyerror(const char* s);
 "&&"            {  return AND; }
 "||"            {  return OR; }
 "=="|"!="       { strcpy(yylval.byte,yytext); return EQ;}
-"<"|">"|"<="|">=" {return ORDER;}
+"<"|">"|"<="|">=" {strcpy(yylval.order, yytext); return ORDER;}
 '(\\[a-z]|[^\'])' {strcpy(yylval.letter,yytext); return CHARACTER;}
 \n              { lineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }

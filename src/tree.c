@@ -57,9 +57,6 @@ Node *makeNode(label_t label) {
   node->label = label;
   node-> firstChild = node->nextSibling = NULL;
   node->lineno=lineno;
-  node->type = NULL;
-  node->ident = NULL;
-  node->value = 0;
   return node;
 }
 
@@ -125,6 +122,9 @@ void printTree(Node *node) {
 
   } else if(node->label == Character){
     printf("%s : %s", StringFromLabel[node->label], node->letter);
+    printf("\n");
+  } else if(node->label == Order){
+    printf("%s : %s", StringFromLabel[node->label], node->order);
     printf("\n");
   } else {
     printf("%s", StringFromLabel[node->label]);

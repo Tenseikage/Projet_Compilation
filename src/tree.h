@@ -51,6 +51,7 @@ typedef struct Node {
   char* sign; // signe d'opération (+,/-,*)
   int value; // Valeur d'une instruction
   char* letter; // caractère char
+  char* order; // signe de comparaison
 } Node;
 
 Node *makeNode(label_t label);
