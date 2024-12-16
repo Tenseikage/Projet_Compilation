@@ -23,7 +23,6 @@ int args_choice(int argc, char* argv[]) {
                 help(argv[0]);
                 return 0;
             case 't':
-                fprintf(stdout, "Affichage de l'arbre : \n");
                 return 1;
             case '?':
                 if (optopt == 'h' || optopt == 't') {
@@ -45,76 +44,9 @@ int args_choice(int argc, char* argv[]) {
             help(argv[i]);
             return 0;
         } else if (strcmp(argv[i], "--tree") == 0) {
-            fprintf(stdout, "Affichage de l'arbre : \n");
-            // Ajoutez le code pour gérer l'option --tree ici
             return 1;
         }
     }
 	return -3; // Erreur quelconque
 }
 
-/*
-void args_valids(int argc, char* argv[]){
-    char c; 
-    FILE* output_file = stdout;
-
-    // Réinitialiser les variables globales de getopt
-    optind = 1;
-    opterr = 0;
-    optopt = 0;
-    optarg = NULL;
-
-    // Deuxième passe pour traiter les arguments
-    while ((c = getopt(argc, argv, ":n:i:o:cdfsvh")) != -1){
-        switch (c) {
-        case 'n':
-            fprintf(stdout,"number of values: %d\n", atoi(optarg));
-            break;
-
-        case 'i':
-           fprintf(stdout,"input stream : %s\n",optarg);
-           break;
-
-        case 'o':
-            output_file = fopen(optarg,"w");
-            fprintf(stdout,"output stream : %s \n",optarg);
-            break;
-
-        case 'c':
-            fprintf(stdout,"type of values : char\n");
-            break;
-
-        case 'd':
-            printf(stdout,"type of values : int\n");
-            break;
-        case 'f':
-            fprintf(stdout,"type of values : float\n");
-            break;
-        case 's':
-            fprintf(stdout,"sort values : yes\n");
-            break;
-        case 'v':
-            fprintf(stdout,"verbose mode : yes\n");
-            break;
-        case 'h':
-            help(argv[0]);
-            break;
-        default:
-            break;
-        }
-    }
-}
-*/
-/*int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        help(argv[0]);
-        return 1;
-    }
-    if (args_case_check(argc,argv) == -1){
-        return -1;
-    } else {
-        args_valids(argc,argv);
-        return 0;
-    }
-    return 0;
-}*/
