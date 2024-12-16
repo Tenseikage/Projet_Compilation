@@ -31,7 +31,7 @@ static const char *StringFromLabel[] = {
     "type",
     "identifiant",
     "Void",
-    "Si",
+    "If",
     "Else",
     "While",
     "Return",
@@ -42,8 +42,10 @@ static const char *StringFromLabel[] = {
     "Addsub",
     "valeur",
     "Character",
-    "Static"
-    /* Ajoutez d'autres labels si nécessaire */
+    "Static",
+    "Non"
+    
+    
 };
 
 Node *makeNode(label_t label) {
@@ -119,6 +121,10 @@ void printTree(Node *node) {
 
   } else if(node->label == divstar){
     printf("%s : %s", StringFromLabel[node->label], node->sign);
+    printf("\n");
+
+  } else if(node->label == Character){
+    printf("%s : %s", StringFromLabel[node->label], node->letter);
     printf("\n");
   } else {
     printf("%s", StringFromLabel[node->label]);

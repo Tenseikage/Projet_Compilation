@@ -32,6 +32,7 @@ char *strdup(const char *s) {
   char type[10];
   char ident[64];
   char byte[1];
+  char letter[1];
   int num;
 }
 %precedence IF 
@@ -43,13 +44,13 @@ char *strdup(const char *s) {
 %left EQ ORDER
 
 
-%token VOID IF ELSE WHILE RETURN OR AND EQ ORDER CHARACTER STATIC
+%token VOID IF ELSE WHILE RETURN OR AND EQ ORDER STATIC
 %token<type> TYPE
 %token<ident> IDENT
 %token<num> NUM
 %token <byte> ADDSUB DIVSTAR
+%token<letter> CHARACTER
 %type <node> Prog DeclVars DeclVarsLocale Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
-
 %%
 
 Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); 
@@ -165,7 +166,8 @@ Instr:
        nodeIdent->ident = strdup($1);
        addChild($$, nodeIdent); addChild($$, $3); }
     |  IF '(' Exp ')' Instr %prec IF { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
-    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
+    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If)); 
+       addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
     |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(While)); addChild($$, $3); addChild($$, $5); }
     |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); 
        Node* nodeIdent = makeNode(ident);
@@ -178,7 +180,7 @@ Instr:
     ;
 
 Exp:
-    Exp OR TB { $$ = makeNode(Exp); $$ = $1; addChild($$, makeNode(Or)); addChild($$, $3); }
+    Exp OR TB { $$ = $1; addChild($$, makeNode(Or)); addChild($$, $3); }
     |  TB { $$ = $1; }
     ;
 
@@ -215,14 +217,15 @@ T:
 
 F:
     ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(Addsub)); addChild($$, $2); }
-    |  '!' F { $$ = makeNode(F); addChild($$, makeNode('!')); addChild($$, $2); }
+    |  '!' F { $$ = makeNode(F); addChild($$, makeNode(Not)); addChild($$, $2); }
     |  '(' Exp ')' { $$ = $2; }
     |  NUM { 
         $$ = makeNode(Num); 
         $$->value = $1; 
         
     }
-    |  CHARACTER {$$ = makeNode(Character);}
+    |  CHARACTER {$$ = makeNode(Character);
+       $$->letter = strdup($1);}
     |  IDENT { $$ = makeNode(ident);
                $$->ident = strdup($1); }
     |  IDENT '(' Arguments ')' {$$ = makeNode(ident);

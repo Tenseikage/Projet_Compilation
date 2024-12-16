@@ -37,7 +37,8 @@ typedef enum {
   Addsub,
   Num,
   Character,
-  Static
+  Static,
+  Not
   /* Ajoutez d'autres labels si nécessaire */
 } label_t;
 
@@ -49,6 +50,7 @@ typedef struct Node {
   char* ident; // identifiant
   char* sign; // signe d'opération (+,/-,*)
   int value; // Valeur d'une instruction
+  char* letter; // caractère char
 } Node;
 
 Node *makeNode(label_t label);

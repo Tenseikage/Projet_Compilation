@@ -41,7 +41,7 @@ void yyerror(const char* s);
 [0-9]+                 {yylval.num = atoi(yytext); /*printf("valeur : %d \n",yylval.num);*/ return NUM; }   // Nombres entiers
 
 "="             {  return '='; }
-"!"             { return '!';} /*Pas sur*/
+"!"             { return '!';} 
 ";"             { return ';'; }
 ","             { return ',';}
 "+"|"-"         { strcpy(yylval.byte,yytext); return ADDSUB; }
@@ -50,7 +50,7 @@ void yyerror(const char* s);
 "||"            {  return OR; }
 "=="|"!="       { strcpy(yylval.byte,yytext); return EQ;}
 "<"|">"|"<="|">=" {return ORDER;}
-'(\\[a-z]|[^\'])' {printf("oui\n");return CHARACTER;}
+'(\\[a-z]|[^\'])' {strcpy(yylval.letter,yytext); return CHARACTER;}
 \n              { lineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
