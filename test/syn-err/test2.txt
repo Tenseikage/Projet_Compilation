@@ -1,7 +1,9 @@
 int a;
 char b;
 int a,a;
-
+/*fonction
+vraiment
+ÉTRANGE*/
 int main(void){
 	static int hello, goodbye, aa,;
 	if (i && a){

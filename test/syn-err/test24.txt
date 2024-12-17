@@ -1,0 +1,6 @@
+
+char m:
+int sub(int a, int b){
+	m  =  'n;
+	return a - b;
+}

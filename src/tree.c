@@ -17,7 +17,7 @@ static const char *StringFromLabel[] = {
     "DeclFonct",
     "EnTeteFonct",
     "Parametres",
-    "ListTypVar",
+    "Variables",
     "Corps",
     "SuiteInstr",
     "Instr",

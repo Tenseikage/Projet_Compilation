@@ -2,6 +2,9 @@ int a;
 char b;
 int c;
 
+
+/*Voici une 
+fonction de calcul du reste*/
 int mod(int a, int b){
 	if(b == 0){
 		return 0;

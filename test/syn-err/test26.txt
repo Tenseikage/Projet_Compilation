@@ -1,0 +1,19 @@
+
+
+int main(void){
+	char 
+	a;
+	char                  b;
+	static char 
+
+	d;
+	a = '\a';
+	b = '\b';
+	d = '\d;
+	return 
+
+
+
+
+	0;
+}
