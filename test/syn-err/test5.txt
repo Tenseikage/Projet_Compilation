@@ -1,0 +1,6 @@
+char c;
+c = 'c';
+int
+main(void){
+
+}

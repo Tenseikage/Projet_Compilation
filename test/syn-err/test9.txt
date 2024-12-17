@@ -1,0 +1,6 @@
+char 	a;
+int b;
+char 		int 	c;
+int main(void){
+
+}

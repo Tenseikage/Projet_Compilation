@@ -1,0 +1,21 @@
+int a;
+char b;
+int c;
+int add(int a, int b){
+	return a + b;
+}
+
+int main(void){
+	static int d;
+	static char c;
+	static char n;
+	a = 1;
+	b = 'c';
+	c = 2;
+	d = d + 1;
+	c = 'r';
+    n = '\n';
+	d = d + add(a,b);
+	return 0;
+
+}

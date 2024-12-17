@@ -1,0 +1,13 @@
+int a;
+char b;
+int c;
+static char d;
+int main(void){
+	static int d;
+	a = 1;
+	b = 'c';
+	c = 2;
+	d = d + 1;
+	return 0;
+
+}

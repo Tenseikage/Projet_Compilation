@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-int lineno;
+int lineno = 1;
 void yyerror(const char* s);
 
 /*void print_token(const char* token_name, const char* token_value) {

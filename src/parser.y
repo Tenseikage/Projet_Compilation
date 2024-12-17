@@ -14,7 +14,6 @@ void yyerror(const char *s);
 Node* root;
 extern char *yytext;
 extern int lineno;
-extern int yylineno;
 int yylex(void);
 void yyerror(const char *s);
 
@@ -139,7 +138,12 @@ Corps:
     } else {
          addChild($$, $2);
     }
-    addChild($$, $3); }
+    if ($3->firstChild == NULL){
+     addChild($$, NULL);
+    } else {
+        addChild($$, $3);
+    }
+    }
     ;
 
 DeclVarsLocale:

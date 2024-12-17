@@ -1,0 +1,13 @@
+int a;
+char b;
+int a,a;
+
+int main(void){
+	static int hello, goodbye, aa,;
+	if (i && a){
+		i = 1;
+		if (i <= a){}
+		
+	}
+	return 1;
+}
