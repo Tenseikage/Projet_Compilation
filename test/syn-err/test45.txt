@@ -1,0 +1,18 @@
+
+
+
+int c;
+char b;
+
+int main(void){
+	char a;
+	char b;
+	a = 0;
+	static char c;
+	static int q;
+	a = 1;
+	while((a && q) || (!q)){
+		q = q + 1;
+	}
+	return 0;
+}

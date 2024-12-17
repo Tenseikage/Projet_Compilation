@@ -1,0 +1,13 @@
+
+
+int main(void){
+	char a;
+	char b;
+	static char c;
+	static int q;
+	a = 1;
+	while(a){
+		1q = q + 1;
+	}
+	return 0;
+}

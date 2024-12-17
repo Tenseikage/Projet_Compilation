@@ -1,0 +1,14 @@
+/* Fonction
+
+
+
+*/
+void charfunc(void){
+	static char a;
+	static char n;
+	char d;
+    char q;
+	q = '\t';
+	return ;
+
+}

@@ -1,0 +1,12 @@
+/* Fonction
+
+
+
+*/
+void charfunc(char a, char b){
+	a = a + 1;
+	if (!b){
+		b = '\re';
+	}
+	return ;
+}

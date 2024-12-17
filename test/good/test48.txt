@@ -1,0 +1,20 @@
+
+char minChar(char m, char n){
+	if(m < n){
+		return m;
+	}
+	return n;
+}
+
+int main(void){
+	char a;
+	char b;
+	static char c;
+	static int q;
+	a = 1;
+	while(a){
+		q = q + 1;
+	}
+	nChar('\t','\q');
+	return 0;
+}

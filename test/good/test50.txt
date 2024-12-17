@@ -1,0 +1,11 @@
+/* retour statique
+
+
+
+*/
+
+char petitStatic(void){
+	static int a;
+	a = 'a';
+	return a;
+}
