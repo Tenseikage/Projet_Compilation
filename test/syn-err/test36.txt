@@ -1,0 +1,5 @@
+
+char retourChar
+(void){
+  return 'ab';
+}

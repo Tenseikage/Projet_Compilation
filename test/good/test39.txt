@@ -1,0 +1,4 @@
+int c;
+char special(void){
+	return '\o';
+}

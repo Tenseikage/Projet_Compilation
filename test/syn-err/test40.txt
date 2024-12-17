@@ -1,0 +1,5 @@
+
+int a; int c; static int d;
+int main(void){
+	return 0;
+}

@@ -1,0 +1,21 @@
+
+
+/*                    Compte
+
+bon retour
+
+caractère  */    
+int nbretourBonChar(char lettre){
+	int cpt;
+	while(lettre != 'a'){
+		cpt = cpt + 1;
+	}
+	return cpt;
+}
+
+int main(void){
+	static char b;
+	nbretourBonChar('c');
+	b = 'b';
+	return 0;
+}

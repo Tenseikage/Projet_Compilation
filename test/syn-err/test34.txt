@@ -1,0 +1,29 @@
+/*
+Programme
+
+calcul 
+
+
+divis
+ion
+
+*/
+
+int global;
+int div(int a, int increment, int end){
+    int cpt;
+	cpt  = 0;
+	while(cpt < end){
+		a = a // increment;
+		cpt = cpt + 1;
+	}
+	return a;
+}
+
+int main(void){
+  static char a;
+  static char b;
+  b = '\z';
+  a = '\n';
+  div(2,6,25);
+}

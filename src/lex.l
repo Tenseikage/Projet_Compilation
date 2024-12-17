@@ -22,7 +22,7 @@ void yyerror(const char* s);
 "//".*          ; /* Ignorer les commentaires de type C */
 "/*"            { BEGIN(COMMENT); } /* Commencer un commentaire de type C */
 <COMMENT>"*/"   { BEGIN(INITIAL); } /* Finir un commentaire de type C */
-<COMMENT>\n     { yylineno++; } /* Incrémenter le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
+<COMMENT>\n     { lineno++; } /* Incrémenter le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
 <COMMENT>.      ; /* Ignorer les autres caractères dans un commentaire */
 "int"           {strcpy(yylval.type,yytext); return TYPE; }
 "static"        { return STATIC;}

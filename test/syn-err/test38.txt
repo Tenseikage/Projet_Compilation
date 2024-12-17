@@ -1,0 +1,19 @@
+/*                    Compte
+
+bon retour
+
+nombre  */    
+int nbretourBonInt(int nombre){
+	int cpt;
+	While(nombre != 15){
+		cpt = cpt + 1;
+	}
+	return cpt;
+}
+
+int main(void){
+	static char b;
+	nbretourBonInt(14);
+	b = 'b';
+	return 0;
+}

@@ -1,0 +1,5 @@
+
+
+int retour(VOID){
+	return 0;
+}
