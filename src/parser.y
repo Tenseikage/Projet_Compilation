@@ -277,10 +277,15 @@ int main(int argc,char *argv[]) {
             printTree(root);
             deleteTree(root);
             return 0;
-        } else{
+
+        } else {
             fprintf(stderr, "Affichage de l'arbre impossible ! \n");
             return 1;
         }
+    } else if (args_choice(argc, argv) == 2) {
+           return yyparse();
+    } else {
+        fprintf(stderr, "Option Inconnue ! \n");
+        help(argv[0]);
     }
-    
 }
