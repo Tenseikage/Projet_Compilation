@@ -7,9 +7,6 @@
 int lineno = 1;
 void yyerror(const char* s);
 
-/*void print_token(const char* token_name, const char* token_value) {
-    printf("Token: %s, Value: %s\n", token_name, token_value);
-}*/
 %}
 
 %option noinput
@@ -19,11 +16,11 @@ void yyerror(const char* s);
 %x COMMENT
 %%
 
-"//".*          ; /* Ignorer les commentaires de type C */
-"/*"            { BEGIN(COMMENT); } /* Commencer un commentaire de type C */
-<COMMENT>"*/"   { BEGIN(INITIAL); } /* Finir un commentaire de type C */
-<COMMENT>\n     { lineno++; } /* Incrémenter le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
-<COMMENT>.      ; /* Ignorer les autres caractères dans un commentaire */
+"//".*          ; /* Ignore les commentaires de type C */
+"/*"            { BEGIN(COMMENT); } /* Commence un commentaire de type C */
+<COMMENT>"*/"   { BEGIN(INITIAL); } /* Finit un commentaire de type C */
+<COMMENT>\n     { lineno++; } /* Incrémente le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
+<COMMENT>.      ; /* Ignore les autres caractères dans un commentaire */
 "int"           {strcpy(yylval.type,yytext); return TYPE; }
 "static"        { return STATIC;}
 "char"          {strcpy(yylval.type,yytext); return TYPE ;}
@@ -38,7 +35,7 @@ void yyerror(const char* s);
 "}"             { return '}';}
 
 [a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident,yytext);  return IDENT; } // Identificateurs
-[0-9]+                 {yylval.num = atoi(yytext); /*printf("valeur : %d \n",yylval.num);*/ return NUM; }   // Nombres entiers
+[0-9]+                 {yylval.num = atoi(yytext); return NUM; }   // Nombres entiers
 
 "="             {  return '='; }
 "!"             { return '!';} 
@@ -55,7 +52,7 @@ void yyerror(const char* s);
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
                     yyerror("Caractère invalide détecté");
-                    return 1;  // Retourner 1 pour signaler l'erreur
+                    return 1;  // Retourne 1 pour signaler l'erreur
                 }
 
 %%

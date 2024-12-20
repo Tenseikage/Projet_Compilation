@@ -5,12 +5,19 @@
 #include "args.h"
 #include "tree.h"
 
+
+// Déclaration explicite de yyin
+extern FILE *yyin;
+
+void yyerror(const char *s);
+
 Node* root;
 extern char *yytext;
 extern int lineno;
 int yylex(void);
 void yyerror(const char *s);
 
+// Ajout aux feuilles de l'arbre leur valeur
 char *strdup(const char *s) {
     size_t len = strlen(s);
     char *dup = malloc(len + 1);
@@ -61,6 +68,7 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog);
 DeclVars:
        DeclVars TYPE Declarateurs ';' { 
        $$ = $1;
+       // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
        nodeType1->type = strdup($2);
        addChild($$, nodeType1); addChild($$, $3); }
@@ -167,6 +175,7 @@ Instr:
        addChild($$, nodeIdent); addChild($$, $3); }
     |  IF '(' Exp ')' Instr %prec IF { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
     |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If));
+       //Node* exp = makeNode(Exp); 
        addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
     |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(While)); addChild($$, $3); addChild($$, $5); }
     |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); 
@@ -249,6 +258,7 @@ ListExp:
 
 void yyerror(const char *s) {
     fprintf(stderr, "Erreur de syntaxe à la ligne %d : %s", lineno, s);
+    // Afficher le lexème ou caractère qui a provoqué l'erreur
     if (yytext[0] != '\0') {
         fprintf(stderr, " - lexème : '%s'\n", yytext);
     } else {
@@ -257,9 +267,10 @@ void yyerror(const char *s) {
 }
 
 int main(int argc,char *argv[]) {
+    // Afficher l'arbre fait planter le bac à sable
     if (argc < 2) {
-        // Pas d'arguments(tests des profs)
-        return yyparse();
+        help(argv[0]);
+        return -1; // Argument non spécifié
     } else if (args_choice(argc, argv) == 1){
         if(!yyparse()){
             fprintf(stdout, "Affichage de l'arbre : \n");
