@@ -51,7 +51,8 @@ void yyerror(const char* s);
 \n              { lineno++; } // Incrément du numéro de ligne
 [ \t]+          { /* Ignore espaces et tabulations */ }
 .               { 
-                    yyerror("Caractère invalide détecté");
+                    yyerror("Caractère ou lexème invalide détecté à la ligne");
+                    printf(": %d \n", lineno);
                     return 1;  // Retourne 1 pour signaler l'erreur
                 }
 

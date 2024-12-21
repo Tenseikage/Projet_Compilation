@@ -72,7 +72,7 @@ DeclVars:
        Node* nodeType1 = makeNode(type);
        nodeType1->type = strdup($2);
        addChild($$, nodeType1); addChild($$, $3); }
-    |  DeclVars STATIC TYPE Declarateurs {yyerror("Variable globale statique"); return 1;}
+    |  DeclVars STATIC TYPE Declarateurs ';' {yyerror("Variable globale statique"); return 1;}
     |  { $$ = makeNode(DeclVars); }
     ;
 
