@@ -22,10 +22,6 @@ static const char *StringFromLabel[] = {
     "SuiteInstr",
     "Instr",
     "Exp",
-    "TB",
-    "FB",
-    "M",
-    "F",
     "Arguments",
     "ListExp",
     "type",
@@ -43,7 +39,7 @@ static const char *StringFromLabel[] = {
     "valeur",
     "Character",
     "Static",
-    "Non"
+    "!"
     
     
 };
@@ -88,52 +84,25 @@ void deleteTree(Node *node) {
 }
 
 void printTree(Node *node) {
-  static bool rightmost[128]; // tells if node is rightmost sibling
-  static int depth = 0;       // depth of current node
-  for (int i = 1; i < depth; i++) { // 2502 = vertical line
-    printf(rightmost[i] ? "    " : "\u2502   ");
-  }
-  if (depth > 0) { // 2514 = L form; 2500 = horizontal line; 251c = vertical line and right horiz 
-    printf(rightmost[depth] ? "\u2514\u2500\u2500 " : "\u251c\u2500\u2500 ");
-  }
-  if(node->firstChild){
-    printf("%s", StringFromLabel[node->label]);
-    printf("\n");
-    
-  } else if (node->label == Num){
-    printf("%s : %d", StringFromLabel[node->label], node->value);
-    printf("\n");
+	static bool rightmost[128]; // tells if node is rightmost sibling
+	static int depth = 0;       // depth of current node
+	for (int i = 1; i < depth; i++) { // 2502 = vertical line
+		printf(rightmost[i] ? "    " : "\u2502   ");
+	}
+	if (depth > 0) { // 2514 = L form; 2500 = horizontal line; 251c = vertical line and right horiz 
+		printf(rightmost[depth] ? "\u2514\u2500\u2500 " : "\u251c\u2500\u2500 ");
+	}
 
-  } else if(node->label == type){
-    printf("%s : %s", StringFromLabel[node->label], node->type);
-    printf("\n");
-  } else if(node->label == ident){
-    printf("%s : %s", StringFromLabel[node->label], node->ident);
-    printf("\n");
-  } 
-
-  else if(node->label == Addsub){
-    printf("%s : %s", StringFromLabel[node->label], node->sign);
-    printf("\n");
-
-  } else if(node->label == divstar){
-    printf("%s : %s", StringFromLabel[node->label], node->sign);
-    printf("\n");
-
-  } else if(node->label == Character){
-    printf("%s : %s", StringFromLabel[node->label], node->letter);
-    printf("\n");
-  } else if(node->label == Order){
-    printf("%s : %s", StringFromLabel[node->label], node->order);
-    printf("\n");
-  } else {
-    printf("%s", StringFromLabel[node->label]);
-    printf("\n");
-  }
-  depth++;
-  for (Node *child = node->firstChild; child != NULL; child = child->nextSibling) {
-    rightmost[depth] = (child->nextSibling) ? false : true;
-    printTree(child);
-  }
-  depth--;
+	if (node->word!= NULL)  printf("%s: %s", StringFromLabel[node->label], node->word);
+	else {
+	if (node->value) printf("%s: %d", StringFromLabel[node->label], node->value);
+	else printf("%s", StringFromLabel[node->label]);
+	}
+	printf("\n");
+	depth++;
+	for (Node *child = node->firstChild; child != NULL; child = child->nextSibling) {
+		rightmost[depth] = (child->nextSibling) ? false : true;
+		printTree(child);
+	}
+	depth--;
 }

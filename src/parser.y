@@ -5,15 +5,13 @@
 #include "args.h"
 #include "tree.h"
 
-
-// Déclaration explicite de yyin
-extern FILE *yyin;
-
 void yyerror(const char *s);
 
 Node* root;
 extern char *yytext;
 extern int lineno;
+extern int line;
+extern char * word;
 int yylex(void);
 void yyerror(const char *s);
 
@@ -30,11 +28,7 @@ char *strdup(const char *s) {
 
 %union {
   Node *node;
-  char type[10];
-  char ident[64];
-  char byte[1];
-  char letter[1];
-  char order[2];
+  char word[10];
   int num;
 }
 %precedence IF 
@@ -46,13 +40,9 @@ char *strdup(const char *s) {
 %left EQ ORDER
 
 
-%token VOID IF ELSE WHILE RETURN OR AND EQ STATIC
-%token<type> TYPE
-%token<ident> IDENT
+%token VOID IF ELSE WHILE RETURN OR AND STATIC
 %token<num> NUM
-%token <byte> ADDSUB DIVSTAR
-%token<letter> CHARACTER
-%token<order> ORDER 
+%token <word> EQ ADDSUB DIVSTAR TYPE ORDER IDENT CHARACTER
 %type <node> Prog DeclVars DeclVarsLocale Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 %%
 
@@ -70,7 +60,7 @@ DeclVars:
        $$ = $1;
        // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
-       nodeType1->type = strdup($2);
+       nodeType1->word = strdup($2);
        addChild($$, nodeType1); addChild($$, $3); }
     |  DeclVars STATIC TYPE Declarateurs ';' {yyerror("Variable globale statique"); return 1;}
     |  { $$ = makeNode(DeclVars); }
@@ -79,56 +69,69 @@ DeclVars:
 Declarateurs:
        Declarateurs ',' IDENT { $$ = $1;
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($3);
+       nodeIdent->word = strdup($3);
        addSibling($$, nodeIdent); }
     |  IDENT  { $$ = makeNode(ident);
-       $$->ident = strdup($1); }
+       $$->word = strdup($1); }
     ;
 
 DeclFoncts:
-       DeclFoncts DeclFonct { $$ = makeNode(DeclFoncts); addChild($$,$1); addChild($$, $2); }
+       DeclFoncts DeclFonct { $$ = $1; 
+       if ($2->firstChild|| $2->nextSibling){
+            addChild($$, $2);
+       }
+
+       }
     |  DeclFonct { $$ = $1; }
     ;
 
 DeclFonct:
-       EnTeteFonct Corps { $$ = makeNode(DeclFonct); addChild($$, $1); addChild($$, $2); }
+       EnTeteFonct Corps { $$ = makeNode(DeclFonct); addChild($$, $1);
+       if ($2->firstChild|| $2->nextSibling){
+        addSibling($1, $2);
+       }
+		
+       }
     ;
 
 EnTeteFonct:
        TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
        Node* nodeType = makeNode(type);
-       nodeType->type = strdup($1);
+       nodeType->word = strdup($1);
        addChild($$, nodeType); 
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($2);
+       nodeIdent->word = strdup($2);
        addChild($$, nodeIdent); 
-       addChild($$, $4); }
-    |  VOID IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
-       addChild($$, makeNode(Void)); 
+       addSibling($$, $4); }
+
+    |  VOID IDENT '(' Parametres ')' { 
+       $$ = makeNode(Void); 
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($2);
+       nodeIdent->word = strdup($2);
        addChild($$,nodeIdent); 
-       addChild($$, $4); }
+       addSibling($$, $4); }
     ;
 
 Parametres:
-       VOID {$$ = makeNode(Parametres); addChild($$, makeNode(Void)); }
-    |  ListTypVar { $$ = makeNode(Parametres); addChild($$, $1); }
+       VOID {$$ = makeNode(Void); }
+    |  ListTypVar { $$ = makeNode(ListTypVar); addChild($$, $1); }
     ;
 
 ListTypVar:
        ListTypVar ',' TYPE IDENT { $$ = $1;
        Node* nodeType = makeNode(type);
-       nodeType->type = strdup($3); 
+       nodeType->word = strdup($3); 
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($4);
-       addChild($$, nodeType); addChild($$, nodeIdent); }
-    |  TYPE IDENT { $$ = makeNode(ListTypVar); 
+       nodeIdent->word = strdup($4);
+       addSibling($$, nodeType); addChild(nodeType, nodeIdent); }
+
+    |  TYPE IDENT { 
        Node* nodeType = makeNode(type);
-       nodeType->type = strdup($1);
+       nodeType->word = strdup($1);
+       $$ = nodeType;
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($2);
-       addChild($$, nodeType); addChild($$, nodeIdent); }
+       nodeIdent->word = strdup($2);
+       addChild(nodeType, nodeIdent);}
     ;
 
 Corps:
@@ -150,14 +153,14 @@ DeclVarsLocale:
         DeclVarsLocale STATIC TYPE Declarateurs ';' { $$ = $1;
         Node* elem = makeNode(Static);
         Node* nodeType = makeNode(type);
-        nodeType->type = strdup($3);
+        nodeType->word = strdup($3);
         addSibling(elem,nodeType);
         addChild($$,elem);
         addChild($$,$4);}
     |   DeclVarsLocale TYPE Declarateurs ';' { 
         $$ = $1;  
         Node* nodeType = makeNode(type);
-        nodeType->type = strdup($2);
+        nodeType->word = strdup($2);
         addChild($$, nodeType); 
         addChild($$, $3); }
     |   {$$ = makeNode(DeclVarsLocale);}
@@ -165,71 +168,126 @@ DeclVarsLocale:
 
 SuiteInstr:
        SuiteInstr Instr { $$ = $1; addChild($$, $2); }
-    | { $$ = makeNode(SuiteInstr); }
+    | { $$ = makeNode(Instr); }
     ;
 
 Instr:
-       IDENT '=' Exp ';' { $$ = makeNode(Instr); 
+       IDENT '=' Exp ';' {  
+       $$ = makeNode(ident);
+       $$->word = strdup($1);
+       addChild($$, $3); }
+
+    |  IF '(' Exp ')' Instr %prec IF { $$ = makeNode(If);
+        Node* exp = makeNode (Exp);
+        addChild(exp, $3);
+		addChild($$, exp);
+		addChild($$, $5); 
+        }
+
+    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { 
+       Node* nodeIf = makeNode(If);
+       Node* nodeElse = makeNode(Else);
+       addChild(nodeIf,$3);
+       addChild(nodeIf,$5);
+       addChild(nodeElse,$7);
+       addSibling(nodeIf,nodeElse); 
+       $$ = nodeIf;}
+
+
+
+    |  WHILE '(' Exp ')' Instr { 
+        $$ = makeNode(While);
+        addChild($$,$3);
+        addChild($$,$5);
+    }
+
+    |  IDENT '(' Arguments ')' ';' { 
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($1);
-       addChild($$, nodeIdent); addChild($$, $3); }
-    |  IF '(' Exp ')' Instr %prec IF { $$ = makeNode(Instr); addChild($$, makeNode(If)); addChild($$, $3); addChild($$, $5); }
-    |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { $$ = makeNode(Instr); addChild($$, makeNode(If));
-       //Node* exp = makeNode(Exp); 
-       addChild($$, $3); addChild($$, $5); addChild($$, makeNode(Else)); addChild($$, $7); }
-    |  WHILE '(' Exp ')' Instr { $$ = makeNode(Instr); addChild($$, makeNode(While)); addChild($$, $3); addChild($$, $5); }
-    |  IDENT '(' Arguments ')' ';' { $$ = makeNode(Instr); 
-       Node* nodeIdent = makeNode(ident);
-       nodeIdent->ident = strdup($1);
-       addChild($$, nodeIdent); addChild($$, $3); }
-    |  RETURN Exp ';' {  $$ = makeNode(Instr); addChild($$, makeNode(Return)); addChild($$, $2); }
-    |  RETURN ';' { $$ = makeNode(Instr); addChild($$, makeNode(Return)); }
+       nodeIdent->word = strdup($1);
+       $$ = nodeIdent;
+       addChild($$, $3); }
+    
+
+    |  RETURN Exp ';' {  $$ = makeNode(Return); addChild($$, $2); }
+
+    |  RETURN ';' { $$ = makeNode(Return); }
+
     |  '{' SuiteInstr '}' { $$ = $2; }
+
     |  ';' { $$ = makeNode(Instr); }
     ;
 
 Exp:
-    Exp OR TB { $$ = makeNode(Exp); addChild($$,$1); addChild($$, makeNode(Or)); addChild($$, $3); }
+    Exp OR TB { Node* NodeOr = makeNode(Or);
+        addChild(NodeOr,$1);
+        addChild(NodeOr,$3);
+        $$ = NodeOr;
+    }
     |  TB { $$ = $1; }
     ;
 
 TB:
-    TB AND FB { $$ = makeNode(TB); addChild($$, $1); addChild($$, makeNode(And)); addChild($$, $3); }
+    TB AND FB { Node* NodeAnd = makeNode(And);
+        addChild(NodeAnd,$1);
+        addChild(NodeAnd,$3);
+        $$ = NodeAnd;
+    }
     |  FB { $$ = $1; }
     ;
 
 FB:
-    FB EQ M { $$ = makeNode(FB); addChild($$, $1); addChild($$, makeNode(Eq)); addChild($$, $3); }
+    FB EQ M { Node * nodeEq = makeNode(Eq);
+        nodeEq->word = strdup($2);
+        addChild(nodeEq,$1);
+        addChild(nodeEq,$3);
+        $$ = nodeEq;
+    }
     |  M { $$ = $1; }
     ;
 
 M:
-    M ORDER E { $$ = makeNode(M); addChild($$, $1); 
-    Node* nodeOrder = makeNode(Order);
-    nodeOrder->order = strdup($2);
-    addChild($$, nodeOrder); addChild($$, $3); }
+    M ORDER E { 
+        Node* nodeOrder = makeNode(Order);
+        nodeOrder->word = strdup($2);
+        addChild(nodeOrder,$1); 
+        addChild($$, $3);
+        $$ = nodeOrder; 
+    }
     |  E { $$ = $1; }
     ;
 
 E:
-    E ADDSUB T { $$ = makeNode(E); addChild($$, $1);
-    Node* operator = makeNode(Addsub);
-    operator->sign = strdup($2);
-    addChild($$, operator); addChild($$, $3); }
+    E ADDSUB T {
+        Node* operator = makeNode(Addsub);
+        operator->word = strdup($2);
+        addChild(operator,$1); 
+        addChild(operator, $3);
+        $$ = operator; 
+    }
     |  T { $$ = $1; }
     ;
 
 T:
-    T DIVSTAR F { $$ = makeNode(T); addChild($$, $1); 
-    Node* operator = makeNode(divstar);
-    operator->sign = strdup($2);
-    addChild($$, operator); addChild($$, $3); }
+    T DIVSTAR F { Node* operator = makeNode(divstar);
+        operator->word = strdup($2);
+        addChild(operator,$1); 
+        addChild(operator, $3);
+        $$ = operator; 
+    }
     |  F { $$ = $1; }
     ;
 
 F:
-    ADDSUB F { $$ = makeNode(F); addChild($$, makeNode(Addsub)); addChild($$, $2); }
-    |  '!' F { $$ = makeNode(F); addChild($$, makeNode(Not)); addChild($$, $2); }
+    ADDSUB F { 
+        Node* operator = makeNode(Addsub);
+        operator->word = strdup($1);
+        addChild(operator,$2); 
+        $$ = operator; 
+        }
+    |  '!' F {Node* notNode = makeNode(Not);
+           notNode = makeNode(Not);
+           notNode->word = strdup("!"); 
+           addChild(notNode,$2);}
     |  '(' Exp ')' { $$ = $2; }
     |  NUM { 
         $$ = makeNode(Num); 
@@ -237,16 +295,16 @@ F:
         
     }
     |  CHARACTER {$$ = makeNode(Character);
-       $$->letter = strdup($1);}
+       $$->word = strdup($1);}
     |  IDENT { $$ = makeNode(ident);
-               $$->ident = strdup($1); }
+               $$->word = strdup($1); }
     |  IDENT '(' Arguments ')' {$$ = makeNode(ident);
-       $$->ident = strdup($1);}
+       $$->word = strdup($1);}
     ;
 
 Arguments:
     ListExp { $$ = $1; }
-    | { $$ = makeNode(Arguments); }
+    | { $$ = makeNode(Void); }
     ;
 
 ListExp:
@@ -257,12 +315,14 @@ ListExp:
 %%
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Erreur de syntaxe à la ligne %d : %s", lineno, s);
-    // Afficher le lexème ou caractère qui a provoqué l'erreur
-    if (yytext[0] != '\0') {
-        fprintf(stderr, " - lexème : '%s'\n", yytext);
-    } else {
-        fprintf(stderr, "\n");
+    fprintf(stderr, "Erreur syntaxique à la ligne %d  (position %d : '%s')\n", lineno, line, yytext ? yytext : "inconnu");
+    if (word) {
+        fprintf(stderr, "%s\n", word);
+
+        for(int i =0; i< line - 2;i++){
+            fprintf(stderr, " ");
+        }
+        fprintf(stderr, "-^\n");
     }
 }
 

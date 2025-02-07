@@ -17,10 +17,6 @@ typedef enum {
   SuiteInstr,
   Instr,
   Exp,
-  TB,
-  FB,
-  M,
-  F,
   Arguments,
   ListExp,
   type,
@@ -46,12 +42,8 @@ typedef struct Node {
   label_t label;
   struct Node *firstChild, *nextSibling;
   int lineno;
-  char* type; // Argument string
-  char* ident; // identifiant
-  char* sign; // signe d'opération (+,/-,*)
-  int value; // Valeur d'une instruction
-  char* letter; // caractère char
-  char* order; // signe de comparaison
+  int value;
+  char* word;
 } Node;
 
 Node *makeNode(label_t label);

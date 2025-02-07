@@ -5,7 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 int lineno = 1;
-void yyerror(const char* s);
+int line = 1;
+char* word = NULL;
+
+void errorlex(const char *s) {
+    fprintf(stderr, "Erreur lexicale à la ligne %d  (position %d : '%s')\n", lineno, line, yytext ? yytext : "inconnu");
+    if (word) {
+        fprintf(stderr, "%s\n", word);
+
+        for(int i =0; i< line - 2;i++){
+            fprintf(stderr, " ");
+        }
+        fprintf(stderr, "-^\n");
+    }
+}
+
+void concat(char *text) {
+    int new_length;
+    if (word){
+        new_length = strlen(word);
+    } else {
+        new_length = 0;
+    }
+    new_length = new_length + strlen(text) + 1;
+    char *new_word = (char *)realloc(word, new_length);
+    if (!new_word) {
+        fprintf(stderr, "Erreur d'allocation mémoire\n");
+        exit(EXIT_FAILURE);
+    }
+    word = new_word;
+    if (!word[0]) {
+       strcpy(word, text);
+    }else {
+        strcat(word, text);
+    }
+     
+}
+
 
 %}
 
@@ -21,41 +57,40 @@ void yyerror(const char* s);
 <COMMENT>"*/"   { BEGIN(INITIAL); } /* Finit un commentaire de type C */
 <COMMENT>\n     { lineno++; } /* Incrémente le compteur de lignes pour chaque nouvelle ligne dans un commentaire */
 <COMMENT>.      ; /* Ignore les autres caractères dans un commentaire */
-"int"           {strcpy(yylval.type,yytext); return TYPE; }
-"static"        { return STATIC;}
-"char"          {strcpy(yylval.type,yytext); return TYPE ;}
-"void"          {strcpy(yylval.type,yytext); return VOID; }
-"if"            { return IF; }
-"else"          {  return ELSE; }
-"while"         {  return WHILE; }
-"return"        {  return RETURN; }
-"("             { return '(';}
-")"             { return ')';}
-"{"             { return '{';}
-"}"             { return '}';}
+"int"           {line +=strlen(yytext); concat(yytext);strcpy(yylval.word,yytext); return TYPE; }
+"static"        {line +=strlen(yytext); concat(yytext); return STATIC;}
+"char"          {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext); return TYPE ;}
+"void"          {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext); return VOID; }
+"if"            {line +=strlen(yytext); concat(yytext); return IF; }
+"else"          {line +=strlen(yytext); concat(yytext); return ELSE; }
+"while"         {line +=strlen(yytext); concat(yytext);  return WHILE; }
+"return"        {line +=strlen(yytext); concat(yytext);  return RETURN; }
+"("             {line +=strlen(yytext); concat(yytext); return '(';}
+")"             {line +=strlen(yytext); concat(yytext); return ')';}
+"{"             {line +=strlen(yytext); concat(yytext); return '{';}
+"}"             {line +=strlen(yytext); concat(yytext); return '}';}
 
-[a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident,yytext);  return IDENT; } // Identificateurs
-[0-9]+                 {yylval.num = atoi(yytext); return NUM; }   // Nombres entiers
+[a-zA-Z_][a-zA-Z0-9_]* {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext);  return IDENT; } // Identificateurs
+[0-9]+                 {line +=strlen(yytext); concat(yytext); yylval.num = atoi(yytext); return NUM; }   // Nombres entiers
 
-"="             {  return '='; }
-"!"             { return '!';} 
-";"             { return ';'; }
-","             { return ',';}
-"+"|"-"         { strcpy(yylval.byte,yytext); return ADDSUB; }
-"*"|"/"|"%"        {strcpy(yylval.byte,yytext);  return DIVSTAR; }
-"&&"            {  return AND; }
-"||"            {  return OR; }
-"=="|"!="       { strcpy(yylval.byte,yytext); return EQ;}
-"<"|">"|"<="|">=" {strcpy(yylval.order, yytext); return ORDER;}
-'(\\[a-z]|[^\'])' {strcpy(yylval.letter,yytext); return CHARACTER;}
-\n              { lineno++; } // Incrément du numéro de ligne
-[ \t]+          { /* Ignore espaces et tabulations */ }
+"="             {line +=strlen(yytext); concat(yytext);  return '='; }
+"!"             {line +=strlen(yytext); concat(yytext);  return '!';} 
+";"             {line +=strlen(yytext); concat(yytext); return ';'; }
+","             {line +=strlen(yytext); concat(yytext); return ',';}
+"+"|"-"         {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext); return ADDSUB; }
+"*"|"/"|"%"        {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext);  return DIVSTAR; }
+"&&"            {line +=strlen(yytext);  concat(yytext); return AND; }
+"||"            {line +=strlen(yytext); concat(yytext);  return OR; }
+"=="|"!="       {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext); return EQ;}
+"<"|">"|"<="|">=" {line +=strlen(yytext); concat(yytext);  strcpy(yylval.word, yytext); return ORDER;}
+'(\\[a-z]|[^\'])' {line +=strlen(yytext); concat(yytext); strcpy(yylval.word,yytext); return CHARACTER;}
+\n              { lineno++; word = NULL; line = 1; } // Incrément du numéro de ligne
+[ \r\t]+          { line += strlen(yytext); concat(yytext);  }
 .               { 
-                    yyerror("Caractère ou lexème invalide détecté à la ligne");
-                    printf(": %d \n", lineno);
+                    line += strlen(yytext); concat(yytext);  
+                    errorlex("Error syntaxe");
                     return 1;  // Retourne 1 pour signaler l'erreur
                 }
 
 %%
-
 

@@ -56,7 +56,6 @@ def final_report(tuple: tuple) -> None:
 
 if __name__ == "__main__":
     compile()
-    
     tuple = test_tpc_files(0,0)
     final_report(tuple)
     
