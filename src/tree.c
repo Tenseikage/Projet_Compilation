@@ -39,7 +39,7 @@ static const char *StringFromLabel[] = {
     "valeur",
     "Character",
     "Static",
-    "!"
+    "Not"
     
     
 };

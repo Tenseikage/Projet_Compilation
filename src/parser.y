@@ -77,19 +77,13 @@ Declarateurs:
 
 DeclFoncts:
        DeclFoncts DeclFonct { $$ = $1; 
-       if ($2->firstChild|| $2->nextSibling){
-            addChild($$, $2);
-       }
-
+       addChild($$, $2);
        }
     |  DeclFonct { $$ = $1; }
     ;
 
 DeclFonct:
-       EnTeteFonct Corps { $$ = makeNode(DeclFonct); addChild($$, $1);
-       if ($2->firstChild|| $2->nextSibling){
-        addSibling($1, $2);
-       }
+       EnTeteFonct Corps { $$ = makeNode(DeclFonct); addChild($$, $1); addSibling($1, $2);
 		
        }
     ;
@@ -285,9 +279,11 @@ F:
         $$ = operator; 
         }
     |  '!' F {Node* notNode = makeNode(Not);
-           notNode = makeNode(Not);
            notNode->word = strdup("!"); 
-           addChild(notNode,$2);}
+           addChild(notNode,$2);
+           $$ = notNode;
+           }
+           
     |  '(' Exp ')' { $$ = $2; }
     |  NUM { 
         $$ = makeNode(Num); 

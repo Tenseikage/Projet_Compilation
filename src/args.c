@@ -11,7 +11,6 @@ void help(char* data){
     fprintf(stdout,"usage : %s [OPTIONS] \n", data);
     fprintf(stdout,"-t, --tree : Affichage de l'arbre \n");
     fprintf(stdout,"-h, --help : Affiche l'aide\n");
-    fprintf(stdout, "-n, -notree : Affiche rien (Juste sortie de l'analyseur syntaxique) \n");
     fprintf(stdout,"Les autres options seront ignorés\n");
 }
 
@@ -23,7 +22,7 @@ int args_choice(int argc, char* argv[]) {
             return 0;
         } else if (strcmp(argv[i], "--tree") == 0 || (strcmp(argv[i], "-t") == 0)) {
             return 1;
-        } else if (strcmp(argv[i], "--notree") == 0 || strcmp(argv[i], "-n") == 0){
+        } else {
             return 2;
         } 
     } 
