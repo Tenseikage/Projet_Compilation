@@ -44,6 +44,44 @@ static const char *StringFromLabel[] = {
     
 };
 
+/*int countLeaves(Node *node) {
+    if (node == NULL) {
+        return 0;
+    }
+
+  // Si le nœud n'a pas d'enfants, c'est une feuille
+    if (!FIRSTCHILD(node) || ! SECONDCHILD(node) || !THIRDCHILD(node)) {
+        return 1;
+    }
+
+    // Compter les feuilles des enfants et des frères
+    int count = 0;
+    count += countLeaves(FIRSTCHILD(node));
+    count += countLeaves(SECONDCHILD(node));
+    count += countLeaves(THIRDCHILD(node));
+
+    return count;
+}*/
+
+int countLeaves(Node *node) {
+    if (node == NULL) {
+        return 0;
+    }
+
+    // Si le nœud n'a pas d'enfants, c'est une feuille
+    if (node->firstChild == NULL) {
+        return 1;
+    }
+
+    // Compter les feuilles des enfants et des frères
+    int count = 0;
+    count += countLeaves(node->firstChild);
+    count += countLeaves(node->nextSibling);
+
+    return count;
+}
+
+
 Node *makeNode(label_t label) {
   Node *node = malloc(sizeof(Node));
   if (!node) {

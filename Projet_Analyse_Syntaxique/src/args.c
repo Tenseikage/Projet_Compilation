@@ -22,9 +22,8 @@ int args_choice(int argc, char* argv[]) {
             return 0;
         } else if (strcmp(argv[i], "--tree") == 0 || (strcmp(argv[i], "-t") == 0)) {
             return 1;
-        } else {
-            return 2;
-        } 
+        }
+        
     } 
 	return -3; // Erreur quelconque
 }
