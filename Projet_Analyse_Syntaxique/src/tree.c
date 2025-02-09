@@ -77,6 +77,7 @@ int countLeaves(Node *node) {
     int count = 0;
     count += countLeaves(node->firstChild);
     count += countLeaves(node->nextSibling);
+    printf("Count %d \n",count);
 
     return count;
 }

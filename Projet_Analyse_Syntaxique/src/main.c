@@ -14,9 +14,9 @@ int main(int argc,char *argv[]) {
     if (args_choice(argc, argv) == 1){
         if(!yyparse()){
             fprintf(stdout, "Affichage de l'arbre : \n");
-			fill_symb_tab(tab,root);
+			//fill_symb_tab(tab,root);
             printTree(root);
-			display_symb_tab(tab);
+			//display_symb_tab(tab);
             deleteTree(root);
             return 0;
 

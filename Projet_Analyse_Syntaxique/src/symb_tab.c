@@ -4,6 +4,7 @@
 #include "tree.h"
 #include "symb_tab.h"
 
+// Ajout
 void add_var(Symbol_table* tab,int index, const char* name, label_t type, int lineno){
 	for(int j = 0; j < index; j++){
 		if(!strcmp(tab->vars[j].name,name)){
@@ -24,11 +25,19 @@ void fill_symb_tab(Symbol_table* tab, Node* var){
 		exit(EXIT_FAILURE);
 	}
 	int cpt = 0;
-	for(Node* node = FIRSTCHILD(var); node; node = node->nextSibling){
+	Node* node =  FIRSTCHILD(var);
+	while(node){
 		add_var(tab,cpt,SECONDCHILD(node)->word,FIRSTCHILD(node)->label,FIRSTCHILD(node)->lineno);
+		node = node->nextSibling;
 		cpt++;
 	}
+	
 }
+
+
+/*void fill_symb_tab_global(Symbol_table_global* tab,Node* var){
+
+}*/
 
 void display_symb_tab(Symbol_table* tab){
 	fprintf(stdout,"oui\n");
