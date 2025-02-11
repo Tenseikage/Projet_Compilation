@@ -24,8 +24,10 @@ typedef struct symb_table_global {
 
 // Prototype des fonctions
 void add_var(Symbol_table* tab,int index, const char* name, label_t type, int lineno);
-void fill_symb_tab(Symbol_table* tab, Node* var);
+void fill_symb_tab(Symbol_table* tab, Node* var,int cpt);
 void display_symb_tab(Symbol_table* tab);
+Symbol_table* init_table(void);
+
 
 
 

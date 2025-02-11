@@ -5,6 +5,8 @@
 #include "tree.h"
 extern int lineno;       /* from lexer */
 
+/// Fonction qui alloue de manière dynmique la table de symboles
+
 static const char *StringFromLabel[] = {
     "Expression",
     "T",
@@ -67,19 +69,16 @@ int countLeaves(Node *node) {
     if (node == NULL) {
         return 0;
     }
-
-    // Si le nœud n'a pas d'enfants, c'est une feuille
-    if (node->firstChild == NULL) {
+    if(!node->firstChild && !node->nextSibling){
         return 1;
+    } else {
+        return countLeaves(node->firstChild) + countLeaves(node->nextSibling);
     }
 
-    // Compter les feuilles des enfants et des frères
-    int count = 0;
-    count += countLeaves(node->firstChild);
-    count += countLeaves(node->nextSibling);
-    printf("Count %d \n",count);
+    
 
-    return count;
+
+    
 }
 
 

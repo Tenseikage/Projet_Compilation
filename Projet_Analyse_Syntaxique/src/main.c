@@ -10,13 +10,13 @@ extern Node* root;
 
 int main(int argc,char *argv[]) {
     // Afficher l'arbre fait planter le bac à sable
-	Symbol_table* tab = NULL;
+	Symbol_table* tab = init_table();
     if (args_choice(argc, argv) == 1){
         if(!yyparse()){
             fprintf(stdout, "Affichage de l'arbre : \n");
-			//fill_symb_tab(tab,root);
-            printTree(root);
-			//display_symb_tab(tab);
+			fill_symb_tab(tab,root,0);
+            //printTree(root);
+            display_symb_tab(tab);
             deleteTree(root);
             return 0;
 
