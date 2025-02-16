@@ -7,7 +7,7 @@
 #define INITIAL_SIZE 10
 #define RESIZE_FACTOR 2
 
-int is_var_in_table(Symbol_table* tab, const char* name) {
+int is_var_in_table(Symbol_table_locale* tab, const char* name) {
     for (int i = 0; i < tab->table_size; i++) {
         if (strcmp(tab->vars[i].name, name) == 0) {
             return 1; 
@@ -16,12 +16,12 @@ int is_var_in_table(Symbol_table* tab, const char* name) {
     return 0; 
 }
 
-void add_var(Symbol_table* tab,const char* name, label_t type, int lineno){
+void add_var(Symbol_table_locale* tab,const char* name, label_t type, int lineno){
 	if(tab->index_tab >= tab->table_size){
 		tab->table_size *= RESIZE_FACTOR;
 		tab->vars = realloc(tab->vars, tab->table_size * sizeof(Data));
         if (!tab->vars) {
-            fprintf(stderr, "Erreur d'allkocation de mémoire\n");
+            fprintf(stderr, "Erreur d'allocation de mémoire\n");
             exit(EXIT_FAILURE);
         }
 	}
@@ -34,8 +34,8 @@ void add_var(Symbol_table* tab,const char* name, label_t type, int lineno){
 	tab->index_tab++;
 }
 
-Symbol_table* init_table(void){
-	Symbol_table* tab = malloc(sizeof(Symbol_table));
+Symbol_table_locale* init_table(void){
+	Symbol_table_locale* tab = malloc(sizeof(Symbol_table_locale));
 	if(!tab) {
 		fprintf(stderr, "Erreur d'allocation de mémoire\n");
         exit(EXIT_FAILURE);
@@ -46,29 +46,36 @@ Symbol_table* init_table(void){
         fprintf(stderr, "Erreur d'allocation de mémoire\n");
         exit(EXIT_FAILURE);
     }
-	tab->table_size = 0;
 	tab->index_tab = 0;
 	return tab;
 
 }
 
-
-
-void display_symb_tab(Symbol_table* tab){
+void display_symb_tab(Symbol_table_locale* tab){
 	printf("\n");
 	if(!tab) return;
 	for(int i = 0; i < tab->index_tab; i++){
-	    //fprintf(stdout,"oui\n");
 		fprintf(stdout,"%s : %d \n",tab->vars[i].name,tab->vars[i].type);
 	}
 }
 
-void fill_symb_tab(Symbol_table* tab,Node * root){
+void fill_locale(Symbol_table_locale* tab, Node* root){
 	if(!root) return;
-    if (root->label == ident){
-		printf("Nom : %s  Type : %d \n",root->word,root->label);
+	if (root->label == ident){
 		add_var(tab,root->word, root->label, root->lineno);
 	} 
+	
+	fill_locale(tab,root->nextSibling);
+
+}
+
+void fill_symb_tab(Symbol_table_locale* tab,Node * root){
+	if(!root) return;
+	if (root->label == DeclVarsLocale){
+		fill_locale(tab,root->firstChild);
+		
+	}
     fill_symb_tab(tab,root->firstChild);
 	fill_symb_tab(tab,root->nextSibling);
 }
+

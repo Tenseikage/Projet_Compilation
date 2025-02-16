@@ -10,7 +10,7 @@ extern Node* root;
 
 int main(int argc,char *argv[]) {
     // Afficher l'arbre fait planter le bac à sable
-	Symbol_table* tab = init_table();
+	Symbol_table_locale* tab = init_table();
     if (args_choice(argc, argv) == 1){
         if(!yyparse()){
             fprintf(stdout, "Affichage de l'arbre : \n");

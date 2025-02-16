@@ -14,7 +14,7 @@ typedef struct symb_table {
 	Data* vars;
 	int table_size;
 	int index_tab;
-} Symbol_table;
+} Symbol_table_locale;
 
 // Table valeurs globales
 typedef struct symb_table_global {
@@ -25,10 +25,10 @@ typedef struct symb_table_global {
 
 
 // Prototype des fonctions
-void add_var(Symbol_table* tab,const char* name, label_t type, int lineno);
-void fill_symb_tab(Symbol_table* tab, Node* var);
-void display_symb_tab(Symbol_table* tab);
-Symbol_table* init_table(void);
+void add_var(Symbol_table_locale* tab,const char* name, label_t type, int lineno);
+void fill_symb_tab(Symbol_table_locale* tab, Node* var);
+void display_symb_tab(Symbol_table_locale* tab);
+Symbol_table_locale* init_table(void);
 
 
 
