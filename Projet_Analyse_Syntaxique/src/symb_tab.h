@@ -23,13 +23,29 @@ typedef struct symb_table_global {
 	int index_tab;
 } Symbol_table_global;
 
+// Table de symboles pour les fonctions
+typedef struct symb_table_func {
+	char name[IDENT_LENGTH];
+	Data* vars; // Paramètres de
+	Symbol_table_locale * tab;
+} Symbol_table_function;
+
+typedef struct symb_tab_funcs {
+	Symbol_table_function* tab; // Contient les tables de symbole propre aux fonctions
+} Symbol_table_functions;
+
+typedef enum {
+	LOCAL,
+	GLOBAL,
+	FUNCTION
+} TableType;
 
 // Prototype des fonctions
-void add_var(Symbol_table_locale* tab,const char* name, label_t type, int lineno);
-void fill_symb_tab(Symbol_table_locale* tab, Node* var);
-void display_symb_tab(Symbol_table_locale* tab);
-Symbol_table_locale* init_table(void);
-
+void add_var(void* tab, TableType type, const char* name, label_t label, int lineno);
+void fill_symb_tab(void* tab, TableType type, Node* var);
+void display_symb_tab(void* tab, TableType type);
+void* init_table(TableType type);
+//void free_table(void* tab, TableType type);
 
 
 
