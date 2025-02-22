@@ -15,16 +15,16 @@ int main(int argc,char *argv[]) {
     if (args_choice(argc, argv) == 1){
         if(!yyparse()){
             fprintf(stdout, "Affichage de l'arbre : \n");
-			fill_symb_tab(local_tab, LOCAL, root);
-            fill_symb_tab(global_tab, GLOBAL, root);
             printTree(root);
+            // Libérer la mémoire allouée
+            //free_table(local_tab, LOCAL);
+            //free_table(global_tab, GLOBAL);
+            fill_symb_tab(local_tab, LOCAL, root);
+            fill_symb_tab(global_tab, GLOBAL, root);
             printf("Table des symboles locales:\n");
             display_symb_tab(local_tab, LOCAL);
             printf("Table des symboles globales:\n");
             display_symb_tab(global_tab, GLOBAL);
-            // Libérer la mémoire allouée
-            //free_table(local_tab, LOCAL);
-            //free_table(global_tab, GLOBAL);
             deleteTree(root);
             return 0;
 
@@ -33,7 +33,7 @@ int main(int argc,char *argv[]) {
             return 1;
         }
     } else {
-           return yyparse();
+        return yyparse();
     }
 	//display_symb_tab(tab);
 }

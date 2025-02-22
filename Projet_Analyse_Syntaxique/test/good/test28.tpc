@@ -1,7 +1,7 @@
 
 int main(void){
-	static int a;
-	static int b;
+	int a;
+	int b;
 	int c;
 	c = 0;
 	a = 12;

@@ -77,7 +77,7 @@ Declarateurs:
 
 DeclFoncts:
        DeclFoncts DeclFonct { $$ = $1; 
-       addChild($$, $2);
+       addSibling($$, $2);
        }
     |  DeclFonct { $$ = $1; }
     ;

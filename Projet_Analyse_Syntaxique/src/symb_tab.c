@@ -8,17 +8,14 @@
 #define RESIZE_FACTOR 2
 
 int is_var_in_table(void* tab, TableType type, const char* name) {
-    int table_size = 0;
-	int index_tab = 0;
+    int index_tab;
 	Data* vars;
 	if (type == LOCAL){
 		Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
-		table_size = sym_tab->table_size;
 		index_tab = sym_tab->index_tab;
 		vars = sym_tab->vars;
    	} else {
 		Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
-		table_size = sym_tab->table_size;
 		index_tab = sym_tab->index_tab;
 		vars = sym_tab->vars;
     } 
@@ -30,7 +27,7 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
     return 0; 
 }
 
-void add_var(void* tab, TableType type, const char* name, label_t label, int lineno) {
+void add_var(void* tab, TableType type, const char* name, label_t label, int lineno,int state) {
     int* table_size;
     int* index_tab;
     Data** vars;
@@ -61,16 +58,25 @@ void add_var(void* tab, TableType type, const char* name, label_t label, int lin
     }
     strcpy((*vars)[*index_tab].name, name);
     (*vars)[*index_tab].type = label;
+    (*vars)[*index_tab].isStatic = state;
     (*index_tab)++;
 }
 
-void fill_vars(void* tab, TableType type, Node* root) {
+void fill_vars(void* tab, TableType types, Node* root) {
     if (!root) return;
     if (root->label == ident) {
-        add_var(tab, type, root->word, root->label, root->lineno);
+        add_var(tab, types, root->word, root->label, root->lineno,0);
+    } if (root->label == Static){
+        if(root->nextSibling->label == type){
+           Node* branch = root->nextSibling->nextSibling;
+            if (branch->label == ident){
+                add_var(tab,types,branch->word,branch->label,branch->lineno,1);
+            }
+        }
+
     }
-    fill_vars(tab, type, root->firstChild);
-    fill_vars(tab, type, root->nextSibling);
+    fill_vars(tab, types, root->firstChild);
+    fill_vars(tab, types, root->nextSibling);
 }
 
 void fill_symb_tab(void* tab, TableType type, Node* root) {
@@ -119,27 +125,9 @@ void* init_table(TableType type) {
     return tab;
 }
 
-/*void free_table(void* tab, TableType type) {
-    int index_tab;
-    Data* vars;
-
-    if (type == LOCAL) {
-        Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
-        index_tab = sym_tab->index_tab;
-        vars = sym_tab->vars;
-    } else {
-        Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
-        index_tab = sym_tab->index_tab;
-        vars = sym_tab->vars;
-    }
-
-    for (int i = 0; i < index_tab; i++) {
-        free(vars[i].name);
-    }
-    free(vars);
-    free(tab);
-}*/
-
+void init_symb_tab_func(Symbol_table_locale tab){
+    
+}
 void display_symb_tab(void* tab, TableType type) {
     int index_tab;
     Data* vars;
@@ -148,15 +136,20 @@ void display_symb_tab(void* tab, TableType type) {
         Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
         index_tab = sym_tab->index_tab;
         vars = sym_tab->vars;
+        for (int i = 0; i < index_tab; i++) {
+            printf("Nom : %s, Type : %d, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
+        }
     } else {
         Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
         index_tab = sym_tab->index_tab;
         vars = sym_tab->vars;
+        for (int i = 0; i < index_tab; i++) {
+            printf("Nom : %s, Type : %d\n", vars[i].name, vars[i].type);
+        }
+
     }
 
-    for (int i = 0; i < index_tab; i++) {
-        printf("Nom : %s, Type : %d\n", vars[i].name, vars[i].type);
-    }
+    
 }
 
 
