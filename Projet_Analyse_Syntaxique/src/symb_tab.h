@@ -28,7 +28,9 @@ typedef struct symb_table_global {
 typedef struct symb_table_func {
 	char name[IDENT_LENGTH];
 	int returnType; //Type de retour de la fonction
-	Data* vars; // Paramètres de f
+	Data* vars; // Paramètres de fonctions
+	int tabv_size;
+	int index_tabv;
 	Symbol_table_locale * local_tab; // Table de symboles variables locales
 } Symbol_table_function;
 
@@ -41,7 +43,8 @@ typedef struct symb_tab_funcs {
 typedef enum {
 	LOCAL,
 	GLOBAL,
-	FUNCTION
+	FUNCTION,
+	VARS
 } TableType;
 
 // Prototype des fonctions

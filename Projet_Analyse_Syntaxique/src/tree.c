@@ -18,8 +18,8 @@ static const char *StringFromLabel[] = {
     "DeclFoncts",
     "DeclFonct",
     "EnTeteFonct",
-    "Parametres",
-    "Variables",
+    "Params",
+    "Paramètres",
     "Corps",
     "SuiteInstr",
     "Instr",
@@ -41,7 +41,8 @@ static const char *StringFromLabel[] = {
     "valeur",
     "Character",
     "Static",
-    "Not"
+    "Not",
+    "NonStatic"
     
     
 };

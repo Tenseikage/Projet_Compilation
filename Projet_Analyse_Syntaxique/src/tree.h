@@ -34,7 +34,8 @@ typedef enum {
   Num,
   Character,
   Static,
-  Not
+  Not,
+  NonStatic
   /* Ajoutez d'autres labels si nécessaire */
 } label_t;
 

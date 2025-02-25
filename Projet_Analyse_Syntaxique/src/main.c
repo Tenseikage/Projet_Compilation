@@ -18,11 +18,12 @@ int main(int argc,char *argv[]) {
             int index = 0;
             fprintf(stdout, "Affichage de l'arbre : \n");
             printTree(root);
+            printf("\n");
             fill_symb_tab_func(tab_funcs,FUNCTION,root,&index);
             fill_symb_tab(global_tab,GLOBAL,root);
             printf("Variables Globales :  \n");
             display_symb_tab(global_tab,GLOBAL);
-            printf("Fonctions et variables locales");
+            printf("Fonctions et variables locales \n");
             display_symb_tab(tab_funcs,FUNCTION);
             deleteTree(root);
             return 0;

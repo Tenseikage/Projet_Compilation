@@ -117,7 +117,7 @@ ListTypVar:
        nodeType->word = strdup($3); 
        Node* nodeIdent = makeNode(ident);
        nodeIdent->word = strdup($4);
-       addSibling($$, nodeType); addChild(nodeType, nodeIdent); }
+       addSibling($$, nodeType);   addSibling(nodeType, nodeIdent); }
 
     |  TYPE IDENT { 
        Node* nodeType = makeNode(type);
@@ -125,7 +125,7 @@ ListTypVar:
        $$ = nodeType;
        Node* nodeIdent = makeNode(ident);
        nodeIdent->word = strdup($2);
-       addChild(nodeType, nodeIdent);}
+       addSibling(nodeType, nodeIdent);}
     ;
 
 Corps:
@@ -152,10 +152,12 @@ DeclVarsLocale:
         addChild($$,elem);
         addChild($$,$4);}
     |   DeclVarsLocale TYPE Declarateurs ';' { 
-        $$ = $1;  
+        $$ = $1;
+        Node* elem = makeNode(NonStatic); 
         Node* nodeType = makeNode(type);
         nodeType->word = strdup($2);
-        addChild($$, nodeType); 
+        addSibling(elem,nodeType);
+        addChild($$, elem); 
         addChild($$, $3); }
     |   {$$ = makeNode(DeclVarsLocale);}
 ;
