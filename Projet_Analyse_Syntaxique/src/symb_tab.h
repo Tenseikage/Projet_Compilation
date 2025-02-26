@@ -49,10 +49,6 @@ typedef enum {
 
 // Prototype des fonctions
 /**
- * Cette fonction ajoute une variable ou une fonction dans sa table
- */
-void add_var(void* tab, TableType type, const char* name, label_t label, int lineno,int state);
-/**
  * Replit la table de symboles d'une fonction (table de symboles variables golbales)
  */
 void fill_symb_tab(void* tab, TableType type, Node* var);
@@ -73,9 +69,20 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
  * Initialise la table des symboles des fonctions
  */
 Symbol_table_functions* init_symb_tab_func(void);
+/**
+ * Libère les tables de symboles
+ */
+void free_all_tables(Symbol_table_global* global_tab, Symbol_table_functions* funcs_tab) ;
 
+/**
+ * Vérifie que les variables globales et noms de fonction n'ont pas le même nom
+ */
+int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab);
 
-
+/**
+ * Vérifie que les variables locales et paramètres de fonction n'ont pas le même nom
+ */
+int check_param_local_vars(Symbol_table_functions* tab);
 
 
 #endif

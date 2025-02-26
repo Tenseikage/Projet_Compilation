@@ -159,7 +159,6 @@ void fill_symb_tab(void* tab, TableType type, Node* root) {
         fill_vars_locale(tab, type, root->firstChild);
     }
 	if (root->label == DeclVars && type == GLOBAL){
-        //printf("oui \n");
         // Replissage tableau globales
 		fill_vars_global(tab, type, root->firstChild);
 
@@ -194,6 +193,31 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
     }
     fill_symb_tab_func(tab, types, root->firstChild,index);
     fill_symb_tab_func(tab,types,root->nextSibling,index);
+}
+
+int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
+    for(int i = 0; i < tab->index_tab; i++){
+        if(is_var_in_table(global_tab,GLOBAL,tab->tab_funcs[i].name)){
+            fprintf(stderr,"Erreur de sémantique : Même définition variable globale / Nom de fonction\n");
+            return 1;
+        }
+    }
+    return 0;
+
+}
+
+int check_param_local_vars(Symbol_table_functions* tab){
+    for(int j = 0; j < tab->index_tab; j++){
+        for(int k = 0;k < tab->tab_funcs[j].index_tabv;k++){
+            //printf("Nom de var %s \n", tab->tab_funcs[j].vars[k].name);
+            if(is_var_in_table(tab->tab_funcs[j].local_tab,LOCAL, tab->tab_funcs[j].vars[k].name)){
+                fprintf(stderr,"Erreur de sémantique : Même définition variable locale / Paramètre de fonction\n");
+                return 1;
+            }
+        }
+    }
+
+    return 0;
 }
 
 
@@ -277,6 +301,9 @@ Symbol_table_functions* init_symb_tab_func(void) {
     return tab;
 
 }
+
+
+
 void display_local_tab(Symbol_table_locale* tab) {
     if (!tab) {
         fprintf(stderr, "Erreur : la table locale est NULL\n");
@@ -284,6 +311,7 @@ void display_local_tab(Symbol_table_locale* tab) {
     }
 
     Data* vars = tab->vars;
+    printf("Variables locales de la fonction : \n");
     for (int i = 0; i < tab->index_tab; i++) {
         printf("Nom : %s, Type : %d, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
     }
@@ -292,7 +320,7 @@ void display_local_tab(Symbol_table_locale* tab) {
 void display_params(Symbol_table_function* func){
     Data* vars = func->vars;
     if(vars){
-        printf("Paramètres de fonction \n");
+        printf("Paramètres de fonction  :\n");
         for (int i = 0; i < func->index_tabv; i++) {
             printf("Nom : %s, Type : %d, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
         }
@@ -321,9 +349,10 @@ void display_symb_tab(void* tab, TableType type) {
         for(int i = 0; i < index_tab; i++){
             printf("Nom : %s, Type : %d\n", funcs[i].name, funcs->returnType);
             if(funcs[i].local_tab){
-                //printf("Nom : %s", funcs[i].name);
-                display_local_tab(funcs[i].local_tab); 
                 display_params(&funcs[i]);
+
+                display_local_tab(funcs[i].local_tab); 
+
             }  
         }
 
@@ -331,7 +360,50 @@ void display_symb_tab(void* tab, TableType type) {
 }
 
 
+void free_local_table(Symbol_table_locale* tab) {
+    if (tab) {
+        if (tab->vars) {
+            free(tab->vars);
+        }
+        free(tab);
+    }
+}
 
+void free_global_table(Symbol_table_global* tab) {
+    if (tab) {
+        if (tab->vars) {
+            free(tab->vars);
+        }
+        free(tab);
+    }
+}
 
+void free_function_table(Symbol_table_function* func) {
+    if (func) {
+        if (func->vars) {
+            free(func->vars);
+        }
+        if (func->local_tab) {
+            free_local_table(func->local_tab);
+        }
+    }
+}
+
+void free_functions_table(Symbol_table_functions* tab) {
+    if (tab) {
+        if (tab->tab_funcs) {
+            for (int i = 0; i < tab->index_tab; i++) {
+                free_function_table(&tab->tab_funcs[i]);
+            }
+            free(tab->tab_funcs);
+        }
+        free(tab);
+    }
+}
+
+void free_all_tables(Symbol_table_global* global_tab, Symbol_table_functions* funcs_tab) {
+    free_global_table(global_tab);
+    free_functions_table(funcs_tab);
+}
 
 

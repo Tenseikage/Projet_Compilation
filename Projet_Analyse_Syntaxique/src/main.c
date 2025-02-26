@@ -5,35 +5,52 @@
 #include "tree.h"
 #include "parser.tab.h"
 #include "symb_tab.h"
+
 extern Node* root; 
 
-
-int main(int argc,char *argv[]) {
-    // Afficher l'arbre fait planter le bac à sable
-	//Symbol_table_locale* local_tab = init_table(LOCAL);
+int main(int argc, char *argv[]) {
     Symbol_table_global* global_tab = init_table(GLOBAL);
     Symbol_table_functions* tab_funcs = init_symb_tab_func(); // Table symboles fonctions et variables locales
-    if (args_choice(argc, argv) == 1){
-        if(!yyparse()){
+
+    if (args_choice(argc, argv) == 1) {
+        if (!yyparse()) {
             int index = 0;
             fprintf(stdout, "Affichage de l'arbre : \n");
             printTree(root);
             printf("\n");
-            fill_symb_tab_func(tab_funcs,FUNCTION,root,&index);
-            fill_symb_tab(global_tab,GLOBAL,root);
-            printf("Variables Globales :  \n");
-            display_symb_tab(global_tab,GLOBAL);
-            printf("Fonctions et variables locales \n");
-            display_symb_tab(tab_funcs,FUNCTION);
-            deleteTree(root);
-            return 0;
+            fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
+            fill_symb_tab(global_tab, GLOBAL, root);
 
+            // Stocker les résultats des fonctions de vérification
+            int param_error = check_param_local_vars(tab_funcs);
+            int name_error = check_name_func_global(tab_funcs, global_tab);
+
+            // Vérifiez si l'une des deux fonctions retourne 1 (indiquant une erreur)
+            if (param_error || name_error) {
+                if (param_error) {
+                    fprintf(stderr, "Erreur : Conflit entre les paramètres et les variables locales.\n");
+                }
+                if (name_error) {
+                    fprintf(stderr, "Erreur : Conflit entre les noms de fonctions et les variables globales.\n");
+                }
+            } else {
+                printf("Variables Globales :  \n");
+                display_symb_tab(global_tab, GLOBAL);
+                printf("Fonctions et variables locales \n");
+                display_symb_tab(tab_funcs, FUNCTION);
+            }
+
+            deleteTree(root);
+            free_all_tables(global_tab, tab_funcs);
+            return 0;
         } else {
             fprintf(stderr, "Affichage de l'arbre impossible ! \n");
+            free_all_tables(global_tab, tab_funcs);
             return 1;
         }
     } else {
-        return yyparse();
+        int parse_result = yyparse();
+        free_all_tables(global_tab, tab_funcs);
+        return parse_result;
     }
-	//display_symb_tab(tab);
 }
