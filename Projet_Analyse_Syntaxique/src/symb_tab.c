@@ -117,7 +117,7 @@ void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
 
 
 
-void fill_vars(void* tab, TableType types, Node* root) {
+void fill_vars_locale(void* tab, TableType types, Node* root) {
     if (!root) return;
     if (root->label == Static){
         if(root->nextSibling->label == type){
@@ -135,18 +135,33 @@ void fill_vars(void* tab, TableType types, Node* root) {
         }
         
     }
-    fill_vars(tab, types, root->nextSibling);
+    fill_vars_locale(tab, types, root->nextSibling);
+}
+
+void fill_vars_global(void* tab,TableType types, Node* root){
+    if (!root) return;
+    if(root->label == type){
+        Node* branch = root->nextSibling;
+        if (branch->label == ident){
+            add_var(tab,types,branch->word,branch->label,branch->lineno,0);
+        }
+
+       
+    }
+    fill_vars_global(tab,types,root->nextSibling);
+
 }
 
 void fill_symb_tab(void* tab, TableType type, Node* root) {
     if (!root) return;
     if (root->label == DeclVarsLocale && type == LOCAL) {
         // Replissage tableau variables locales fonction
-        fill_vars(tab, type, root->firstChild);
+        fill_vars_locale(tab, type, root->firstChild);
     }
 	if (root->label == DeclVars && type == GLOBAL){
-        // Replissage tableau varibles locales
-		fill_vars(tab, type, root->firstChild);
+        //printf("oui \n");
+        // Replissage tableau globales
+		fill_vars_global(tab, type, root->firstChild);
 
 	}
     fill_symb_tab(tab, type, root->firstChild);
@@ -163,7 +178,7 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
     if (root->label == DeclVarsLocale) {
         //Replit la table de variables locales des fonctions
         if (*index > 0 && *index <= tab->index_tab) {
-            fill_vars(tab->tab_funcs[*index - 1].local_tab, LOCAL, root->firstChild);
+            fill_vars_locale(tab->tab_funcs[*index - 1].local_tab, LOCAL, root->firstChild);
         } else {
             fprintf(stderr, "Erreur : index hors limites\n");
             return;
