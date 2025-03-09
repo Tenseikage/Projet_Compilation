@@ -61,7 +61,7 @@ DeclVars:
        // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
        nodeType1->word = strdup($2);
-       addChild($$, nodeType1); addChild($$, $3); }
+       addChild($$, nodeType1); addChild(nodeType1, $3); }
     |  DeclVars STATIC TYPE Declarateurs ';' {yyerror("Variable globale statique"); return 1;}
     |  { $$ = makeNode(DeclVars); }
     ;
@@ -69,7 +69,7 @@ DeclVars:
 Declarateurs:
        Declarateurs ',' IDENT { $$ = $1;
        Node* nodeIdent = makeNode(ident);
-       nodeIdent->word = strdup($3);
+       nodeIdent->word = strdup($3); // Autre variable liée à la première
        addSibling($$, nodeIdent); }
     |  IDENT  { $$ = makeNode(ident);
        $$->word = strdup($1); }

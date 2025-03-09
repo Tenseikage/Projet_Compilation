@@ -73,7 +73,7 @@ void add_var(void* tab, TableType type, const char* name, label_t label, int lin
         }
         if (is_var_in_table(tab, type, name)) {
             fprintf(stderr, "Erreur sémantique : le nom existe déjà\n");
-            return;
+            exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
         (*vars)[*index_tab].type = label;
@@ -141,12 +141,17 @@ void fill_vars_locale(void* tab, TableType types, Node* root) {
 void fill_vars_global(void* tab,TableType types, Node* root){
     if (!root) return;
     if(root->label == type){
-        Node* branch = root->nextSibling;
+        Node* branch = root->firstChild;
         if (branch->label == ident){
             add_var(tab,types,branch->word,branch->label,branch->lineno,0);
+            if(branch->nextSibling){
+               add_var(tab,types,branch->word,branch->label,branch->lineno,0);  
+            }
         }
 
        
+    } else {
+        printf("nigga formnfr\n");
     }
     fill_vars_global(tab,types,root->nextSibling);
 
@@ -341,13 +346,15 @@ void display_symb_tab(void* tab, TableType type) {
         for (int i = 0; i < index_tab; i++) {
             printf("Nom : %s, Type : %d\n", vars[i].name, vars[i].type);
         }
+        printf("\n");
 
     } else {
         Symbol_table_functions* sym_tab = (Symbol_table_functions*)tab;
         index_tab = sym_tab->index_tab;
         funcs = sym_tab->tab_funcs;
         for(int i = 0; i < index_tab; i++){
-            printf("Nom : %s, Type : %d\n", funcs[i].name, funcs->returnType);
+            printf("\n");
+            printf("Nom de fonction : %s, Type : %d\n", funcs[i].name, funcs->returnType);
             if(funcs[i].local_tab){
                 display_params(&funcs[i]);
 
