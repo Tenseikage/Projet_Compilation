@@ -121,16 +121,20 @@ void fill_vars_locale(void* tab, TableType types, Node* root) {
     if (!root) return;
     if (root->label == Static){
         if(root->nextSibling->label == type){
-           Node* branch = root->nextSibling->nextSibling;
+           Node* branch = root->nextSibling->firstChild;
             if (branch->label == ident){
                 add_var(tab,types,branch->word,branch->label,branch->lineno,1);
             }
         }   
     }if (root->label == NonStatic){
         if(root->nextSibling->label == type){
-           Node* branch = root->nextSibling->nextSibling;
+           Node* branch = root->nextSibling->firstChild;
             if (branch->label == ident){
                 add_var(tab,types,branch->word,branch->label,branch->lineno,0);
+                if(branch->nextSibling){
+                    branch = branch->nextSibling;
+                    add_var(tab,types,branch->word,branch->label,branch->lineno,0);  
+                 }
             }
         }
         
@@ -145,14 +149,13 @@ void fill_vars_global(void* tab,TableType types, Node* root){
         if (branch->label == ident){
             add_var(tab,types,branch->word,branch->label,branch->lineno,0);
             if(branch->nextSibling){
+               branch = branch->nextSibling;
                add_var(tab,types,branch->word,branch->label,branch->lineno,0);  
             }
         }
 
        
-    } else {
-        printf("nigga formnfr\n");
-    }
+    } 
     fill_vars_global(tab,types,root->nextSibling);
 
 }
@@ -327,7 +330,7 @@ void display_params(Symbol_table_function* func){
     if(vars){
         printf("Paramètres de fonction  :\n");
         for (int i = 0; i < func->index_tabv; i++) {
-            printf("Nom : %s, Type : %d, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
+            printf("Nom : %s, Type : %d\n", vars[i].name, vars[i].type);
         }
     }
 

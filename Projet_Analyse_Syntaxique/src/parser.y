@@ -150,7 +150,7 @@ DeclVarsLocale:
         nodeType->word = strdup($3);
         addSibling(elem,nodeType);
         addChild($$,elem);
-        addChild($$,$4);}
+        addChild(nodeType,$4);}
     |   DeclVarsLocale TYPE Declarateurs ';' { 
         $$ = $1;
         Node* elem = makeNode(NonStatic); 
@@ -158,7 +158,7 @@ DeclVarsLocale:
         nodeType->word = strdup($2);
         addSibling(elem,nodeType);
         addChild($$, elem); 
-        addChild($$, $3); }
+        addChild(nodeType, $3); }
     |   {$$ = makeNode(DeclVarsLocale);}
 ;
 

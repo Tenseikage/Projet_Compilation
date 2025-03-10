@@ -1,4 +1,4 @@
-int a;
+int a,c;
 char booo;
 int cumpo;
 
@@ -17,8 +17,8 @@ int sub(int a, int b){
 int main(void){
 	static int d;
 	static char c;
-	static char n;
-	int f,m;
+	static char n,u;
+	int f,g;
 	a = 1;
 	b = 'c';
 	c = 2;
