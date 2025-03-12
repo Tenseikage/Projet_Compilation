@@ -2,12 +2,17 @@
 #define __SYMB_TAB_H__
 #define IDENT_LENGTH 128
 
+
+
+
 // Donnée d'une variable
 typedef struct datas {
 	char name[IDENT_LENGTH]; // Nom de la variable
-	int type;
+	char* type;
 	int isStatic;
 } Data;
+
+
 
 // Table de symboles
 
@@ -27,7 +32,7 @@ typedef struct symb_table_global {
 // Table de symboles pour les fonctions
 typedef struct symb_table_func {
 	char name[IDENT_LENGTH];
-	int returnType; //Type de retour de la fonction
+	char* returnType; //Type de retour de la fonction
 	Data* vars; // Paramètres de fonctions
 	int tabv_size;
 	int index_tabv;

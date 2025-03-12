@@ -1,8 +1,8 @@
 /* tree.h */
 
+
+
 typedef enum {
-  E,
-  T,
   divstar,
   Prog,
   DeclVars,
@@ -36,7 +36,6 @@ typedef enum {
   Static,
   Not,
   NonStatic
-  /* Ajoutez d'autres labels si nécessaire */
 } label_t;
 
 typedef struct Node {

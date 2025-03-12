@@ -1,0 +1,19 @@
+global _start
+section .text
+extern show_registers
+_start:
+  push 25
+  push 3
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
+  push 10
+  pop rcx
+  pop rax
+  sub rax, rcx
+  call show_registers
+  push rax
+  pop rdi
+  mov rax, 60
+  syscall

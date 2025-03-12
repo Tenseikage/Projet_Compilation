@@ -1,19 +1,5 @@
 
 
-int add(int a, int b){
-	return a + b;
-}
 int main(void){
-	int a;
-	int b;
-	char c;
-	a = 1;
-	b = 2;
-	c ='c';
-	if ('a'){
-		return 1;
-	} else if (a){
-		return 2;
-	}
-	return 0;
+	return 25 + 32 - 10;
 }

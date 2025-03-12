@@ -8,8 +8,6 @@ extern int lineno;       /* from lexer */
 /// Fonction qui alloue de manière dynmique la table de symboles
 
 static const char *StringFromLabel[] = {
-    "Expression",
-    "T",
     "Divstar",
     "Prog",
     "DeclVars",
@@ -18,8 +16,8 @@ static const char *StringFromLabel[] = {
     "DeclFoncts",
     "DeclFonct",
     "EnTeteFonct",
-    "Params",
-    "Paramètres",
+    "Parametres",
+    "ListTypeVar",
     "Corps",
     "SuiteInstr",
     "Instr",
@@ -42,10 +40,9 @@ static const char *StringFromLabel[] = {
     "Character",
     "Static",
     "Not",
-    "NonStatic"
-    
-    
+    "NonStatic"  
 };
+
 
 /*int countLeaves(Node *node) {
     if (node == NULL) {

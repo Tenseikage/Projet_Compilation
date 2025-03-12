@@ -9,6 +9,7 @@
 #define NB_VARS 2
 #define RESIZE_FACTOR 2
 
+
 int is_var_in_table(void* tab, TableType type, const char* name) {
     int index_tab;
 	Data* vars;
@@ -29,7 +30,7 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
     return 0; 
 }
 
-void add_var(void* tab, TableType type, const char* name, label_t label, int lineno,int state) {
+void add_var(void* tab, TableType type, const char* name, char* word, int lineno,int state) {
     int* table_size;
     int* index_tab;
     Data** vars;
@@ -51,7 +52,6 @@ void add_var(void* tab, TableType type, const char* name, label_t label, int lin
         index_tab = &sym_tab->index_tab;
         funcs = &sym_tab->tab_funcs;
     } else {
-        //printf("poass \n");
         Symbol_table_function* func = (Symbol_table_function*)tab;
         table_size = &func->tabv_size;
         index_tab = &func->index_tabv;
@@ -76,7 +76,7 @@ void add_var(void* tab, TableType type, const char* name, label_t label, int lin
             exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
-        (*vars)[*index_tab].type = label;
+        (*vars)[*index_tab].type = word;
         (*vars)[*index_tab].isStatic = state;
         (*index_tab)++;
     } else if(type == FUNCTION) {
@@ -93,7 +93,7 @@ void add_var(void* tab, TableType type, const char* name, label_t label, int lin
             return;
         }
         strcpy((*funcs)[*index_tab].name, name);
-        (*funcs)[*index_tab].returnType = label;
+        (*funcs)[*index_tab].returnType = word;
         (*funcs)[*index_tab].local_tab = init_table(LOCAL);
         (*funcs)[*index_tab].vars = malloc(NB_VARS* sizeof(Data));
         (*index_tab)++;
@@ -107,7 +107,7 @@ void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
     if(root->label == type){
         Node* branch = root->nextSibling;
         if (branch->label == ident){
-            add_var(tab,types,branch->word,branch->label,branch->lineno,0);
+            add_var(tab,types,branch->word,root->word,branch->lineno,0);
         }
         
     }  
@@ -123,17 +123,17 @@ void fill_vars_locale(void* tab, TableType types, Node* root) {
         if(root->nextSibling->label == type){
            Node* branch = root->nextSibling->firstChild;
             if (branch->label == ident){
-                add_var(tab,types,branch->word,branch->label,branch->lineno,1);
+                add_var(tab,types,branch->word,root->nextSibling->word,branch->lineno,1);
             }
         }   
     }if (root->label == NonStatic){
         if(root->nextSibling->label == type){
            Node* branch = root->nextSibling->firstChild;
             if (branch->label == ident){
-                add_var(tab,types,branch->word,branch->label,branch->lineno,0);
+                add_var(tab,types,branch->word,root->nextSibling->word,branch->lineno,0);
                 if(branch->nextSibling){
                     branch = branch->nextSibling;
-                    add_var(tab,types,branch->word,branch->label,branch->lineno,0);  
+                    add_var(tab,types,branch->word,root->nextSibling->word,branch->lineno,0);  
                  }
             }
         }
@@ -147,10 +147,10 @@ void fill_vars_global(void* tab,TableType types, Node* root){
     if(root->label == type){
         Node* branch = root->firstChild;
         if (branch->label == ident){
-            add_var(tab,types,branch->word,branch->label,branch->lineno,0);
+            add_var(tab,types,branch->word,root->word,branch->lineno,0);
             if(branch->nextSibling){
                branch = branch->nextSibling;
-               add_var(tab,types,branch->word,branch->label,branch->lineno,0);  
+               add_var(tab,types,branch->word,root->word,branch->lineno,0);  
             }
         }
 
@@ -179,7 +179,7 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
     if(!root) return;
     if(root->label == EnTeteFonct){
         //Remplit avec les noms de fonctions
-        add_var(tab, types, root->firstChild->nextSibling->word, root->label, root->lineno,0);
+        add_var(tab, types, root->firstChild->nextSibling->word, root->firstChild->word, root->lineno,0);
         (*index)++;
     }
     if (root->label == DeclVarsLocale) {
@@ -319,18 +319,21 @@ void display_local_tab(Symbol_table_locale* tab) {
     }
 
     Data* vars = tab->vars;
-    printf("Variables locales de la fonction : \n");
-    for (int i = 0; i < tab->index_tab; i++) {
-        printf("Nom : %s, Type : %d, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
-    }
+    
+   if(tab->index_tab > 0){
+        printf("===Variables locales de la fonction=== \n");
+        for (int i = 0; i < tab->index_tab; i++) {
+            printf("Identifiant : %s, Type : %s, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
+        }
+   }
 }
 
 void display_params(Symbol_table_function* func){
     Data* vars = func->vars;
-    if(vars){
-        printf("Paramètres de fonction  :\n");
+    if(func->index_tabv > 0){
+        printf("==Paramètres de fonction==\n");
         for (int i = 0; i < func->index_tabv; i++) {
-            printf("Nom : %s, Type : %d\n", vars[i].name, vars[i].type);
+            printf("Identifiant : %s, Type : %s\n", vars[i].name, vars[i].type);
         }
     }
 
@@ -346,10 +349,13 @@ void display_symb_tab(void* tab, TableType type) {
         Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
         index_tab = sym_tab->index_tab;
         vars = sym_tab->vars;
-        for (int i = 0; i < index_tab; i++) {
-            printf("Nom : %s, Type : %d\n", vars[i].name, vars[i].type);
+        if(index_tab > 0){
+            printf("===Variables Globales===\n");
+            for (int i = 0; i < index_tab; i++) {
+                printf("Nom : %s, Type : %s\n", vars[i].name, vars[i].type);
+            }
+            printf("\n");
         }
-        printf("\n");
 
     } else {
         Symbol_table_functions* sym_tab = (Symbol_table_functions*)tab;
@@ -357,7 +363,7 @@ void display_symb_tab(void* tab, TableType type) {
         funcs = sym_tab->tab_funcs;
         for(int i = 0; i < index_tab; i++){
             printf("\n");
-            printf("Nom de fonction : %s, Type : %d\n", funcs[i].name, funcs->returnType);
+            printf("Nom de fonction : %s, Type : %s\n", funcs[i].name, funcs->returnType);
             if(funcs[i].local_tab){
                 display_params(&funcs[i]);
 
