@@ -16,7 +16,7 @@ OUTPUT := tpcas
 all: $(BIN) $(OBJ) $(BIN)/$(OUTPUT)
 
 # Cible pour l'exécutable final
-$(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o $(OBJ)/$(ARGS).o $(OBJ)/main.o $(OBJ)/symb_tab.o
+$(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o $(OBJ)/$(ARGS).o $(OBJ)/main.o $(OBJ)/symb_tab.o $(OBJ)/write_asmfile.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Génération des fichiers Bison
@@ -40,13 +40,18 @@ $(OBJ)/$(LEX).yy.o: $(SRC)/$(LEX).yy.c $(SRC)/$(TREE).h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation du fichier main.c
-$(OBJ)/main.o: $(SRC)/main.c $(SRC)/$(ARGS).h $(SRC)/$(TREE).h $(SRC)/symb_tab.h
+$(OBJ)/main.o: $(SRC)/main.c $(SRC)/$(ARGS).h $(SRC)/$(TREE).h $(SRC)/symb_tab.h $(SRC)/write_asmfile.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation table des symboles
 $(OBJ)/symb_tab.o: $(SRC)/symb_tab.c $(SRC)/symb_tab.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+# Compilation création fichier asm opérations
+$(OBJ)/write_asmfile.o: $(SRC)/write_asmfile.c $(SRC)/write_asmfile.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+	
 # Génération du fichier Flex
 $(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l $(SRC)/$(BISON).tab.h
 	flex -o $@ $<
