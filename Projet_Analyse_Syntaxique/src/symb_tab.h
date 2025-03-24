@@ -8,8 +8,9 @@
 // Donnée d'une variable
 typedef struct datas {
 	char name[IDENT_LENGTH]; // Nom de la variable
-	char* type;
-	int isStatic;
+	char* type; // type de la variable
+	int isStatic; // Vérifie si la variable est statique
+	int lineno; // Ligne où est positionnée la variable
 } Data;
 
 
@@ -24,9 +25,9 @@ typedef struct symb_table {
 
 // Table valeurs globales
 typedef struct symb_table_global {
-	Data* vars;
-	int table_size;
-	int index_tab;
+	Data* vars; // Tableau de variables globales
+	int table_size; // Taille du tableau
+	int index_tab; // Position dans le tableau
 } Symbol_table_global;
 
 // Table de symboles pour les fonctions
@@ -34,15 +35,16 @@ typedef struct symb_table_func {
 	char name[IDENT_LENGTH];
 	char* returnType; //Type de retour de la fonction
 	Data* vars; // Paramètres de fonctions
-	int tabv_size;
-	int index_tabv;
+	int tabv_size; // Taille du tableau local
+	int index_tabv; // Position dans le tableau local
+	int lineno; // Ligne où se trouve la fonction
 	Symbol_table_locale * local_tab; // Table de symboles variables locales
 } Symbol_table_function;
 
 typedef struct symb_tab_funcs {
 	Symbol_table_function* tab_funcs; // Contient les tables de symbole propre aux fonctions
-	int table_size;
-	int index_tab;
+	int table_size; // Taille de la table de fonctions
+	int index_tab; // Index dans le tableau
 } Symbol_table_functions;
 
 typedef enum {

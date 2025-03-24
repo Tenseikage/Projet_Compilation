@@ -24,7 +24,7 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
     } 
 	for (int i = 0; i < index_tab; i++) {
         if (strcmp(vars[i].name, name) == 0) {
-            return 1; 
+            return vars[i].lineno; 
         }
     }
     return 0; 
@@ -34,6 +34,7 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
     int* table_size;
     int* index_tab;
     Data** vars;
+    int lineno_found;
     Symbol_table_function ** funcs = NULL;
 
     if (type == LOCAL) {
@@ -56,9 +57,6 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
         table_size = &func->tabv_size;
         index_tab = &func->index_tabv;
         vars = &func->vars;
-        if(!*vars){
-            printf("NULLL \n");
-        }
     }
 
 
@@ -71,13 +69,14 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
                 exit(EXIT_FAILURE);
             }
         }
-        if (is_var_in_table(tab, type, name)) {
-            fprintf(stderr, "Erreur sémantique : le nom existe déjà\n");
+        if ((lineno_found = is_var_in_table(tab, type, name))) {
+            fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: le nom existe déjà en ligne : %d\n", lineno_found);
             exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
         (*vars)[*index_tab].type = word;
         (*vars)[*index_tab].isStatic = state;
+        (*vars)[*index_tab].lineno = lineno;
         (*index_tab)++;
     } else if(type == FUNCTION) {
         if(*index_tab >= *table_size){
@@ -88,14 +87,15 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
                 exit(EXIT_FAILURE);
             }
         }
-        if (is_var_in_table(tab, type, name)) {
-            fprintf(stderr, "Erreur sémantique : le nom existe déjà\n");
+        if ((lineno_found = is_var_in_table(tab, type, name))) {
+            fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: le nom existe déjà en ligne : %d\n", lineno_found);
             return;
         }
         strcpy((*funcs)[*index_tab].name, name);
         (*funcs)[*index_tab].returnType = word;
         (*funcs)[*index_tab].local_tab = init_table(LOCAL);
         (*funcs)[*index_tab].vars = malloc(NB_VARS* sizeof(Data));
+        (*funcs)[*index_tab].lineno = lineno;
         (*index_tab)++;
 
 
@@ -204,9 +204,10 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
 }
 
 int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
+    int line_return;
     for(int i = 0; i < tab->index_tab; i++){
-        if(is_var_in_table(global_tab,GLOBAL,tab->tab_funcs[i].name)){
-            fprintf(stderr,"Erreur de sémantique : Même définition variable globale / Nom de fonction\n");
+        if((line_return = is_var_in_table(global_tab,GLOBAL,tab->tab_funcs[i].name))){
+            fprintf(stderr,"\033[1;31mErreur de sémantique\033[0m: Même définition variable globale ligne : %d / Nom de fonction ligne : %d\n",line_return,tab->tab_funcs[i].lineno);
             return 1;
         }
     }
@@ -219,7 +220,7 @@ int check_param_local_vars(Symbol_table_functions* tab){
         for(int k = 0;k < tab->tab_funcs[j].index_tabv;k++){
             //printf("Nom de var %s \n", tab->tab_funcs[j].vars[k].name);
             if(is_var_in_table(tab->tab_funcs[j].local_tab,LOCAL, tab->tab_funcs[j].vars[k].name)){
-                fprintf(stderr,"Erreur de sémantique : Même définition variable locale / Paramètre de fonction\n");
+                fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: Même définition variable locale / Paramètre de fonction. Nom : %s, Ligne : %d\n", tab->tab_funcs[j].vars[k].name, tab->tab_funcs[j].vars[k].lineno);
                 return 1;
             }
         }

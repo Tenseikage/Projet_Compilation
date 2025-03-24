@@ -7,6 +7,7 @@ int cumpo;
 /*Voici une 
 fonction d'ajout*/
 int add(int a, int b){
+	int a;
 	return a + b;
 }
 

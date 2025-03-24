@@ -28,10 +28,10 @@ int main(int argc, char *argv[]) {
             // Vérifiez si l'une des deux fonctions retourne 1 (indiquant une erreur)
             if (param_error || name_error) {
                 if (param_error) {
-                    fprintf(stderr, "Erreur : Conflit entre les paramètres et les variables locales.\n");
+                    fprintf(stderr, "\033[1;31mErreur\033[0m: Conflit entre les paramètres et les variables locales.\n");
                 }
                 if (name_error) {
-                    fprintf(stderr, "Erreur : Conflit entre les noms de fonctions et les variables globales.\n");
+                    fprintf(stderr, "\033[1;31mErreur\033[0m: Conflit entre les noms de fonctions et les variables globales.\n");
                 }
             } else {
                 printf("============================================\n");
@@ -47,12 +47,12 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Erreur à l'ouverture du fichier\n");
                 return 1;
             }
-            if (!parcours_arbre_main(root)) {
+            /*if (!parcours_arbre_main(root)) {
                 write_asm_file(file);
             }
             parcours_operators(root,file);
             write_end_asm_file(file);
-            fclose(file);
+            fclose(file);*/
             deleteTree(root);
             free_all_tables(global_tab, tab_funcs);
             return 0;
