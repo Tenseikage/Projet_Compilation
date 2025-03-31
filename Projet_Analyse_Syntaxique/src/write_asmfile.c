@@ -81,3 +81,30 @@ int parcours_arbre_main(Node* root) {
     if (parcours_arbre_main(root->nextSibling) == 0) return 0;
     return 1;
 }
+
+/*void parcours_op(Node* root){
+    if(root == NULL) return;
+
+    if(root->label == ident){
+        //printf("Présence d'un nombre %d\n", root->value);
+        printf("ident yaaah \n");
+        return;
+        
+    }
+    if(root->label == Addsub || root->label == divstar){
+        //printf("Opérateur %s existant\n", root->word);
+        parcours_op(root->firstChild); // Fils
+        parcours_op(root->firstChild->nextSibling);
+        //fprintf(file,"  pop rcx\n");
+        //fprintf(file, "  pop rax\n");
+        //char* operator = asm_operator(root->word);
+        //fprintf(file,"  %s rax, rcx\n",operator);
+        //fprintf(file, "  push rax\n");
+        return;
+
+    } else {
+        parcours_op(root->firstChild);
+        parcours_op(root->nextSibling);
+    }
+    
+}*/

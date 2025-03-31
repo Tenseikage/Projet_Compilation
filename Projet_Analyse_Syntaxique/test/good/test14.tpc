@@ -1,22 +1,25 @@
 int a,c;
 char booo;
 int cumpo;
+int b;
 
 
 
 /*Voici une 
 fonction d'ajout*/
 int add(int a, int b){
-	int a;
 	return a + b;
 }
 
 int sub(int a, int b){
+	//int d;
+	a = 2 + 3 ;
+	b = 5 - 2;
 	return a - b;
 }
 
 int main(void){
-	static int d;
+	//static int d;
 	static char c;
 	static char n,u;
 	int f,g;
@@ -30,3 +33,7 @@ int main(void){
 	return 0;
 
 }
+
+
+// 1 Conversion assembleur
+// 2 typage 
