@@ -318,7 +318,7 @@ const char* compute_expression_type(Node* root, Symbol_table_global* global_tab,
             }
         }
 
-        fprintf(stderr, "\033[1;31mErreur\033[0m: Variable ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);
+        //fprintf(stderr, "\033[1;31mErreur\033[0m: Variable ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);
         return NULL;
     }
 
