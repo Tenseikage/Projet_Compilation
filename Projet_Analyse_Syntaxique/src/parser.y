@@ -201,7 +201,8 @@ Instr:
        Node* nodeIdent = makeNode(ident);
        nodeIdent->word = strdup($1);
        $$ = nodeIdent;
-       addChild($$, $3); }
+       addChild($$, $3);
+    }
     
 
     |  RETURN Exp ';' {  $$ = makeNode(Return); addChild($$, $2); }
@@ -297,11 +298,13 @@ F:
     |  IDENT { $$ = makeNode(ident);
                $$->word = strdup($1); }
     |  IDENT '(' Arguments ')' {$$ = makeNode(ident);
-       $$->word = strdup($1);}
+       $$->word = strdup($1);
+       //Node nodeArg = makeNode(Arguments);
+       addChild($$,$3);}
     ;
 
 Arguments:
-    ListExp { $$ = $1; }
+    ListExp { $$ = makeNode(Arguments); addChild($$,$1);}
     | { $$ = makeNode(Void); }
     ;
 

@@ -233,13 +233,22 @@ int check_param_local_vars(Symbol_table_functions* tab){
     return 0;
 }
 
+void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname){    
+    if (!root) return;
+    if(root->label == ident){
+        Node* branch = NULL;
+        // A finir 
+    }
 
 
-void check_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
+}
+
+void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
     if (!root) return;
 
     if (root->label == ident) {
         int found = 0;
+        //printf("Mot trouvé %s \n", root->word);
         if (is_var_in_table(global_tab, GLOBAL, root->word)) {
             found = 1;
         }
@@ -256,16 +265,18 @@ void check_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_funct
             }
         }
         if (!found) {
+            //printf("Mot écrit %s \n", root->word);
             fprintf(stderr, "\033[1;31mErreur\033[0m: Variable ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);
             return;
             
             
         }
+        //return;
     }
 
     // Parcourir les enfants et les frères
-    check_instr(root->firstChild, global_tab, tab_funks, funcname);
-    check_instr(root->nextSibling, global_tab, tab_funks, funcname);
+    //check_instr(root->firstChild, global_tab, tab_funks, funcname);
+    check_left_inst(root->nextSibling, global_tab, tab_funks, funcname);
 }
 
 
@@ -355,7 +366,7 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
         if (expr_type) {
             printf("Type de l'expression (ligne %d) : %s\n", root->lineno, expr_type);
         }
-        check_instr(root->firstChild,global_tab,tab_funcs,funcname);
+        check_left_inst(root->firstChild,global_tab,tab_funcs,funcname);
         
     }
 
