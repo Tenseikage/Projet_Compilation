@@ -16,7 +16,7 @@ OUTPUT := tpcas
 all: $(BIN) $(OBJ) $(BIN)/$(OUTPUT)
 
 # Cible pour l'exécutable final
-$(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o $(OBJ)/$(ARGS).o $(OBJ)/main.o $(OBJ)/symb_tab.o $(OBJ)/write_asmfile.o
+$(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o $(OBJ)/$(ARGS).o $(OBJ)/main.o $(OBJ)/symb_tab.o $(OBJ)/semantics.o #$(OBJ)/write_asmfile.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Génération des fichiers Bison
@@ -24,36 +24,39 @@ $(SRC)/$(BISON).tab.c $(SRC)/$(BISON).tab.h: $(SRC)/$(BISON).y
 	bison -d -o $(SRC)/$(BISON).tab.c $<
 
 # Compilation du fichier tree
-$(OBJ)/$(TREE).o: $(SRC)/$(TREE).c $(SRC)/$(TREE).h
+$(OBJ)/$(TREE).o: $(SRC)/$(TREE).c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation du fichier args
-$(OBJ)/$(ARGS).o: $(SRC)/$(ARGS).c $(SRC)/$(ARGS).h
+$(OBJ)/$(ARGS).o: $(SRC)/$(ARGS).c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation des fichiers générés par Bison
-$(OBJ)/$(BISON).tab.o: $(SRC)/$(BISON).tab.c $(SRC)/$(BISON).tab.h
+$(OBJ)/$(BISON).tab.o: $(SRC)/$(BISON).tab.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation du fichier Flex
-$(OBJ)/$(LEX).yy.o: $(SRC)/$(LEX).yy.c $(SRC)/$(TREE).h
+$(OBJ)/$(LEX).yy.o: $(SRC)/$(LEX).yy.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation du fichier main.c
-$(OBJ)/main.o: $(SRC)/main.c $(SRC)/$(ARGS).h $(SRC)/$(TREE).h $(SRC)/symb_tab.h $(SRC)/write_asmfile.h
+$(OBJ)/main.o: $(SRC)/main.c #$(SRC)/write_asmfile.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation table des symboles
-$(OBJ)/symb_tab.o: $(SRC)/symb_tab.c $(SRC)/symb_tab.h
+$(OBJ)/symb_tab.o: $(SRC)/symb_tab.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJ)/semantics.o : $(SRC)/semantics.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilation création fichier asm opérations
-$(OBJ)/write_asmfile.o: $(SRC)/write_asmfile.c $(SRC)/write_asmfile.h
+$(OBJ)/write_asmfile.o: $(SRC)/write_asmfile.c 
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 	
 # Génération du fichier Flex
-$(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l $(SRC)/$(BISON).tab.h
+$(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l
 	flex -o $@ $<
 
 # Nettoyage des fichiers générés

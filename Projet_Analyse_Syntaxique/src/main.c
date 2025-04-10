@@ -5,6 +5,7 @@
 #include "tree.h"
 #include "parser.tab.h"
 #include "symb_tab.h"
+#include "semantics.h"
 #include "write_asmfile.h"
 
 extern Node* root; 

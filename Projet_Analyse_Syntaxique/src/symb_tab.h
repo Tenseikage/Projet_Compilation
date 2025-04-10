@@ -96,4 +96,9 @@ int check_param_local_vars(Symbol_table_functions* tab);
 
 void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs,char* funcname);
 
+/**
+ * Vérifie qu'une variable est dans la table des symboles
+ */
+int is_var_in_table(void* tab, TableType type, const char* name);
+
 #endif
