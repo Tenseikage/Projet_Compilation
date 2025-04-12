@@ -1,6 +1,14 @@
 #ifndef __SEMANTICS__H_
 #define __SEMANTICS__H_
 
+
+/**Structure récupération partie droite expression  (cas d'opérations qui se suivent) */
+typedef struct list_right{
+	const char** list;
+	int index;
+
+} List_Right;
+
 /**
  * Vérifie que les variables globales et noms de fonction n'ont pas le même nom
  */

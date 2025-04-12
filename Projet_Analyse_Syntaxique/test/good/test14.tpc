@@ -13,7 +13,7 @@ int add(int a, int b){
 	int r;
 	int q;
 	char m;
-	q = babidi(4,5);
+	//q = babidi(4,5);
 	r = 'a';
 	m = 6;
 	return a + b;
@@ -28,14 +28,13 @@ int main(void){
 	//static int d;
 	static char c;
 	static char n,u;
+	char l;
 	int f,g;
 	a = 1;
-	q = 1;
-	bahha(4,3);
-	a = f;
+	l = 3;
 	b = 'c';
-	c = 2;
-	//d = d + 1;
+	c = 2 + 3 + 'c';
+	d = d + 1;
 	dee(4,5);
 	c = 'r';
     n = '\n';
