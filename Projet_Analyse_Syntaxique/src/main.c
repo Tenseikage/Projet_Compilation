@@ -37,7 +37,9 @@ int main(int argc, char *argv[]) {
                     fprintf(stderr, "\033[1;31mErreur\033[0m: Conflit entre les noms de fonctions et les variables globales.\n");
                 }
             } else {
-                printf("============================================\n");
+                // Partie table des symboles
+                printf("========Table des Symboles=====================\n");
+                printf("\n");
                 display_symb_tab(global_tab, GLOBAL);
                 printf("============================================\n");
                 printf("Fonctions et variables locales \n");

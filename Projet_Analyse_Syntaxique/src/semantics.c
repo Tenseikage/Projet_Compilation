@@ -119,7 +119,7 @@ void check_right_instr(Node* root,Symbol_table_functions* tab_funks, char* funcn
             int found = 0;
 
             // Vérifier dans les variables globales
-            printf("Nom var à droite présente %s\n", right->word);
+            //printf("Nom var à droite présente %s\n", right->word);
             Node* branch = right->firstChild;
             if (branch) {
                 if (branch->label == Arguments) {
@@ -167,13 +167,102 @@ void check_right_instr(Node* root,Symbol_table_functions* tab_funks, char* funcn
     }
 }
 
-//semantics.h
+
+const char* get_var_type(void* tab, TableType type, const char* name) {
+    int index_tab;
+    Data* vars;
+
+    if (type == LOCAL) {
+        Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
+        index_tab = sym_tab->index_tab;
+        vars = sym_tab->vars;
+
+    } else if (type == GLOBAL) {
+        Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
+        index_tab = sym_tab->index_tab;
+        vars = sym_tab->vars;
+    } else {
+        return NULL;
+    }
+
+    for (int i = 0; i < index_tab; i++) {
+        if (strcmp(vars[i].name, name) == 0) {
+            return vars[i].type;
+        }
+    }
+    return NULL; // Type non trouvé
+}
+
+
+const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname) {
+    if (!root) return NULL;
+
+
+    if (root->label == ident) {
+        // Vérifier dans les variables globales
+        const char* type = get_var_type(global_tab, GLOBAL, root->word);
+        if (type) return type;
+
+        // Vérifier dans les variables locales et les paramètres
+        for (int i = 0; i < tab_funcs->index_tab; i++) {
+            if (!strcmp(tab_funcs->tab_funcs[i].name, funcname)) {
+                type = get_var_type(tab_funcs->tab_funcs[i].local_tab, LOCAL, root->word);
+                Node* branch = root->firstChild;
+                if (branch){
+                    if (branch->label == Num){
+                        printf("Ceci est un entier \n");
+                    } else if (branch->label == Character){
+                        printf("Ceci est un char \n");  
+                    }
+                }
+                if (type) return type;
+
+                for (int j = 0; j < tab_funcs->tab_funcs[i].index_tabv; j++) {
+                    if (!strcmp(tab_funcs->tab_funcs[i].vars[j].name, root->word)) {
+                        return tab_funcs->tab_funcs[i].vars[j].type;
+                    }
+                }
+            }
+        }
+
+        fprintf(stderr, "\033[1;31mErreur\033[0m: Variable ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);
+        return NULL;
+    }
+
+    if (root->label == Addsub || root->label == divstar) {
+        // Calculer les types des opérandes gauche et droit
+        const char* left_type = calculate_expression_type(root->firstChild, global_tab, tab_funcs, funcname);
+        const char* right_type = calculate_expression_type(root->firstChild->nextSibling, global_tab, tab_funcs, funcname);
+
+        if (!left_type || !right_type) {
+            fprintf(stderr, "\033[1;31mErreur\033[0m: Impossible de déterminer les types des opérandes (ligne %d).\n", root->lineno);
+            return NULL;
+        }
+
+        if (strcmp(left_type, right_type) != 0) {
+            fprintf(stderr, "\033[1;31mErreur\033[0m: Incompatibilité des types dans l'expression (ligne %d).\n", root->lineno);
+            return NULL;
+        }
+
+        return left_type; // Retourner le type résultant
+
+
+    }
+
+    return NULL;
+}
+
+
 void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
     if (!root) return;
 
     if (root->label == ident) {
         int found = 0;
         //printf("Mot trouvé %s \n", root->word);
+        const char* expr_type = calculate_expression_type(root, global_tab, tab_funks, funcname);
+        if (expr_type) {
+            printf("Type de l'expression (ligne %d) : %s\n", root->lineno, expr_type);
+        }
         if (is_var_in_table(global_tab, GLOBAL, root->word)) {
             found = 1;
         }
@@ -191,7 +280,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                     }
                 }
                 if (!found) {
-                    fprintf(stderr, "\033[1;31m Erreur\033[0m: Déclaration implicite de fonction %s  (ligne %d).\n", word_func, root->lineno);
+                    fprintf(stderr, "\033[1;31mErreur\033[0m: Déclaration implicite de fonction %s  (ligne %d).\n", word_func, root->lineno);
                     //return;
                 }  
             } else {
@@ -220,6 +309,9 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
     
 }
 
+
+
+
 void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname) {
     if (!root) return;
 
@@ -229,9 +321,6 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
     }
     // Vérification des identifiants utilisés
     if (root->label ==  Instr) {
-        //printf("Instruction présente : %d \n", root->lineno);
-        //printf("Mot my %s \n", funcname);
-        //const char* expr_type = compute_expression_type(root->firstChild, global_tab, tab_funcs, funcname);
         check_left_instr(root->firstChild,global_tab,tab_funcs,funcname);
         
     }

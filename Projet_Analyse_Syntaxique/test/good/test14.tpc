@@ -10,8 +10,12 @@ int babidi(int a, int b){
 /*Voici une 
 fonction d'ajout*/
 int add(int a, int b){
-	babidi(4,5);
-	//m = 6;
+	int r;
+	int q;
+	char m;
+	q = babidi(4,5);
+	r = 'a';
+	m = 6;
 	return a + b;
 }
 
