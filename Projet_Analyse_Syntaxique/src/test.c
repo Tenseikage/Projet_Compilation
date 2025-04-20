@@ -1,13 +1,12 @@
 
+
+
+char q(void){
+  return 97;
+}
 int main(int argc, char const *argv[])
 {
-	a = b;
-	c = 3;
-	c = 4;
-  b = 2;
-  c = sub(12,5);
-	a = a + add(12,1);
-	prout("eerr");
+	
 	return 0;
 }
 

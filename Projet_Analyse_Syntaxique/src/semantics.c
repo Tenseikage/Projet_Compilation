@@ -213,13 +213,15 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
             printf("Type de la partie gauche (ligne %d) : %s\n", root->lineno, left_type);
         }*/
         if (is_var_in_table(global_tab, GLOBAL, root->word)) {
+            //printf("yyyyyeeaaah \n");
             found = 1;
         }
         Node * branch = root->firstChild;
         if (branch){
             if (branch->label == Arguments) {
                 char* word_func = root->word;
-                int found = 0;
+                //printf("Word func %s\n", word_func);
+                found = 0;
                     //printf("index  %d \n",tab_funks->index_tab);
                 for (int i = 0; i < tab_funks->index_tab; i++) {
                         //printf(" Fonction  %s \n",tab_funks->tab_funcs[i].name);
@@ -229,10 +231,18 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                     }
                 }
                 if (!found) {
+                    //printf("Word func frr \n %s", word_func);
                     fprintf(stderr, "\033[1;31mErreur\033[0m: Déclaration implicite de fonction %s  (ligne %d).\n", word_func, root->lineno);
                     //return;
                 }  
             } else {
+
+                /*for(int i = 0; i < global_tab->index_tab; i++){
+                    //printf("Mot %s \n", root->word);
+                    if(is_var_in_table(global_tab,GLOBAL,root->word)){
+                        found = 1;
+                    }
+                }*/
                 for (int i = 0; i < tab_funks->index_tab; i++) {
                     if (!strcmp(tab_funks->tab_funcs[i].name, funcname)) {
                         if (is_var_in_table(tab_funks->tab_funcs[i].local_tab, LOCAL, root->word)) {
@@ -245,12 +255,12 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                         }
                     }
                 }
+                //printf("Variable found %d : %s \n", found,root->word);
                 if (!found) {
                     //printf("Mot écrit %s \n", root->word);
                     fprintf(stderr, "\033[1;31mErreur\033[0m: Variable ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);  
                     //return;
-                }  
-                 
+                }    
             }
         }if (root->firstChild){
             check_right_instr(root->firstChild,global_tab,tab_funks,funcname,left_type,right_list);
@@ -259,13 +269,29 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
             free(right_list->list);
         }
         free(right_list);
+    } if(root->label == Return){
+        int index_tab = tab_funks->index_tab;
+        Symbol_table_function *funcs = tab_funks->tab_funcs;
+        for(int i = 0; i < index_tab; i++){
+            if (!strcmp(funcs[i].name,funcname)){
+                char* funcsignType = funcs[i].returnType;
+                Node* branch = root->firstChild;
+                if(branch){
+                    if(branch->label == Num){
+                        //char* returnType = "int";
+                        if(!strcmp("char",funcsignType)){
+                            fprintf(stderr, "\033[1;35mWarning\033[0m: Retour implicite de 'int' dans une fonction de retour  'char' (ligne %d).\n", root->lineno); 
+                        }
+                    }    
+                }
+
+            }
+            //printf("Nom de fonction : %s, Type : %s\n", funcs[i].name, funcs->returnType);
+        }
+
     }
-    check_left_instr(root->nextSibling, global_tab, tab_funks, funcname);
-
-    
+    check_left_instr(root->nextSibling, global_tab, tab_funks, funcname);    
 }
-
-
 
 
 void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname) {

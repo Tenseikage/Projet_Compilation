@@ -24,6 +24,7 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
     } 
 	for (int i = 0; i < index_tab; i++) {
         if (strcmp(vars[i].name, name) == 0) {
+            //printf("oui\n");
             return vars[i].lineno; 
         }
     }
@@ -35,6 +36,7 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
     int* index_tab;
     Data** vars;
     int lineno_found;
+
     Symbol_table_function ** funcs = NULL;
 
     if (type == LOCAL) {
@@ -43,6 +45,7 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
         index_tab = &sym_tab->index_tab;
         vars = &sym_tab->vars;
     } else if (type == GLOBAL) {
+        //printf("bonjour global name %s, word %s\n", name,word);
         Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
         table_size = &sym_tab->table_size;
         index_tab = &sym_tab->index_tab;
@@ -116,67 +119,56 @@ void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
     
 
 
-
-void fill_vars_locale(void* tab, TableType types, Node* root) {
-    if (!root) return;
-    if (root->label == Static){
-        if(root->nextSibling->label == type){
-           Node* branch = root->nextSibling->firstChild;
-            if (branch->label == ident){
-                add_var(tab,types,branch->word,root->nextSibling->word,branch->lineno,1);
-            }
-        }   
-    }if (root->label == NonStatic){
-        if(root->nextSibling->label == type){
-           Node* branch = root->nextSibling->firstChild;
-            if (branch->label == ident){
-                add_var(tab,types,branch->word,root->nextSibling->word,branch->lineno,0);
-                //printf("Nom var %s, Nom func %s \n",branch->word,root->nextSibling->word);
-                if(branch->nextSibling){
-                    branch = branch->nextSibling;
-                    //printf("Nom var %s, Nom func %s \n",branch->word,root->nextSibling->word);
-                    add_var(tab,types,branch->word,root->nextSibling->word,branch->lineno,0);  
-                 }
-            }
-        }
-        
-    }
-    fill_vars_locale(tab, types, root->nextSibling);
-}
-
 void fill_vars_global(void* tab,TableType types, Node* root){
     if (!root) return;
     if(root->label == type){
         Node* branch = root->firstChild;
+        char* typevar = root->word;
         if (branch->label == ident){
-            add_var(tab,types,branch->word,root->word,branch->lineno,0);
-            if(branch->nextSibling){
-               branch = branch->nextSibling;
-               add_var(tab,types,branch->word,root->word,branch->lineno,0);  
-            }
-        }
+            while(branch){
+                //printf("Mot global : %s, type  :%s \n", branch->word, typevar);
+                add_var(tab,types,branch->word,typevar,branch->lineno,0);
+                branch = branch->nextSibling;
 
-       
+            }
+        } 
     } 
     fill_vars_global(tab,types,root->nextSibling);
 
 }
 
-
+void fill_vars_locale(void* tab, TableType types, Node* root, int staticity) {  //
+    //if (!root) return;
+    if(root->label == type){
+        Node* branch = root->firstChild;
+        if (branch->label == ident){
+            //printf("Mot branche %s , type branche %s  ligne %d\n", branch->word, root->word, root->lineno);
+            while (branch){
+                add_var(tab,types,branch->word,root->word,branch->lineno,staticity);
+                branch = branch->nextSibling;
+            }
+        }
+    }   
+}
 
 void fill_symb_tab(void* tab, TableType type, Node* root) {
-    if (!root) return;
-    if (root->label == DeclVarsLocale && type == LOCAL) {
-        // Replissage tableau variables locales fonction
-        fill_vars_locale(tab, type, root->firstChild);
+    if (root->label == Static && type == LOCAL) {
+        //printf("oui yaaa :%s\n",root->word);
+        fill_vars_locale(tab, type, root->firstChild, 1);
+    } else if(root->label == NonStatic && type == LOCAL){
+        fill_vars_locale(tab, type, root->firstChild, 0);
+        
     }
-	if (root->label == DeclVars && type == GLOBAL){
-        // Replissage tableau globales
-		fill_vars_global(tab, type, root->firstChild);
+    while (root) {
+        if (root->label == DeclVars && type == GLOBAL) {
+            //printf("oui global kk\n");
+            fill_vars_global(tab, type, root->firstChild);
+        }
+        root = root->firstChild; // Passe au nœud suivant
+    }
 
-	}
-    fill_symb_tab(tab, type, root->firstChild);
-    fill_symb_tab(tab, type, root->nextSibling);
+   
+
 }
 
 void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root, int* index){
@@ -189,7 +181,15 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
     if (root->label == DeclVarsLocale) {
         //Replit la table de variables locales des fonctions
         if (*index > 0 && *index <= tab->index_tab) {
-            fill_vars_locale(tab->tab_funcs[*index - 1].local_tab, LOCAL, root->firstChild);
+            //printf("oui var locale  \n");
+            Node* branch = root->firstChild;
+            while(branch){
+                fill_symb_tab(tab->tab_funcs[*index - 1].local_tab, LOCAL, branch);
+                branch = branch->nextSibling;
+            }
+            //fill_symb_tab(tab->tab_funcs[*index - 1].local_tab, LOCAL, root->firstChild);
+        
+      
         } else {
             fprintf(stderr, "Erreur : index hors limites\n");
             return;

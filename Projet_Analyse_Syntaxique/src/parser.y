@@ -148,7 +148,7 @@ DeclVarsLocale:
         Node* elem = makeNode(Static);
         Node* nodeType = makeNode(type);
         nodeType->word = strdup($3);
-        addSibling(elem,nodeType);
+        addChild(elem,nodeType);
         addChild($$,elem);
         addChild(nodeType,$4);}
     |   DeclVarsLocale TYPE Declarateurs ';' { 
@@ -156,7 +156,7 @@ DeclVarsLocale:
         Node* elem = makeNode(NonStatic); 
         Node* nodeType = makeNode(type);
         nodeType->word = strdup($2);
-        addSibling(elem,nodeType);
+        addChild(elem,nodeType);
         addChild($$, elem); 
         addChild(nodeType, $3); }
     |   {$$ = makeNode(DeclVarsLocale);}

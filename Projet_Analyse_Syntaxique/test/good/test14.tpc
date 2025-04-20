@@ -1,12 +1,15 @@
-int a,c;
+int a,c,d;
 char booo;
 int cumpo;
 int b;
 
 int babidi(int a, int b){
-	return 4;
+	return 0;
 }
 
+char pooop(int m, int q){
+	return 97;
+}
 /*Voici une 
 fonction d'ajout*/
 int add(int a, int b){
@@ -27,9 +30,10 @@ int sub(int a, int b){
 int main(void){
 	//static int d;
 	static char c;
-	static char n,u;
+	int y;
+	static char n,u,p;
 	char l;
-	int f,g;
+	int f,g,h;
 	a = 1;
 	l = 3;
 	b = 'c';
@@ -39,7 +43,7 @@ int main(void){
 	c = 'r';
     n = '\n';
 	d = d + boo(a,b,c,d);
-	return 0;
+	return 'a';
 
 }
 
