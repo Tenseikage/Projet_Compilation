@@ -1,4 +1,4 @@
-int a,c,d;
+int a,c,t,d;
 char booo;
 int cumpo;
 int b;
@@ -23,12 +23,12 @@ int add(int a, int b){
 }
 
 int sub(int a, int b){
-	//int d;
+	int d;
 	return a - b;
 }
 
 int main(void){
-	//static int d;
+	static int d;
 	static char c;
 	int y;
 	static char n,u,p;
