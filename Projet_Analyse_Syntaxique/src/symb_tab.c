@@ -168,6 +168,7 @@ void fill_symb_tab(void* tab, TableType type, Node* root) {
 
 void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root, int* index){
     if(!root) return;
+    //printf("yaya \n");
     if(root->label == EnTeteFonct){
         add_var(tab, types, root->firstChild->nextSibling->word, root->firstChild->word, root->lineno,0);
         (*index)++;

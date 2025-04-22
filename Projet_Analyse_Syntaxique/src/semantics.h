@@ -1,6 +1,8 @@
 #ifndef __SEMANTICS__H_
 #define __SEMANTICS__H_
 
+extern int semantic_errors;
+
 
 /**Structure récupération partie droite expression  (cas d'opérations qui se suivent) */
 typedef struct list_right{

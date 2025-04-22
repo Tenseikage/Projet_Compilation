@@ -5,6 +5,8 @@
 #include "symb_tab.h"
 #include "semantics.h"
 
+int semantic_errors = 0; // Erreurs sémantiques
+
 
 
 int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
@@ -12,6 +14,7 @@ int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* glo
     for(int i = 0; i < tab->index_tab; i++){
         if((line_return = is_var_in_table(global_tab,GLOBAL,tab->tab_funcs[i].name))){
             fprintf(stderr,"\033[1;31mErreur de sémantique\033[0m: Même définition variable globale ligne : %d / Nom de fonction ligne : %d\n",line_return,tab->tab_funcs[i].lineno);
+            semantic_errors += 1;
             return 1;
         }
     }
@@ -26,6 +29,7 @@ int check_param_local_vars(Symbol_table_functions* tab){
             //printf("Nom de var %s \n", tab->tab_funcs[j].vars[k].name);
             if(is_var_in_table(tab->tab_funcs[j].local_tab,LOCAL, tab->tab_funcs[j].vars[k].name)){
                 fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: Même définition variable locale / Paramètre de fonction. Nom : %s, Ligne : %d\n", tab->tab_funcs[j].vars[k].name, tab->tab_funcs[j].vars[k].lineno);
+                semantic_errors += 1;
                 return 1;
             }
         }
@@ -128,6 +132,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                     }
                     if (!found) {
                         fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, root->lineno);
+                        semantic_errors += 1;
                         return;
                     }
                 } 
@@ -137,6 +142,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
             Node* right = root->firstChild->nextSibling;
             if (!left || !right) {
                 fprintf(stderr, "\033[1;31mErreur\033[0m: Opération incomplète (ligne %d).\n", root->lineno);
+                semantic_errors += 1;
                 return;
             }
             const char* rightleft_type = calculate_expression_type(left, global_tab, tab_funks, funcname);
@@ -204,6 +210,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 }
                 if (!found) {
                     fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, root->lineno);
+                    semantic_errors += 1;
                 }  
             } else {
 
@@ -227,6 +234,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 }
                 if (!found) {
                     fprintf(stderr, "\033[1;31mErreur\033[0m: Variable ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);  
+                    semantic_errors += 1;
                 }    
             }
         }if (root->firstChild){

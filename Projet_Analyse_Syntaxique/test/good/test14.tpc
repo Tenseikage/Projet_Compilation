@@ -28,7 +28,7 @@ int sub(int a, int b){
 }
 
 int main(void){
-	static int d;
+	/*static int d;
 	static char c;
 	int y;
 	static char n,u,p;
@@ -43,7 +43,8 @@ int main(void){
 	c = 'r';
     n = '\n';
 	d = d + boo(a,b,c,d);
-	return 'a';
+	return 'a';*/
+	return 14 + 15 + 16;
 
 }
 

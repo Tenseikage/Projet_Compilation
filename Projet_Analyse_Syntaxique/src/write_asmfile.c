@@ -3,11 +3,79 @@
 #include <string.h>
 #include "args.h"
 #include "tree.h"
-#include "parser.tab.h"
 #include "write_asmfile.h"
 
-extern Node* root; 
+//extern Node* root; 
 
+/* Allocation dans un tableau en asm
+
+
+; définition d'un tableau
+
+section .bss
+	TAB resb 64
+
+
+section .text
+
+global _start
+
+extern show_registers
+
+_start:
+	mov rax, 60
+	mov r13b, byte[TAB] ; récupérer 1ere valeur du tableauù
+	mov r12, 0
+	mov r13, 0
+	;xor rdi, rdi ; code de retour 0
+	;syscall
+
+boucle:
+	mov r13b, byte[TAB + r12]
+	call show_registers
+	inc r12
+	cmp r12, 64
+	jge fin
+	jmp boucle
+
+fin: 
+	mov rax, 60
+	mov rdi, 0
+	syscall
+
+*/
+
+void declVarsGlobal(Node* root,int byte_length_glob_var){
+    if(!root) return;
+    if(root->label == type && !strcmp(root->word,"int")){
+        printf("entier présent yay ! \n");
+
+    }
+    declVarsGlobal(root->nextSibling,byte_length_glob_var);
+
+}
+
+int parcours_var_globales(Node* root, int byte_length_glob_var) {
+    if (!root) {
+        printf("haha end of shit \n");
+        return byte_length_glob_var;
+    }
+     // Vérification de root
+
+    if (root->label == DeclVars) {
+        printf("var globally yay \n");
+        Node* branch = root->firstChild;
+        while (branch) {
+            // Exemple : chaque variable globale occupe 4 octets
+            byte_length_glob_var += 4;
+            declVarsGlobal(branch, byte_length_glob_var);
+            branch = branch->nextSibling;
+        }
+    }
+
+    // Parcours des frères
+    return parcours_var_globales(root->nextSibling, byte_length_glob_var);
+}
 
 void write_asm_file(FILE *file) {
     if (!file) {
@@ -68,8 +136,17 @@ void parcours_operators(Node* root, FILE * file){
 }
 
 
-int parcours_arbre_main(Node* root) {
+int parcours_arbre(Node* root, int* byte_length_glob_var) {
     if (!root) return 1;
+    if(root->label == DeclVars){
+        Node* branch = root->firstChild;
+        while (branch) {
+            // Exemple : chaque variable globale occupe 4 octets
+            //*byte_length_glob_var += 4;
+            declVarsGlobal(branch, *byte_length_glob_var);
+            branch = branch->nextSibling;
+        }
+    }
     if (root->label == EnTeteFonct) {
         Node* branch = root->firstChild->nextSibling;
         if (!strcmp(branch->word, "main")) {
@@ -77,8 +154,8 @@ int parcours_arbre_main(Node* root) {
             return 0;
         }
     } 
-    if (parcours_arbre_main(root->firstChild) == 0) return 0;
-    if (parcours_arbre_main(root->nextSibling) == 0) return 0;
+    if (parcours_arbre(root->firstChild,byte_length_glob_var) == 0) return 0;
+    if (parcours_arbre(root->nextSibling,byte_length_glob_var) == 0) return 0;
     return 1;
 }
 
