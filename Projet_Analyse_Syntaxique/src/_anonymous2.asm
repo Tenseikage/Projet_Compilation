@@ -7,7 +7,7 @@ _start:
   push 1
 
   pop rax
-  mov [TAB_GLOBAL + 0], rax ;piu
+  mov [TAB_GLOBAL + 0], rax
 
   mov eax, dword [TAB_GLOBAL + 0]
   push rax 
@@ -18,7 +18,7 @@ _start:
   push rax
 
   pop rax
-  mov [TAB_GLOBAL + 4], rax ;piu
+  mov [TAB_GLOBAL + 4], rax
 
   mov eax, dword [TAB_GLOBAL + 0]
   push rax 
@@ -36,7 +36,7 @@ _start:
   push rax
 
   pop rax
-  mov [TAB_GLOBAL + 8], rax ;piu
+  mov [TAB_GLOBAL + 8], rax
   mov ebx, dword [TAB_GLOBAL]
   mov r12d, dword [TAB_GLOBAL + 4]
   mov r13d, dword [TAB_GLOBAL + 8]

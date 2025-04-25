@@ -12,13 +12,6 @@ void write_asm_file(FILE *file);
 
 void write_end_asm_file(FILE *file);
 
-
-/**
- * Parcours l'arbre à la recherche d'opérations arithmétques et les
- * écrits sous la forme de code assembleur asm
- */
-void parcours_operators(Node* root, FILE* file, Symbol_table_global* global_tab);
-
 /**
  *  Parocours l'arbre à la recherche de la fonction main
  * qui y est représenté

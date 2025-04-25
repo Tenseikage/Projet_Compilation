@@ -114,7 +114,7 @@ void declVarsGlobal(Node* root,int *byte_length_glob_var){
 
 }
 
-void parcours_operators(Node* root, FILE* file, Symbol_table_global* global_tab) {
+void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_tab) {
     //printf("I'm here yaaa \n");
     if (!root) {
         //printf("Nigga u loose !!! \n");
@@ -135,8 +135,8 @@ void parcours_operators(Node* root, FILE* file, Symbol_table_global* global_tab)
     }
 
     if (root->label == divstar) {
-        parcours_operators(root->firstChild, file, global_tab);
-        parcours_operators(root->firstChild->nextSibling, file, global_tab);
+        parcours_expr_droite(root->firstChild, file, global_tab);
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab);
         fprintf(file, "  pop rcx\n"); 
         fprintf(file, "  pop rax\n");
 
@@ -155,8 +155,8 @@ void parcours_operators(Node* root, FILE* file, Symbol_table_global* global_tab)
     // Si le nœud est un opérateur d'addition ou soustraction
     if (root->label == Addsub) {
         // Générer le code pour les opérandes gauche et droite
-        parcours_operators(root->firstChild, file, global_tab); // Opérande gauche
-        parcours_operators(root->firstChild->nextSibling, file, global_tab); // Opérande droite
+        parcours_expr_droite(root->firstChild, file, global_tab); // Opérande gauche
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab); // Opérande droite
 
         // Dépilez les deux opérandes et effectuez l'opération
         fprintf(file, "  pop rcx\n"); // Deuxième opérande
@@ -228,10 +228,10 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                 Node* right_expr = branch_instr->firstChild;
                 //parcours_operators(rig)
                 if(right_expr){
-                    parcours_operators(right_expr,file,global_tab);
+                    parcours_expr_droite(right_expr,file,global_tab);
                     fprintf(file,"\n");
                     fprintf(file, "  pop rax\n");
-                    fprintf(file, "  mov dword [TAB_GLOBAL + %d], rax\n", offset_ident);
+                    fprintf(file, "  mov [TAB_GLOBAL + %d], rax\n", offset_ident);
                     fprintf(file,"\n");
                 }
             }
@@ -262,49 +262,15 @@ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab) {
         Node* corps_fonc = root->firstChild->nextSibling->nextSibling;
         if(branch_func_name){
             //printf("présence de fonction hehe %s\n", branch_func_name->word);
+            //Cas du main // var globales
             if(!strcmp(branch_func_name->word,"main")){
-                //printf("ouii yaaaa !!! \n");
-                if(!corps_fonc){
-                    //printf("Non fdp !!! \n");
-                } else {
-                    //printf("C'est bon yaaa !! \n");
-                    parcours_corps_func(corps_fonc,file,global_tab);
-                }
-                //parcours_corps_func(corps_fonc,file,global_tab);
-
-
+              parcours_corps_func(corps_fonc,file,global_tab);
             }
+            // Autres fonctions à venir
+            //parcours_corps_func(corps_fonc,file,global_tab);
         }
     } 
     parcours_arbre(root->firstChild,file,global_tab);
     parcours_arbre(root->nextSibling,file,global_tab);
 }
 
-
-/*void parcours_operators(Node* root, FILE * file){
-    if(root == NULL) return;
-
-    if(root->label == Num){
-        printf("Présence d'un nombre %d\n", root->value);
-        fprintf(file,"  push %d\n",root->value);
-        return;
-        
-    }
-    if(root->label == Addsub){
-        //printf("Opérateur %s existant\n", root->word);
-        parcours_operators(root->firstChild,file); // Fils
-        parcours_operators(root->firstChild->nextSibling,file);
-        fprintf(file,"  pop r12\n");
-        fprintf(file, "  pop rbx\n");
-        char* operator = asm_operator(root->word);
-        fprintf(file,"  %s rbx, r12\n",operator);
-        fprintf(file, "  push rbx\n");
-        return;
-
-    } else {
-        parcours_operators(root->firstChild,file);
-        parcours_operators(root->nextSibling,file);
-    }
-    
-}
-*/

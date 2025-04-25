@@ -18,6 +18,7 @@ int add(int a, int b){
 	//q = babidi(4,5);
 	r = 'a';
 	m = 6;
+	a = 3;
 	return a + b;
 }
 
