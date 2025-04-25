@@ -129,7 +129,7 @@ void parcours_operators(Node* root, FILE* file, Symbol_table_global* global_tab)
 
     if (root->label == ident) {
         int offset = get_var_global_offset(root->word, global_tab);
-        fprintf(file, "  mov eax, [TAB_GLOBAL + %d]\n", offset);
+        fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
         fprintf(file, "  push rax \n");
         return;
     }
@@ -205,11 +205,11 @@ void write_asm_file(FILE *file) {
 }*/
 
 void write_end_asm_file(FILE *file) {
-    fprintf(file, "  sub rsp, 8\n");     // Aligner la pile sur 16 octets
+    //fprintf(file, "  sub rsp, 8\n");     // Aligner la pile sur 16 octets
     fprintf(file, "  mov rax, 60\n");    // syscall: exit
     fprintf(file, "  xor rdi, rdi\n");   // Code de retour 0
     fprintf(file, "  syscall\n");        // Appel système
-    fprintf(file, "  add rsp, 8\n");     // Restaurer la pile
+    //fprintf(file, "  add rsp, 8\n");     // Restaurer la pile
 }
 
 
@@ -231,7 +231,7 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                     parcours_operators(right_expr,file,global_tab);
                     fprintf(file,"\n");
                     fprintf(file, "  pop rax\n");
-                    fprintf(file, "  mov [TAB_GLOBAL + %d], rax\n", offset_ident);
+                    fprintf(file, "  mov dword [TAB_GLOBAL + %d], rax\n", offset_ident);
                     fprintf(file,"\n");
                 }
             }

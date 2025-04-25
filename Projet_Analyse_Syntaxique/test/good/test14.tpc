@@ -46,13 +46,23 @@ int main(void){
 	d = d + boo(a,b,c,d);
 	return 'a';
 	return 14 + 15 + 16;*/
-	a = 235;
-	b = 53;
+	//a = 235 + 12;
+	//b = 53 + 12;
+	a = 1;
+	b = a * 2;
+	c = a + b / 2;
 	//b  = a * 2;
 	//c = a + b / 3;
 	return 0;
 
 }
+
+/*mov [TAB_GLOBAL + 4], rax
+  mov ebx, dword [TAB_GLOBAL]
+  mov r12d, dword [TAB_GLOBAL + 4]
+  sub rsp,8
+  call show_registers
+  add rsp,8*/
 
 
 // 1 Conversion assembleur

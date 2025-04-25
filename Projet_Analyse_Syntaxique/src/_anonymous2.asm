@@ -4,19 +4,45 @@ global _start
 section .text
 extern show_registers
 _start:
-  push 235
+  push 1
+
   pop rax
-  mov dword [TAB_GLOBAL + 0], eax
-  push 53
+  mov [TAB_GLOBAL + 0], rax ;piu
+
+  mov eax, dword [TAB_GLOBAL + 0]
+  push rax 
+  push 2
+  pop rcx
   pop rax
-  mov dword [TAB_GLOBAL + 4], eax
-  mov rbx, qword [TAB_GLOBAL]
-  mov r12, qword [TAB_GLOBAL + 4]
+  imul rax, rcx
+  push rax
+
+  pop rax
+  mov [TAB_GLOBAL + 4], rax ;piu
+
+  mov eax, dword [TAB_GLOBAL + 0]
+  push rax 
+  mov eax, dword [TAB_GLOBAL + 4]
+  push rax 
+  push 2
+  pop rcx
+  pop rax
+  xor rdx, rdx
+  div rcx
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
+
+  pop rax
+  mov [TAB_GLOBAL + 8], rax ;piu
+  mov ebx, dword [TAB_GLOBAL]
+  mov r12d, dword [TAB_GLOBAL + 4]
+  mov r13d, dword [TAB_GLOBAL + 8]
   sub rsp,8
   call show_registers
   add rsp,8
-  ;sub rsp, 8
   mov rax, 60
   xor rdi, rdi
   syscall
-  ;add rsp, 8
