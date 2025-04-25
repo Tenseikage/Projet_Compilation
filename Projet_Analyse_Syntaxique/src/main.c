@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     Symbol_table_global* global_tab = init_table(GLOBAL);
     Symbol_table_functions* tab_funcs = init_symb_tab_func();
     char* funcname = NULL;
-    int byte_global = 0;
+    //int byte_global = 0;
     if (args_choice(argc, argv) == 1) {
         if (!yyparse()) {
             printTree(root);
@@ -103,8 +103,8 @@ int main(int argc, char *argv[]) {
                 printf("============================================\n");
                 check_variables(root, global_tab, tab_funcs,funcname);
             }
-            /*FILE* file = fopen("./src/_anonymous2.asm", "w");
-            if (!file) {
+            FILE* file = fopen("./src/_anonymous2.asm", "w");
+            /*if (!file) {
                 fprintf(stderr, "Erreur à l'ouverture du fichier\n");
                 return 1;
             }
@@ -115,10 +115,13 @@ int main(int argc, char *argv[]) {
             write_end_asm_file(file);
             fclose(file);*/
             //printf("length var globales %d \n", parcours_var_globales(root,0));
-            if (!parcours_arbre(root,&byte_global)) {
-               printf("oui \n");
-            }
-            printf("Var global length : %d \n", byte_global);
+            write_asm_tab_global(file,global_tab);
+            write_asm_file(file);
+            parcours_arbre(root,file,global_tab);
+            write_end_asm_file(file);
+            fclose(file);
+            //printf("Var global length : %d \n", byte_global);
+
             deleteTree(root);
             free_all_tables(global_tab, tab_funcs);
             return 0;

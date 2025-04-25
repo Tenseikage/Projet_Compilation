@@ -9,6 +9,8 @@
 #define NB_VARS 2
 #define RESIZE_FACTOR 2
 
+int global_offset = 0;
+
 
 int is_var_in_table(void* tab, TableType type, const char* name) {
     int index_tab;
@@ -76,6 +78,20 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
         }
         strcpy((*vars)[*index_tab].name, name);
         (*vars)[*index_tab].type = word;
+        if(type == GLOBAL){
+            printf("mf is global yaaa \n");
+            if(!strcmp(word,"int")){
+                (*vars)[*index_tab].size = 4;
+                (*vars)[*index_tab].offset = global_offset;
+                global_offset += 4;
+      
+            } else if(!strcmp(word, "char")){
+                  (*vars)[*index_tab].size = 1;
+                  (*vars)[*index_tab].offset = global_offset;
+                  global_offset++;
+            }
+        }
+        
         (*vars)[*index_tab].isStatic = state;
         (*vars)[*index_tab].lineno = lineno;
         (*index_tab)++;
@@ -292,6 +308,7 @@ void display_local_tab(Symbol_table_locale* tab) {
     Data* vars = tab->vars;
     
    if(tab->index_tab > 0){
+        printf("oui  %d\n", tab->index_tab);
         printf("===Variables locales de la fonction=== \n");
         for (int i = 0; i < tab->index_tab; i++) {
             printf("Identifiant : %s, Type : %s, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
@@ -323,7 +340,8 @@ void display_symb_tab(void* tab, TableType type) {
         if(index_tab > 0){
             printf("===Variables Globales===\n");
             for (int i = 0; i < index_tab; i++) {
-                printf("Nom : %s, Type : %s\n", vars[i].name, vars[i].type);
+                printf("Nom : %s, Type : %s taille\n", vars[i].name, vars[i].type);
+                //printf("Nom : %s, Type : %s taille (octets) %d, offset %d\n", vars[i].name, vars[i].type, vars[i].size,vars[i].offset);
             }
             printf("\n");
         }

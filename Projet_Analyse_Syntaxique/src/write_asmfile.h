@@ -1,6 +1,6 @@
 #ifndef __WRITE_ASMFILE_H__
 #define __WRITE_ASMFILE_H__
-
+#include "symb_tab.h"
 /**
  *  Écrit dans le fichier asm nouvellement crée
  */
@@ -12,27 +12,26 @@ void write_asm_file(FILE *file);
 
 void write_end_asm_file(FILE *file);
 
-/**
- *  Convertit l'opérateur trouvé dans l'arbre asbstrait en mot
- */
-char* asm_operator(char* op);
 
 /**
  * Parcours l'arbre à la recherche d'opérations arithmétques et les
  * écrits sous la forme de code assembleur asm
  */
-void parcours_operators(Node* root, FILE * file);
-
-/**
- * Parcours l'ensemble des variable globales présentes dans l'arbre abstrait
- */
-int parcours_var_globales(Node* root, int byte_length_glob_var);
+void parcours_operators(Node* root, FILE* file, Symbol_table_global* global_tab);
 
 /**
  *  Parocours l'arbre à la recherche de la fonction main
  * qui y est représenté
  */
 
-int parcours_arbre(Node* root, int* byte_length_glob_var);
+ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab);
+
+
+/**
+ * Initialisation du tableau contenant les variables globales
+ */
+
+ void write_asm_tab_global(FILE* file,Symbol_table_global* global_tab);
+
 
 #endif

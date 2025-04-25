@@ -11,6 +11,8 @@ typedef struct datas {
 	char* type; // type de la variable
 	int isStatic; // Vérifie si la variable est statique
 	int lineno; // Ligne où est positionnée la variable
+	int size; // Nombre d'octets utilisé par la variable
+	int offset; // position dans le segment de mémoire
 } Data;
 
 

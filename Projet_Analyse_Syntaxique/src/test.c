@@ -1,12 +1,14 @@
-
-
+#include<stdio.h>
 
 char q(void){
   return 97;
 }
 int main(int argc, char const *argv[])
 {
-	
+	int a = 0;
+  a = a + 3;
+  a;
+  printf("Nombre a %d\n",a);
 	return 0;
 }
 

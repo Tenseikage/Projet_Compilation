@@ -1,7 +1,6 @@
-int a,c,t,d;
-char booo;
-int cumpo;
+int a;
 int b;
+int c;
 
 int babidi(int a, int b){
 	return 0;
@@ -34,17 +33,24 @@ int main(void){
 	static char n,u,p;
 	char l;
 	int f,g,h;
+	y = a + 3 + 5;
 	a = 1;
 	l = 3;
 	b = 'c';
+	a;
 	c = 2 + 3 + 'c';
 	d = d + 1;
 	dee(4,5);
 	c = 'r';
     n = '\n';
 	d = d + boo(a,b,c,d);
-	return 'a';*/
-	return 14 + 15 + 16;
+	return 'a';
+	return 14 + 15 + 16;*/
+	a = 235;
+	b = 53;
+	//b  = a * 2;
+	//c = a + b / 3;
+	return 0;
 
 }
 
