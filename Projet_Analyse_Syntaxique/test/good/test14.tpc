@@ -58,9 +58,9 @@ int main(void){
 
 }
 
-/*mov [TAB_GLOBAL + 4], rax
-  mov ebx, dword [TAB_GLOBAL]
+/*mov ebx, dword [TAB_GLOBAL]
   mov r12d, dword [TAB_GLOBAL + 4]
+  mov r13d, dword [TAB_GLOBAL + 8]
   sub rsp,8
   call show_registers
   add rsp,8*/
