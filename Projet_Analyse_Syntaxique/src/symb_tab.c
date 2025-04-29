@@ -73,7 +73,7 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
             }
         }
         if ((lineno_found = is_var_in_table(tab, type, name))) {
-            fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: le nom existe déjà en ligne : %d\n", lineno_found);
+            fprintf(stderr, "\033[1;31mErreur 033[0m: la variable existe déjà en ligne : %d\n", lineno_found);
             exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
@@ -183,6 +183,19 @@ void fill_symb_tab(void* tab, TableType type, Node* root) {
 
 }
 
+int is_func_in_tab(Symbol_table_functions* tab, const char* funcname) {
+    if (!tab || !funcname) {
+        return 0;
+    }
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (strcmp(tab->tab_funcs[i].name, funcname) == 0) {
+            return 1; 
+
+        }
+    }
+    return 0;
+}
+
 void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root, int* index){
     if(!root) return;
     //printf("yaya \n");
@@ -191,13 +204,22 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
         if(branch_func->label == EnTeteFonct){
             char* funcname = branch_func->firstChild->nextSibling->word;
             char* return_type = branch_func->firstChild->word;
-            add_var(tab, types, funcname,return_type, branch_func->lineno,0);
-            (*index)++;
+            if(!is_func_in_tab(tab,funcname)){
+                add_var(tab, types, funcname,return_type, branch_func->lineno,0);
+                (*index)++;
+            } else {
+                fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction '%s' déja présente dans le programme (ligne %d).\n", funcname, branch_func->lineno);
+                //return;
+            }
         } else if(branch_func->label == Void){
             char* funcname = branch_func->firstChild->word;
-            //char* return_type = "void";
-            add_var(tab, types, funcname,"void", branch_func->lineno,0);
-            (*index)++;
+            char* return_type = "void";
+            if(!is_func_in_tab(tab,funcname)){
+                add_var(tab, types, funcname,return_type, branch_func->lineno,0);
+                (*index)++;
+            } else {
+                fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction '%s' déja présente dans le programme (ligne %d).\n", funcname, branch_func->lineno);
+            }
             //printf("présence de fonction void !! \n");
         }
 

@@ -107,13 +107,13 @@ int main(int argc, char *argv[]) {
             }
         } else {
             //Args affichage table des symboles
-            printf("============================================\n");
+            /*printf("============================================\n");
             display_symb_tab(global_tab, GLOBAL);
             printf("============================================\n");
             printf("Fonctions et variables locales \n");
             printf("============================================\n");
             display_symb_tab(tab_funcs, FUNCTION);
-            printf("============================================\n");
+            printf("============================================\n");*/
             check_variables(root, global_tab, tab_funcs,funcname);
         }
         /*FILE* file = fopen("./src/_anonymous2.asm", "w");

@@ -3,7 +3,7 @@
 
 #include "tree.h"
 
-
+//Fait
 /**
  * Message d'erreur pour l'utilisation d'un retour de fonction Void
  * Incremente nb_error
@@ -117,5 +117,9 @@ void warningUninitialized(Node* node);
  * @param node La node problematique
  */
 void warningVarMain(Node* node);
+
+
+
+
 
 #endif

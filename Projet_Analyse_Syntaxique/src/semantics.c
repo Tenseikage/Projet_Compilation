@@ -22,7 +22,6 @@ int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* glo
 
 }
 
-
 int check_param_local_vars(Symbol_table_functions* tab){
     for(int j = 0; j < tab->index_tab; j++){
         for(int k = 0;k < tab->tab_funcs[j].index_tabv;k++){
@@ -37,9 +36,6 @@ int check_param_local_vars(Symbol_table_functions* tab){
 
     return 0;
 }
-
-
-
 
 const char* get_var_type(void* tab, TableType type, const char* name) {
     int index_tab;
@@ -64,6 +60,37 @@ const char* get_var_type(void* tab, TableType type, const char* name) {
         }
     }
     return NULL; 
+}
+
+int evaluate_constant_expression(Node* root, int* result) {
+    if (!root) return 0;
+
+    if (root->label == Num) {
+        *result = root->value;
+        return 1;
+    }
+
+    if (root->label == Addsub || root->label == divstar) {
+        int left_result = 0, right_result = 0;
+        if (evaluate_constant_expression(root->firstChild, &left_result) &&
+            evaluate_constant_expression(root->firstChild->nextSibling, &right_result)) {
+            if (strcmp(root->word, "+") == 0) {
+                *result = left_result + right_result;
+            } else if (strcmp(root->word, "-") == 0) {
+                *result = left_result - right_result;
+            } else if (strcmp(root->word, "*") == 0) {
+                *result = left_result * right_result;
+            } else if (strcmp(root->word, "/") == 0) {
+                if (right_result == 0) {
+                    return 0; // Division par zéro
+                }
+                *result = left_result / right_result;
+            }
+            return 1;
+        }
+    }
+
+    return 0; // L'expression ne peut pas être évaluée
 }
 
 
@@ -121,22 +148,47 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 }
             }
             if (branch) {
+                int found = 0;
                 if (branch->label == Arguments) {
                     char* word_func = root->word;
-                    int found = 0;
                     for (int i = 0; i < tab_funks->index_tab; i++) {
-                        if (strcmp(tab_funks->tab_funcs[i].name, word_func) == 0) {
+                        if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
+                            printf("retour fonction %s, type gauche %s \n",tab_funks->tab_funcs[i].returnType,type_left);
+                            if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
+                                fprintf(stderr, "\033[1;31mErreur\033[0m: Affectation incompatible %s/%s (lingne %d)\n",type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
+                                semantic_errors++;
+                                return;
+                            }
                             found = 1;
                             break;
                         }
                     }
                     if (!found) {
-                        fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, root->lineno);
+                        fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
                         semantic_errors += 1;
                         return;
                     }
-                } 
-            }
+                } else if (branch->label == Void){
+                    char* word_func = root->word;
+                    for (int i = 0; i < tab_funks->index_tab; i++) {
+                        if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
+                            if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
+                                fprintf(stderr, "\033[1;31mErreur\033[0m: Affectation incompatible %s/%s (ligne %d)\n",type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
+                                semantic_errors++;
+                                return;
+                            }
+                            found = 1;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
+                        semantic_errors += 1;
+                        return;
+                    }
+
+                }
+            } /// A voir
         } else if (root->label == Addsub || root->label == divstar) {
             Node* left = root->firstChild;
             Node* right = root->firstChild->nextSibling;
@@ -144,6 +196,17 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 fprintf(stderr, "\033[1;31mErreur\033[0m: Opération incomplète (ligne %d).\n", root->lineno);
                 semantic_errors += 1;
                 return;
+            }
+            if (strcmp(root->word, "/") == 0) {
+                int right_value = 0;
+                // Vérifier si le membre droit est une constante ou une expression constante
+                if (evaluate_constant_expression(right, &right_value)) {
+                    if (right_value == 0) {
+                        fprintf(stderr, "\033[1;35mWarning\033[0m: Division par zéro détectée dans une expression (ligne %d).\n", root->lineno);
+                        semantic_errors += 1;
+                        return;
+                    }
+                }
             }
             const char* rightleft_type = calculate_expression_type(left, global_tab, tab_funks, funcname);
             const char* rightright_type = calculate_expression_type(right, global_tab, tab_funks, funcname);
@@ -181,14 +244,22 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
 
 
 
-void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
-    if (!root) return;
+void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname,int returnhere) {
+    if (!root){
+        if(!returnhere){
+            fprintf(stderr, "\033[1;35mWarning\033[0m: Absence de return dans la fonction non void %s \n", funcname); 
+            return;
+            
+        } else {
+            return;
+        }
+    }
     List_Right* right_list = malloc(sizeof(List_Right));
     if(!right_list){
        fprintf(stderr,"Erreur d'allocation de mémoire");
        return;
     }
-    // Vérifier les if
+    // Vérifier les if fonction
     right_list->list = NULL;
     right_list->index = 0;
     if (root->label == ident) {
@@ -262,11 +333,13 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
         }
         free(right_list);
     } if(root->label == Return){
+        returnhere = 1;
         int index_tab = tab_funks->index_tab;
         Symbol_table_function *funcs = tab_funks->tab_funcs;
         for(int i = 0; i < index_tab; i++){
             if (!strcmp(funcs[i].name,funcname)){
                 char* funcsignType = funcs[i].returnType;
+                //if()
                 Node* branch = root->firstChild;
                 if(branch){
                     if(branch->label == Num){
@@ -286,7 +359,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
         }
 
     }
-    check_left_instr(root->nextSibling, global_tab, tab_funks, funcname);    
+    check_left_instr(root->nextSibling, global_tab, tab_funks, funcname,returnhere);    
 }
 
 
@@ -301,7 +374,8 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
         }
     }
     if (root->label ==  Instr) {
-        check_left_instr(root->firstChild,global_tab,tab_funcs,funcname);
+        int returnhere = 0;
+        check_left_instr(root->firstChild,global_tab,tab_funcs,funcname,returnhere);
         
     }
     check_variables(root->firstChild, global_tab, tab_funcs,funcname);
