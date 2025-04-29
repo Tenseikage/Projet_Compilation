@@ -188,6 +188,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
        fprintf(stderr,"Erreur d'allocation de mémoire");
        return;
     }
+    // Vérifier les if
     right_list->list = NULL;
     right_list->index = 0;
     if (root->label == ident) {
@@ -199,12 +200,28 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
         Node * branch = root->firstChild;
         if (branch){
             if (branch->label == Arguments) {
+                int nb_params = 0;
+                Node* branch_args = branch->firstChild;
+                while(branch_args){
+                    nb_params++;
+                    branch_args = branch_args->nextSibling;
+                }
+                //printf("Nb params %d \n", nb_params);
+
                 char* word_func = root->word;
                 found = 0;
                 for (int i = 0; i < tab_funks->index_tab; i++) {
                         //printf(" Fonction  %s \n",tab_funks->tab_funcs[i].name);
                     if (strcmp(tab_funks->tab_funcs[i].name, word_func) == 0) {
                         found = 1;
+                        //printf("Nb params func %d \n", tab_funks->tab_funcs[i].index_tabv);
+                        if(tab_funks->tab_funcs[i].index_tabv > nb_params){
+                            fprintf(stderr, "\033[1;31mErreur\033[0m: Pas assez d'arguments dans la fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
+                            semantic_errors += 1; 
+                        } else if(tab_funks->tab_funcs[i].index_tabv < nb_params){
+                            fprintf(stderr, "\033[1;31mErreur\033[0m: Beaucoup d'arguments dans la fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
+                            semantic_errors += 1;
+                        }
                         break;
                     }
                 }
@@ -254,9 +271,15 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 if(branch){
                     if(branch->label == Num){
                         if(!strcmp("char",funcsignType)){
-                            fprintf(stderr, "\033[1;35mWarning\033[0m: Retour implicite de 'int' dans une fonction de retour  'char' (ligne %d).\n", root->lineno); 
+                            fprintf(stderr, "\033[1;35mWarning\033[0m: Retour implicite de 'int' dans une fonction de retour 'char' (ligne %d).\n", root->lineno); 
+                        } else if(!strcmp("void",funcsignType)){
+                            fprintf(stderr, "\033[1;35mWarning\033[0m: Retour int dans une fonction de retour  %s (ligne %d).\n",funcsignType, root->lineno);   
                         }
-                    }    
+                    } 
+                } else {
+                    if(strcmp(funcsignType,"void")){
+                        fprintf(stderr, "\033[1;35mWarning\033[0m: Retour void dans une fonction de retour  %s (ligne %d).\n",funcsignType, root->lineno);  
+                    }
                 }
 
             }
@@ -269,9 +292,13 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
 
 void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname) {
     if (!root) return;
-
-    if(root->label == EnTeteFonct){
-        funcname = root->firstChild->nextSibling->word;
+    if(root->label == DeclFonct){
+        Node* branch_func = root->firstChild;
+        if(branch_func->label == EnTeteFonct){
+            funcname = branch_func->firstChild->nextSibling->word;
+        } else if (branch_func->label == Void){
+            funcname = branch_func->firstChild->word;
+        }
     }
     if (root->label ==  Instr) {
         check_left_instr(root->firstChild,global_tab,tab_funcs,funcname);

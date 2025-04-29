@@ -32,7 +32,7 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
     return 0; 
 }
 
-void add_var(void* tab, TableType type, const char* name, char* word, int lineno,int state) {
+void add_var(void* tab, TableType type, const char* name, char* str_type, int lineno,int state) {
     int* table_size;
     int* index_tab;
     Data** vars;
@@ -77,15 +77,15 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
             exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
-        (*vars)[*index_tab].type = word;
+        (*vars)[*index_tab].type = str_type;
         if(type == GLOBAL){
-            printf("mf is global yaaa \n");
-            if(!strcmp(word,"int")){
+            //printf("mf is global yaaa \n");
+            if(!strcmp(str_type,"int")){
                 (*vars)[*index_tab].size = 4;
                 (*vars)[*index_tab].offset = global_offset;
                 global_offset += 4;
       
-            } else if(!strcmp(word, "char")){
+            } else if(!strcmp(str_type, "char")){
                   (*vars)[*index_tab].size = 1;
                   (*vars)[*index_tab].offset = global_offset;
                   global_offset++;
@@ -109,7 +109,8 @@ void add_var(void* tab, TableType type, const char* name, char* word, int lineno
             return;
         }
         strcpy((*funcs)[*index_tab].name, name);
-        (*funcs)[*index_tab].returnType = word;
+        //printf("retour type fonction fdp !! %s \n", str_type);
+        (*funcs)[*index_tab].returnType = str_type;
         (*funcs)[*index_tab].local_tab = init_table(LOCAL);
         (*funcs)[*index_tab].vars = malloc(NB_VARS* sizeof(Data));
         (*funcs)[*index_tab].lineno = lineno;
@@ -185,9 +186,21 @@ void fill_symb_tab(void* tab, TableType type, Node* root) {
 void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root, int* index){
     if(!root) return;
     //printf("yaya \n");
-    if(root->label == EnTeteFonct){
-        add_var(tab, types, root->firstChild->nextSibling->word, root->firstChild->word, root->lineno,0);
-        (*index)++;
+    if(root->label == DeclFonct){
+        Node* branch_func = root->firstChild;
+        if(branch_func->label == EnTeteFonct){
+            char* funcname = branch_func->firstChild->nextSibling->word;
+            char* return_type = branch_func->firstChild->word;
+            add_var(tab, types, funcname,return_type, branch_func->lineno,0);
+            (*index)++;
+        } else if(branch_func->label == Void){
+            char* funcname = branch_func->firstChild->word;
+            //char* return_type = "void";
+            add_var(tab, types, funcname,"void", branch_func->lineno,0);
+            (*index)++;
+            //printf("présence de fonction void !! \n");
+        }
+
     }
     if (root->label == DeclVarsLocale) {
         if (*index > 0 && *index <= tab->index_tab) {
@@ -352,7 +365,7 @@ void display_symb_tab(void* tab, TableType type) {
         funcs = sym_tab->tab_funcs;
         for(int i = 0; i < index_tab; i++){
             printf("\n");
-            printf("Nom de fonction : %s, Type : %s\n", funcs[i].name, funcs->returnType);
+            printf("Nom de fonction : %s, Type : %s\n", funcs[i].name, funcs[i].returnType);
             if(funcs[i].local_tab){
                 display_params(&funcs[i]);
 

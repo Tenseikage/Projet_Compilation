@@ -116,23 +116,12 @@ int main(int argc, char *argv[]) {
             printf("============================================\n");
             check_variables(root, global_tab, tab_funcs,funcname);
         }
-        FILE* file = fopen("./src/_anonymous2.asm", "w");
-            /*if (!file) {
-                fprintf(stderr, "Erreur à l'ouverture du fichier\n");
-                return 1;
-            }
-            if (!parcours_arbre_main(root)) {
-                write_asm_file(file);
-            }
-            parcours_operators(root,file);
-            write_end_asm_file(file);
-            fclose(file);*/
-            //printf("length var globales %d \n", parcours_var_globales(root,0));
+        /*FILE* file = fopen("./src/_anonymous2.asm", "w");
         write_asm_tab_global(file,global_tab);
         write_asm_file(file);
         parcours_arbre(root,file,global_tab);
         write_end_asm_file(file);
-        fclose(file);
+        fclose(file);*/
         free_all_tables(global_tab, tab_funcs);
         return parse_result;
     }

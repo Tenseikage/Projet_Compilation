@@ -6,54 +6,24 @@ int babidi(int a, int b){
 	return 0;
 }
 
+void dababy(int a){
+	return;
+}
+
+void zbilzbil(void){
+	return;
+}
+
 char pooop(int m, int q){
 	return 97;
 }
-/*Voici une 
-fonction d'ajout*/
-int add(int a, int b){
-	int r;
-	int q;
-	char m;
-	//q = babidi(4,5);
-	r = 'a';
-	m = 6;
-	a = 3;
-	return a + b;
-}
 
-int sub(int a, int b){
-	int d;
-	return a - b;
-}
 
 int main(void){
-	/*static int d;
-	static char c;
-	int y;
-	static char n,u,p;
-	char l;
-	int f,g,h;
-	y = a + 3 + 5;
-	a = 1;
-	l = 3;
-	b = 'c';
-	a;
-	c = 2 + 3 + 'c';
-	d = d + 1;
-	dee(4,5);
-	c = 'r';
-    n = '\n';
-	d = d + boo(a,b,c,d);
-	return 'a';
-	return 14 + 15 + 16;*/
-	//a = 235 + 12;
-	//b = 53 + 12;
 	a = 1;
 	b = a * 2;
 	c = a + b / 2;
-	//b  = a * 2;
-	//c = a + b / 3;
+	q = 1;
 	return 0;
 
 }
