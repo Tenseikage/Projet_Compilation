@@ -7,11 +7,17 @@ int babidi(int a, int b){
 	return 0;
 }
 
+
 void dababy(int a){
+	int q;
+	char m;
+	m = 2 + 'c';
+	q = 1;
+	d();
 }
 
 void zbilzbil(void){
-	return;
+	return 1;
 }
 
 int zbilzbil(void){
@@ -24,12 +30,14 @@ char pooop(int m, int q){
 
 
 int main(void){
+	char a;
 	a = 1;
 	b = a * 2;
 	c = a + b / 2;
 	q = 1;
 	a = zbilzbil();
-	//papa(1);
+	pooop(1);
+	papa(1);
 
 }
 

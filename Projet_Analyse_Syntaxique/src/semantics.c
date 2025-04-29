@@ -13,7 +13,7 @@ int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* glo
     int line_return;
     for(int i = 0; i < tab->index_tab; i++){
         if((line_return = is_var_in_table(global_tab,GLOBAL,tab->tab_funcs[i].name))){
-            fprintf(stderr,"\033[1;31mErreur de sémantique\033[0m: Même définition variable globale ligne : %d / Nom de fonction ligne : %d\n",line_return,tab->tab_funcs[i].lineno);
+            fprintf(stderr,"\033[1;31mErreur\033[0m: Même définition variable globale ligne : %d / Nom de fonction ligne : %d\n",line_return,tab->tab_funcs[i].lineno);
             semantic_errors += 1;
             return 1;
         }
@@ -27,7 +27,7 @@ int check_param_local_vars(Symbol_table_functions* tab){
         for(int k = 0;k < tab->tab_funcs[j].index_tabv;k++){
             //printf("Nom de var %s \n", tab->tab_funcs[j].vars[k].name);
             if(is_var_in_table(tab->tab_funcs[j].local_tab,LOCAL, tab->tab_funcs[j].vars[k].name)){
-                fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: Même définition variable locale / Paramètre de fonction. Nom : %s, Ligne : %d\n", tab->tab_funcs[j].vars[k].name, tab->tab_funcs[j].vars[k].lineno);
+                fprintf(stderr, "\033[1;31mErreur\033[0m: Même définition variable locale / Paramètre de fonction. Nom : %s, Ligne : %d\n", tab->tab_funcs[j].vars[k].name, tab->tab_funcs[j].vars[k].lineno);
                 semantic_errors += 1;
                 return 1;
             }
@@ -228,6 +228,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 if(type_left){
                     if(!strcmp(type_left,"char") && !strcmp(rightright_type,"int")){
                         fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
+
                     }
                 }
                 right_list->index++;
@@ -240,6 +241,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
             if(type_left){
                 if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
                     fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
+                    
                 }
             }
     
@@ -274,7 +276,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
         }
         Node * branch = root->firstChild;
         if (branch){
-            if (branch->label == Arguments) {
+            if (branch->label == Arguments || branch->label == Void) {
                 int nb_params = 0;
                 Node* branch_args = branch->firstChild;
                 while(branch_args){
@@ -291,10 +293,10 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                         found = 1;
                         //printf("Nb params func %d \n", tab_funks->tab_funcs[i].index_tabv);
                         if(tab_funks->tab_funcs[i].index_tabv > nb_params){
-                            fprintf(stderr, "\033[1;31mErreur\033[0m: Pas assez d'arguments dans la fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
+                            fprintf(stderr, "\033[1;31mErreur\033[0m: Pas assez d'arguments dans la fonction %s appelée(ligne %d).\n", word_func, branch->lineno);
                             semantic_errors += 1; 
                         } else if(tab_funks->tab_funcs[i].index_tabv < nb_params){
-                            fprintf(stderr, "\033[1;31mErreur\033[0m: Beaucoup d'arguments dans la fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
+                            fprintf(stderr, "\033[1;31mErreur\033[0m: Beaucoup d'arguments dans la fonction %s appelée (ligne %d).\n", word_func, branch->lineno);
                             semantic_errors += 1;
                         }
                         break;
@@ -399,12 +401,6 @@ void check_unitialized_vars(Symbol_table_functions* tab_funk, Symbol_table_globa
     }
     for (int j = 0; j < tab_funk->index_tab; j++) {
         Symbol_table_function* func = &tab_funk->tab_funcs[j];
-        for (int k = 0; k < func->index_tabv; k++) {
-            if (!func->vars[k].is_affected) {
-                fprintf(stderr, "\033[1;35mWarning\033[0m: Paramètre '%s' de la fonction '%s' déclaré mais non initialisé (ligne %d).\n",
-                        func->vars[k].name, func->name, func->vars[k].lineno);
-            }
-        }
         for (int l = 0; l < func->local_tab->index_tab; l++) {
             if (!func->local_tab->vars[l].is_affected) {
                 fprintf(stderr, "\033[1;35mWarning\033[0m: Variable locale '%s' dans la fonction '%s' déclarée mais non initialisée (ligne %d).\n",

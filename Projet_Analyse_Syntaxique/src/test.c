@@ -1,6 +1,6 @@
 #include<stdio.h>
-
-char q(void){
+//int main;
+char q(int a){
   return 97;
 }
 int main(int argc, char const *argv[])

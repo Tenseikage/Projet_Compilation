@@ -94,7 +94,7 @@ void warningImpliciteConvert(Node* node, char* param);
  */
 void warningRetNoValNoVoid(Node* node);
 
-
+// Fait
 /**
  * Message d'avertissement d'un `return` de fonction void renvoyant une valeur.
  * Incremente nb_warning
@@ -102,7 +102,7 @@ void warningRetNoValNoVoid(Node* node);
  */
 void warningRetValVoid(Node* node);
 
-
+// Fait
 /**
  * Message d'avertissement de l'utilisation d'une variable non initialisee.
  * Incremente nb_warning
