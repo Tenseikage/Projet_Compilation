@@ -10,7 +10,7 @@ BISON := parser
 LEX := lex
 TREE := tree
 ARGS := args
-OUTPUT := tpcas
+OUTPUT := tpcc
 
 # Cible par défaut
 all: $(BIN) $(OBJ) $(BIN)/$(OUTPUT)
