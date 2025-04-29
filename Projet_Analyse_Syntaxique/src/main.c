@@ -115,6 +115,8 @@ int main(int argc, char *argv[]) {
             display_symb_tab(tab_funcs, FUNCTION);
             printf("============================================\n");*/
             check_variables(root, global_tab, tab_funcs,funcname);
+            check_unitialized_vars(tab_funcs,global_tab);
+            
         }
         /*FILE* file = fopen("./src/_anonymous2.asm", "w");
         write_asm_tab_global(file,global_tab);

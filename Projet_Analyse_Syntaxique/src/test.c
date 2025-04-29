@@ -5,6 +5,7 @@ char q(void){
 }
 int main(int argc, char const *argv[])
 {
+  int main;
 	int a = 0;
   a = a + 3;
   a;

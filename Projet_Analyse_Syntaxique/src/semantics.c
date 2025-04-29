@@ -45,7 +45,6 @@ const char* get_var_type(void* tab, TableType type, const char* name) {
         Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
         index_tab = sym_tab->index_tab;
         vars = sym_tab->vars;
-
     } else if (type == GLOBAL) {
         Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
         index_tab = sym_tab->index_tab;
@@ -56,12 +55,12 @@ const char* get_var_type(void* tab, TableType type, const char* name) {
 
     for (int i = 0; i < index_tab; i++) {
         if (strcmp(vars[i].name, name) == 0) {
+            vars[i].is_affected = 1;
             return vars[i].type;
         }
     }
     return NULL; 
 }
-
 int evaluate_constant_expression(Node* root, int* result) {
     if (!root) return 0;
 
@@ -94,9 +93,10 @@ int evaluate_constant_expression(Node* root, int* result) {
 }
 
 
-const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname) {
+const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname, int isleft_var) {
     if (!root) return NULL;
     if (root->label == ident) {
+
         const char* type = get_var_type(global_tab, GLOBAL, root->word);
         if (type) return type;
         for (int i = 0; i < tab_funcs->index_tab; i++) {
@@ -105,6 +105,10 @@ const char* calculate_expression_type(Node* root, Symbol_table_global* global_ta
                 if (type) return type;
                 for (int j = 0; j < tab_funcs->tab_funcs[i].index_tabv; j++) {
                     if (!strcmp(tab_funcs->tab_funcs[i].vars[j].name, root->word)) {
+                        if(isleft_var == 0){
+                            //printf("oui yaaa %s\n", root->word);
+                            tab_funcs->tab_funcs[i].vars[j].is_affected = 1;
+                        }
                         return tab_funcs->tab_funcs[i].vars[j].type;
                     }
                 }
@@ -141,7 +145,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
         }
         if (root->label == ident) {
             Node* branch = root->firstChild;
-            const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname);
+            const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname,1);
             if(type_left){
                 if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
                     fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
@@ -153,7 +157,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                     char* word_func = root->word;
                     for (int i = 0; i < tab_funks->index_tab; i++) {
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
-                            printf("retour fonction %s, type gauche %s \n",tab_funks->tab_funcs[i].returnType,type_left);
+                            //printf("retour fonction %s, type gauche %s \n",tab_funks->tab_funcs[i].returnType,type_left);
                             if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
                                 fprintf(stderr, "\033[1;31mErreur\033[0m: Affectation incompatible %s/%s (lingne %d)\n",type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
                                 semantic_errors++;
@@ -208,8 +212,8 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                     }
                 }
             }
-            const char* rightleft_type = calculate_expression_type(left, global_tab, tab_funks, funcname);
-            const char* rightright_type = calculate_expression_type(right, global_tab, tab_funks, funcname);
+            const char* rightleft_type = calculate_expression_type(left, global_tab, tab_funks, funcname,1);
+            const char* rightright_type = calculate_expression_type(right, global_tab, tab_funks, funcname,1);
             if (rightleft_type){
                 right_list->list[right_list->index] = rightleft_type;
                 if(type_left){
@@ -232,7 +236,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
             check_right_instr(right, global_tab, tab_funks, funcname,type_left,right_list);
             
         } else if(root->label == Num){
-            const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname);
+            const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname,1);
             if(type_left){
                 if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
                     fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
@@ -264,7 +268,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
     right_list->index = 0;
     if (root->label == ident) {
         int found = 0;
-        const char* left_type = calculate_expression_type(root, global_tab, tab_funks, funcname);
+        const char* left_type = calculate_expression_type(root, global_tab, tab_funks, funcname,0);
         if (is_var_in_table(global_tab, GLOBAL, root->word)) {
             found = 1;
         }
@@ -380,4 +384,32 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
     }
     check_variables(root->firstChild, global_tab, tab_funcs,funcname);
     check_variables(root->nextSibling, global_tab, tab_funcs,funcname);
+
+
+}
+
+
+void check_unitialized_vars(Symbol_table_functions* tab_funk, Symbol_table_global* global_tab) {
+    for (int i = 0; i < global_tab->index_tab; i++) {
+        //printf("var globale affectée %d \n",global_tab->vars[i].is_affected);
+        if (!global_tab->vars[i].is_affected) {
+            fprintf(stderr, "\033[1;35mWarning\033[0m: Variable globale '%s' déclarée mais non initialisée (ligne %d).\n",
+                    global_tab->vars[i].name, global_tab->vars[i].lineno);
+        }
+    }
+    for (int j = 0; j < tab_funk->index_tab; j++) {
+        Symbol_table_function* func = &tab_funk->tab_funcs[j];
+        for (int k = 0; k < func->index_tabv; k++) {
+            if (!func->vars[k].is_affected) {
+                fprintf(stderr, "\033[1;35mWarning\033[0m: Paramètre '%s' de la fonction '%s' déclaré mais non initialisé (ligne %d).\n",
+                        func->vars[k].name, func->name, func->vars[k].lineno);
+            }
+        }
+        for (int l = 0; l < func->local_tab->index_tab; l++) {
+            if (!func->local_tab->vars[l].is_affected) {
+                fprintf(stderr, "\033[1;35mWarning\033[0m: Variable locale '%s' dans la fonction '%s' déclarée mais non initialisée (ligne %d).\n",
+                        func->local_tab->vars[l].name, func->name, func->local_tab->vars[l].lineno);
+            }
+        }
+    }
 }

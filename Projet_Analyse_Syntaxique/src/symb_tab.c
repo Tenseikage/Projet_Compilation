@@ -78,6 +78,7 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
         }
         strcpy((*vars)[*index_tab].name, name);
         (*vars)[*index_tab].type = str_type;
+        (*vars)[*index_tab].is_affected = 0; // Variable pas affecté
         if(type == GLOBAL){
             //printf("mf is global yaaa \n");
             if(!strcmp(str_type,"int")){

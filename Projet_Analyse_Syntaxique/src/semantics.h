@@ -26,4 +26,7 @@ int check_param_local_vars(Symbol_table_functions* tab);
 
 void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs,char* funcname);
 
+
+void check_unitialized_vars(Symbol_table_functions* tab_funk, Symbol_table_global* global_tab);
+
 #endif
