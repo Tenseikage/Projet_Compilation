@@ -84,17 +84,6 @@ Symbol_table_functions* init_symb_tab_func(void);
  */
 void free_all_tables(Symbol_table_global* global_tab, Symbol_table_functions* funcs_tab) ;
 
-/**
- * Vérifie que les variables globales et noms de fonction n'ont pas le même nom
- */
-int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab);
-
-/**
- * Vérifie que les variables locales et paramètres de fonction n'ont pas le même nom
- */
-int check_param_local_vars(Symbol_table_functions* tab);
-
-
 /*Vérifie les variables et les paramètres de fonctions */
 
 void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs,char* funcname);

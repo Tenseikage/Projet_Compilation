@@ -46,6 +46,13 @@ fin:
 
 */
 
+/*FILE* file = fopen("./src/_anonymous2.asm", "w");
+        write_asm_tab_global(file,global_tab);
+        write_asm_file(file);
+        parcours_arbre(root,file,global_tab);
+        write_end_asm_file(file);
+        fclose(file);*/
+
 
 /*Old parcours_arbre_main
 int parcours_arbre_main(Node* root) {

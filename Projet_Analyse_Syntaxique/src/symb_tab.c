@@ -3,6 +3,7 @@
 #include <string.h>
 #include "tree.h"
 #include "symb_tab.h"
+#include "sem_errors_warns.h"
 
 #define INITIAL_SIZE 10
 #define NBR_FUNCS 5
@@ -73,8 +74,8 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
             }
         }
         if ((lineno_found = is_var_in_table(tab, type, name))) {
-            fprintf(stderr, "\033[1;31mErreur 033[0m: la variable existe déjà en ligne : %d\n", lineno_found);
-            exit(EXIT_FAILURE);
+            error_var_exists(lineno_found);
+            //exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
         (*vars)[*index_tab].type = str_type;
@@ -205,7 +206,7 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
                 add_var(tab, types, funcname,return_type, branch_func->lineno,0);
                 (*index)++;
             } else {
-                fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction '%s' déja présente dans le programme (ligne %d).\n", funcname, branch_func->lineno);
+                error_function_exists(funcname,branch_func->lineno);
                 //return;
             }
         } else if(branch_func->label == Void){
@@ -215,9 +216,8 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
                 add_var(tab, types, funcname,return_type, branch_func->lineno,0);
                 (*index)++;
             } else {
-                fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction '%s' déja présente dans le programme (ligne %d).\n", funcname, branch_func->lineno);
+                error_function_exists(funcname,branch_func->lineno);
             }
-            //printf("présence de fonction void !! \n");
         }
 
     }

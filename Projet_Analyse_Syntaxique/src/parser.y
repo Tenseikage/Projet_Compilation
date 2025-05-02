@@ -33,11 +33,7 @@ char *strdup(const char *s) {
 }
 %precedence IF 
 %precedence ELSE 
-%left OR AND
-%left ADDSUB
-%left NOT
-%left DIVSTAR
-%left EQ ORDER
+
 
 
 %token VOID IF ELSE WHILE RETURN OR AND STATIC
@@ -46,7 +42,8 @@ char *strdup(const char *s) {
 %type <node> Prog DeclVars DeclVarsLocale Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar Corps SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 %%
 
-Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog); 
+Prog:  DeclVars DeclFoncts 
+    { $$ = makeNode(Prog); 
     if($1->firstChild == NULL){
          addChild($$, NULL);
     } else {
@@ -56,27 +53,33 @@ Prog:  DeclVars DeclFoncts { $$ = makeNode(Prog);
     ;
 
 DeclVars:
-       DeclVars TYPE Declarateurs ';' { 
+       DeclVars TYPE Declarateurs ';' 
+       { 
        $$ = $1;
        // Vesion père unique, plusieurs fils
        Node* nodeType1 = makeNode(type);
        nodeType1->word = strdup($2);
        addChild($$, nodeType1); addChild(nodeType1, $3); }
+
     |  DeclVars STATIC TYPE Declarateurs ';' {yyerror("Variable globale statique"); return 1;}
     |  { $$ = makeNode(DeclVars); }
     ;
 
 Declarateurs:
-       Declarateurs ',' IDENT { $$ = $1;
+       Declarateurs ',' IDENT 
+       { $$ = $1;
        Node* nodeIdent = makeNode(ident);
        nodeIdent->word = strdup($3); // Autre variable liée à la première
        addSibling($$, nodeIdent); }
-    |  IDENT  { $$ = makeNode(ident);
+       
+    |  IDENT  
+      { $$ = makeNode(ident);
        $$->word = strdup($1); }
     ;
 
 DeclFoncts:
-       DeclFoncts DeclFonct { $$ = $1; 
+       DeclFoncts DeclFonct 
+       { $$ = $1; 
        addSibling($$, $2);
        }
     |  DeclFonct { $$ = $1; }
@@ -89,7 +92,8 @@ DeclFonct:
     ;
 
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')' { $$ = makeNode(EnTeteFonct); 
+       TYPE IDENT '(' Parametres ')' 
+       { $$ = makeNode(EnTeteFonct); 
        Node* nodeType = makeNode(type);
        nodeType->word = strdup($1);
        addChild($$, nodeType); 
@@ -98,7 +102,8 @@ EnTeteFonct:
        addChild($$, nodeIdent); 
        addSibling($$, $4); }
 
-    |  VOID IDENT '(' Parametres ')' { 
+    |  VOID IDENT '(' Parametres ')' 
+       { 
        $$ = makeNode(Void); 
        Node* nodeIdent = makeNode(ident);
        nodeIdent->word = strdup($2);
@@ -112,7 +117,8 @@ Parametres:
     ;
 
 ListTypVar:
-       ListTypVar ',' TYPE IDENT { $$ = $1;
+       ListTypVar ',' TYPE IDENT 
+       { $$ = $1;
        Node* nodeType = makeNode(type);
        nodeType->word = strdup($3); 
        Node* nodeIdent = makeNode(ident);
@@ -293,10 +299,10 @@ F:
         $$->value = $1; 
         
     }
-    |  CHARACTER {$$ = makeNode(Character);
-       $$->word = strdup($1);}
     |  IDENT { $$ = makeNode(ident);
                $$->word = strdup($1); }
+    |  CHARACTER {$$ = makeNode(Character);
+       $$->word = strdup($1);}
     |  IDENT '(' Arguments ')' {$$ = makeNode(ident);
        $$->word = strdup($1);
        //Node nodeArg = makeNode(Arguments);

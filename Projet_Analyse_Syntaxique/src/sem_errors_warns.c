@@ -6,7 +6,7 @@ int semantic_warns = 0;
 int semantic_errors = 0;
 
 void error_var_exists(int lineno){
-	fprintf(stderr, "\033[1;31mErreur 033[0m: la variable existe déjà en ligne : %d\n", lineno);
+	fprintf(stderr, "\033[1;31mErreur \033[0m: la variable lllexiste déjà en ligne : %d\n", lineno);
 	semantic_errors++;
 }
 
@@ -23,7 +23,7 @@ void error_global_var_func(int line_var_global,int line_func){
 }
 
 
-void error_same_var_param_func(const char varname,int var_line){
+void error_same_var_param_func(const char* varname,int var_line){
 	fprintf(stderr, "\033[1;31mErreur\033[0m: Même définition variable locale / Paramètre de fonction. Nom : %s, Ligne : %d\n", varname,var_line);
     semantic_errors++;
 
@@ -41,7 +41,7 @@ void error_incomp_affect(const char* left_type,const char* func_ret_type,int lin
 }
 
 void warn_implicit_func_declare(const char* funcname, int lineno){
-	fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
+	fprintf(stderr, "\033[1;35mWarning\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
 	semantic_warns++;
 }
 
@@ -62,7 +62,7 @@ void error_func_toofewargs(const char* funcname, int lineno){
 
 
 void error_func_toomanyargs(const char* funcname, int lineno){
-	printf(stderr, "\033[1;31mErreur\033[0m: Beaucoup d'arguments dans la fonction %s appelée (ligne %d).\n", funcname, lineno);
+	fprintf(stderr, "\033[1;31mErreur\033[0m: Beaucoup d'arguments dans la fonction %s appelée (ligne %d).\n", funcname, lineno);
 	semantic_errors += 1;
 }
 

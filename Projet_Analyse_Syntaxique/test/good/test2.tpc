@@ -1,6 +1,6 @@
 int a;
 char b;
-int a,a;
+int a;
 /*fonction
 vraiment
 ÉTRANGE*/

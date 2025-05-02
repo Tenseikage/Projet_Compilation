@@ -8,7 +8,7 @@ def compile() -> None:
     Cette fonction crée l'exécutable du
     projet pour la mise en place des tests
     """
-    if os.path.exists("bin/tpcas") == False:
+    if os.path.exists("bin/tpcc") == False:
         command = "make"
         subprocess.run(command,stderr = subprocess.PIPE,check=False)
         #print(result)
@@ -26,8 +26,8 @@ def test_tpc_files(good: int, bad: int) -> Tuple[int, int]:
     print("             ERREURS DE TESTS")
     print("---------------------------------------------------")
     for k in range(len(directory1)):
-        command1 = ["./bin/tpcas -n", "<", "./test/good/" + directory1[k]]
-        command2 = ["./bin/tpcas -n", "<", "./test/syn-err/" + directory2[k]]
+        command1 = ["./bin/tpcc ", "<", "./test/good/" + directory1[k]]
+        command2 = ["./bin/tpcc ", "<", "./test/syn-err/" + directory2[k]]
         result1 = subprocess.run(" ".join(command1), shell=True, stderr=subprocess.PIPE, check=False)
         result2 = subprocess.run(" ".join(command2), shell=True, stderr=subprocess.PIPE, check=False)
         if (result1.returncode == 0) : good+=1

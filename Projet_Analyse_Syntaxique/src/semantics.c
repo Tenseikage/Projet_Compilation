@@ -4,35 +4,28 @@
 #include "tree.h"
 #include "symb_tab.h"
 #include "semantics.h"
-
-int semantic_errors = 0; // Erreurs sémantiques
-
+#include "sem_errors_warns.h"
 
 
-int check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
+void check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
     int line_return;
     for(int i = 0; i < tab->index_tab; i++){
         if((line_return = is_var_in_table(global_tab,GLOBAL,tab->tab_funcs[i].name))){
-            fprintf(stderr,"\033[1;31mErreur\033[0m: Même définition variable globale ligne : %d / Nom de fonction ligne : %d\n",line_return,tab->tab_funcs[i].lineno);
-            return 1;
+            error_global_var_func(line_return,tab->tab_funcs[i].lineno);
         }
     }
-    return 0;
 
 }
 
-int check_param_local_vars(Symbol_table_functions* tab){
+void check_param_local_vars(Symbol_table_functions* tab){
     for(int j = 0; j < tab->index_tab; j++){
         for(int k = 0;k < tab->tab_funcs[j].index_tabv;k++){
             //printf("Nom de var %s \n", tab->tab_funcs[j].vars[k].name);
             if(is_var_in_table(tab->tab_funcs[j].local_tab,LOCAL, tab->tab_funcs[j].vars[k].name)){
-                fprintf(stderr, "\033[1;31mErreur\033[0m: Même définition variable locale / Paramètre de fonction. Nom : %s, Ligne : %d\n", tab->tab_funcs[j].vars[k].name, tab->tab_funcs[j].vars[k].lineno);
-                return 1;
+                error_same_var_param_func(tab->tab_funcs[j].vars[k].name, tab->tab_funcs[j].vars[k].lineno);
             }
         }
     }
-
-    return 0;
 }
 
 const char* get_var_type(void* tab, TableType type, const char* name) {
@@ -146,7 +139,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
             const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname,1);
             if(type_left){
                 if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
-                    fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
+                    warn_implicit_conv_int_char(root->lineno);
                 }
             }
             if (branch) {
@@ -157,8 +150,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
                             //printf("retour fonction %s, type gauche %s \n",tab_funks->tab_funcs[i].returnType,type_left);
                             if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
-                                fprintf(stderr, "\033[1;31mErreur\033[0m: Affectation incompatible %s/%s (ligne %d)\n",type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
-                                semantic_errors++;
+                                error_incomp_affect(type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
                                 return;
                             }
                             found = 1;
@@ -166,8 +158,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                         }
                     }
                     if (!found) {
-                        fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
-                        semantic_errors += 1;
+                        warn_implicit_func_declare(word_func, branch->lineno);
                         return;
                     }
                 } else if (branch->label == Void){
@@ -175,8 +166,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                     for (int i = 0; i < tab_funks->index_tab; i++) {
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
                             if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
-                                fprintf(stderr, "\033[1;31mErreur\033[0m: Affectation incompatible %s/%s (ligne %d)\n",type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
-                                semantic_errors++;
+                                error_incomp_affect(type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
                                 return;
                             }
                             found = 1;
@@ -184,8 +174,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                         }
                     }
                     if (!found) {
-                        fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, branch->lineno);
-                        semantic_errors += 1;
+                        warn_implicit_func_declare(word_func, branch->lineno);
                         return;
                     }
 
@@ -204,8 +193,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 // Vérifier si le membre droit est une constante ou une expression constante
                 if (evaluate_constant_expression(right, &right_value)) {
                     if (right_value == 0) {
-                        fprintf(stderr, "\033[1;35mWarning\033[0m: Division par zéro détectée dans une expression (ligne %d).\n", root->lineno);
-                        semantic_errors += 1;
+                        warn_div_by_zero(root->lineno);
                         return;
                     }
                 }
@@ -216,7 +204,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 right_list->list[right_list->index] = rightleft_type;
                 if(type_left){
                     if(!strcmp(type_left,"char") && !strcmp(rightleft_type,"int")){
-                        fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
+                        warn_implicit_conv_int_char(root->lineno);
                     }
                 }
                right_list->index++;
@@ -225,7 +213,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 right_list->list[right_list->index] = rightright_type;
                 if(type_left){
                     if(!strcmp(type_left,"char") && !strcmp(rightright_type,"int")){
-                        fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
+                        warn_implicit_conv_int_char(root->lineno);
 
                     }
                 }
@@ -238,7 +226,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
             const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname,1);
             if(type_left){
                 if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
-                    fprintf(stderr, "\033[1;35mWarning\033[0m: Conversion implicite de 'int' en 'char' (ligne %d).\n", root->lineno); 
+                    warn_implicit_conv_int_char(root->lineno);
                     
                 }
             }
@@ -251,7 +239,7 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
 void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname,int returnhere) {
     if (!root){
         if(!returnhere){
-            fprintf(stderr, "\033[1;35mWarning\033[0m: Absence de return dans la fonction non void %s \n", funcname); 
+            warn_no_return(funcname);
             return;
             
         } else {
@@ -291,18 +279,15 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                         found = 1;
                         //printf("Nb params func %d \n", tab_funks->tab_funcs[i].index_tabv);
                         if(tab_funks->tab_funcs[i].index_tabv > nb_params){
-                            fprintf(stderr, "\033[1;31mErreur\033[0m: Pas assez d'arguments dans la fonction %s appelée(ligne %d).\n", word_func, branch->lineno);
-                            semantic_errors += 1; 
+                            error_func_toofewargs(word_func, branch->lineno);
                         } else if(tab_funks->tab_funcs[i].index_tabv < nb_params){
-                            fprintf(stderr, "\033[1;31mErreur\033[0m: Beaucoup d'arguments dans la fonction %s appelée (ligne %d).\n", word_func, branch->lineno);
-                            semantic_errors += 1;
+                            error_func_toomanyargs(word_func, branch->lineno);
                         }
                         break;
                     }
                 }
                 if (!found) {
-                    fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", word_func, root->lineno);
-                    semantic_errors += 1;
+                    warn_implicit_func_declare(word_func,root->lineno);
                 }  
             } else {
 
@@ -325,8 +310,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                     }
                 }
                 if (!found) {
-                    fprintf(stderr, "\033[1;31mErreur\033[0m: Variable '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);  
-                    semantic_errors += 1;
+                    error_undeclare_var(root->word, root->lineno);
                 }    
             }
         }if (root->firstChild){
@@ -348,14 +332,14 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 if(branch){
                     if(branch->label == Num){
                         if(!strcmp("char",funcsignType)){
-                            fprintf(stderr, "\033[1;35mWarning\033[0m: Retour implicite de 'int' dans une fonction de retour 'char' (ligne %d).\n", root->lineno); 
+                            warn_ret_int_func_char(root->lineno);
                         } else if(!strcmp("void",funcsignType)){
-                            fprintf(stderr, "\033[1;35mWarning\033[0m: Retour int dans une fonction de retour void (ligne %d).\n",root->lineno);   
+                            warn_ret_int_func_void(root->lineno);
                         }
                     } 
                 } else {
                     if(strcmp(funcsignType,"void")){
-                        fprintf(stderr, "\033[1;35mWarning\033[0m: Retour void dans une fonction de retour  %s (ligne %d).\n",funcsignType, root->lineno);  
+                        warn_ret_void_func(funcsignType,root->lineno);
                     }
                 }
 
@@ -393,16 +377,14 @@ void check_unitialized_vars(Symbol_table_functions* tab_funk, Symbol_table_globa
     for (int i = 0; i < global_tab->index_tab; i++) {
         //printf("var globale affectée %d \n",global_tab->vars[i].is_affected);
         if (!global_tab->vars[i].is_affected) {
-            fprintf(stderr, "\033[1;35mWarning\033[0m: Variable globale '%s' déclarée mais non initialisée (ligne %d).\n",
-                    global_tab->vars[i].name, global_tab->vars[i].lineno);
+            warn_global_unitialized(global_tab->vars[i].name, global_tab->vars[i].lineno);
         }
     }
     for (int j = 0; j < tab_funk->index_tab; j++) {
         Symbol_table_function* func = &tab_funk->tab_funcs[j];
         for (int l = 0; l < func->local_tab->index_tab; l++) {
             if (!func->local_tab->vars[l].is_affected) {
-                fprintf(stderr, "\033[1;35mWarning\033[0m: Variable locale '%s' dans la fonction '%s' déclarée mais non initialisée (ligne %d).\n",
-                        func->local_tab->vars[l].name, func->name, func->local_tab->vars[l].lineno);
+                warn_local_unitialized(func->local_tab->vars[l].name, func->name, func->local_tab->vars[l].lineno);
             }
         }
     }

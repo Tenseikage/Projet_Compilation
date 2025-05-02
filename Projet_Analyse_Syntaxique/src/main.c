@@ -6,6 +6,7 @@
 #include "parser.tab.h"
 #include "symb_tab.h"
 #include "semantics.h"
+#include "sem_errors_warns.h"
 #include "write_asmfile.h"
 
 extern Node* root;
@@ -74,58 +75,25 @@ int main(int argc, char *argv[]) {
     Symbol_table_functions* tab_funcs = init_symb_tab_func();
     char* funcname = NULL;
     //int byte_global = 0;
-    if (args_choice(argc, argv) == 1) {
-        if (!yyparse()) {
-            printTree(root);
-            //printf("Var global length : %d \n", byte_global);
-
-            deleteTree(root);
-            //free_all_tables(global_tab, tab_funcs);
-            return 0;
-        } else {
-            fprintf(stderr, "Affichage de l'arbre impossible ! \n");
-            free_all_tables(global_tab, tab_funcs);
-            return 1;
-        }
-    } else {
-        int parse_result = yyparse();
+    if(!ypparse()){
         int index = 0;
-        printf("\n");
         fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
         fill_symb_tab(global_tab, GLOBAL, root);
         // Stocker les résultats des fonctions de vérification
-        int param_error = check_param_local_vars(tab_funcs);
-        int name_error = check_name_func_global(tab_funcs, global_tab);
-
-        // Vérifiez si l'une des deux fonctions retourne 1 (indiquant une erreur)
-        if (param_error || name_error) {
-            if (param_error) {
-                fprintf(stderr, "Erreur : Conflit entre les paramètres et les variables locales.\n");
-            }
-            if (name_error) {
-                    fprintf(stderr, "Erreur : Conflit entre les noms de fonctions et les variables globales.\n");
-            }
-        } else {
-            //Args affichage table des symboles
-            /*printf("============================================\n");
-            display_symb_tab(global_tab, GLOBAL);
-            printf("============================================\n");
-            printf("Fonctions et variables locales \n");
-            printf("============================================\n");
-            display_symb_tab(tab_funcs, FUNCTION);
-            printf("============================================\n");*/
-            check_variables(root, global_tab, tab_funcs,funcname);
-            check_unitialized_vars(tab_funcs,global_tab);
-            
+        check_param_local_vars(tab_funcs);
+        check_name_func_global(tab_funcs, global_tab);
+        check_variables(root, global_tab, tab_funcs,funcname);
+        check_unitialized_vars(tab_funcs,global_tab);
+        if (semantic_errors > 0){
+            free_all_tables(global_tab, tab_funcs);
+            return 2;
         }
-        /*FILE* file = fopen("./src/_anonymous2.asm", "w");
-        write_asm_tab_global(file,global_tab);
-        write_asm_file(file);
-        parcours_arbre(root,file,global_tab);
-        write_end_asm_file(file);
-        fclose(file);*/
         free_all_tables(global_tab, tab_funcs);
-        return parse_result;
+        return 0;
+    } else {
+        free_all_tables(global_tab, tab_funcs);
+        return 1;
     }
+
 }
 
