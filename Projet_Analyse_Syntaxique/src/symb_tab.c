@@ -96,7 +96,7 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
         (*vars)[*index_tab].isStatic = state;
         (*vars)[*index_tab].lineno = lineno;
         (*index_tab)++;
-    } else if(type == FUNCTION) {
+    }else if(type == FUNCTION) {
         if(*index_tab >= *table_size){
             *table_size *= RESIZE_FACTOR;
             *funcs = realloc(*funcs,*table_size *  sizeof(Symbol_table_function));
@@ -104,10 +104,6 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
                 fprintf(stderr, "Erreur d'allocation de mémoire de 2\n");
                 exit(EXIT_FAILURE);
             }
-        }
-        if ((lineno_found = is_var_in_table(tab, type, name))) {
-            fprintf(stderr, "\033[1;31mErreur de sémantique\033[0m: le nom existe déjà en ligne : %d\n", lineno_found);
-            return;
         }
         strcpy((*funcs)[*index_tab].name, name);
         //printf("retour type fonction fdp !! %s \n", str_type);
@@ -258,27 +254,27 @@ void* init_table(TableType type) {
     if (type == LOCAL) {
         tab = malloc(sizeof(Symbol_table_locale));
         if (!tab) {
-            fprintf(stderr, "Erreur d'allocation de mémoire 2\n");
+            fprintf(stderr, "Erreur d'allocation de mémoire 3\n");
             exit(EXIT_FAILURE);
         }
         ((Symbol_table_locale*)tab)->table_size = INITIAL_SIZE;
         ((Symbol_table_locale*)tab)->index_tab = 0;
         ((Symbol_table_locale*)tab)->vars = malloc(INITIAL_SIZE * sizeof(Data));
         if (!((Symbol_table_locale*)tab)->vars) {
-            fprintf(stderr, "Erreur d'allocation de mémoire 3\n");
+            fprintf(stderr, "Erreur d'allocation de mémoire 4\n");
             exit(EXIT_FAILURE);
         }
     } else {
         tab = malloc(sizeof(Symbol_table_global));
         if (!tab) {
-            fprintf(stderr, "Erreur d'allocation de mémoire\n");
+            fprintf(stderr, "Erreur d'allocation de mémoire 5\n");
             exit(EXIT_FAILURE);
         }
         ((Symbol_table_global*)tab)->table_size = INITIAL_SIZE;
         ((Symbol_table_global*)tab)->index_tab = 0;
         ((Symbol_table_global*)tab)->vars = malloc(INITIAL_SIZE * sizeof(Data));
         if (!((Symbol_table_global*)tab)->vars) {
-            fprintf(stderr, "Erreur d'allocation de mémoire 4\n");
+            fprintf(stderr, "Erreur d'allocation de mémoire 6\n");
             exit(EXIT_FAILURE);
         }
     }

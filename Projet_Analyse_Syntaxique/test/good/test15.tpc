@@ -2,7 +2,12 @@ int a;
 char b;
 int c;
 int add(int a, int b){
+	sub(a,b);
 	return a + b;
+}
+
+int sub(int q, int m){
+	return 0;
 }
 
 int main(void){

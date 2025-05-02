@@ -17,7 +17,7 @@ void errorIgnoredVoid(Node* node);
  * Incremente nb_error
  * @param node La node problematique
  */
-void errorImpliciteDecl(Node* node);
+void warningImpliciteDecl(Node* node);
 
 //Fait
 /**
