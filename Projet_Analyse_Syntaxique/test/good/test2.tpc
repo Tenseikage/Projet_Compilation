@@ -5,15 +5,15 @@ int c;
 vraiment
 ÉTRANGE*/
 
-int p(int a, int b){
-	a()
-	return 0;
+void p(int a, int b){
+	a();
+	return;
 }
 int main(void){
 	//static int hello, goodbye, aa, bfdfff;
 	a = 1;
 	c = 1;
-	if ((a+b) + p(1,2,3)){
+	if (p(1,2,3)){
 		a = 2;
 		return 0;
 	} else {

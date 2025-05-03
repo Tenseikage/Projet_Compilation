@@ -261,6 +261,7 @@ void evaluate_condexp(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 int func_params = nb_params_func(tab_funks,root->word);
                 if(func_returntype){
                     if(!strcmp(func_returntype,"void")){
+                       
                        error_void_cond(root->lineno);
                     } else if (nb_params < func_params){
                         error_func_toofewargs(root->word, branch->lineno);

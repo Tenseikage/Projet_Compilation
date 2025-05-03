@@ -187,13 +187,15 @@ Instr:
         }
 
     |  IF '(' Exp ')' Instr ELSE Instr %prec ELSE { 
-       Node* nodeIf = makeNode(If);
+       $$ = makeNode(If);
+       Node* exp = makeNode (Exp);
        Node* nodeElse = makeNode(Else);
-       addChild(nodeIf,$3);
-       addChild(nodeIf,$5);
+       addChild(exp,$3);
+       addChild($$,exp);
+       addChild($$,$5);
        addChild(nodeElse,$7);
-       addSibling(nodeIf,nodeElse); 
-       $$ = nodeIf;}
+       addSibling($$,nodeElse); 
+       }
 
 
 
