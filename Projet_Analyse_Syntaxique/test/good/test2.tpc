@@ -18,6 +18,7 @@ int main(void){
 		return 0;
 	} else {
 		a = 2;
+		m = 3;
 	}
 		
 	

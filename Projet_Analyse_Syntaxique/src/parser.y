@@ -201,7 +201,9 @@ Instr:
 
     |  WHILE '(' Exp ')' Instr { 
         $$ = makeNode(While);
-        addChild($$,$3);
+        Node* exp = makeNode (Exp);
+        addChild(exp,$3);
+        addChild($$,exp);
         addChild($$,$5);
     }
 
@@ -255,7 +257,7 @@ M:
         Node* nodeOrder = makeNode(Order);
         nodeOrder->word = strdup($2);
         addChild(nodeOrder,$1); 
-        addChild($$, $3);
+        addChild(nodeOrder, $3);
         $$ = nodeOrder; 
     }
     |  E { $$ = $1; }

@@ -1,8 +1,6 @@
-int a;
-char b;
-int c;
 
-int div(int a, int b){
+
+int div(char lettre){
 	if(b == 0){
 		return 0;
 	} else {

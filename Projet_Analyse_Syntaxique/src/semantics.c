@@ -136,15 +136,10 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
         }
         if (root->label == ident) {
             Node* branch = root->firstChild;
-            const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname,1);
-            if(type_left){
-                if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
-                    warn_implicit_conv_int_char(root->lineno);
-                }
-            }
             if (branch) {
                 int found = 0;
                 if (branch->label == Arguments) {
+                    //printf("func \n");
                     char* word_func = root->word;
                     for (int i = 0; i < tab_funks->index_tab; i++) {
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
@@ -179,10 +174,20 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                     }
 
                 }
-            } /// A voir
+            } else {
+                //printf("ident %s \n", root->word);
+                // Node* branch = root->firstChild;
+                 const char* type_right = calculate_expression_type(root, global_tab, tab_funks, funcname,1);
+                 if(type_left){
+                     if(!strcmp(type_left,"char") && !strcmp(type_right,"int")){
+                         warn_implicit_conv_int_char(root->lineno);
+                     }
+                 }
+            }
         } else if (root->label == Addsub || root->label == divstar) {
             Node* left = root->firstChild;
             Node* right = root->firstChild->nextSibling;
+            //printf("oui right \n");
             if (!left || !right) {
                 //fprintf(stderr, "\033[1;31mErreur\033[0m: Opération incomplète (ligne %d).\n", root->lineno);
                 //semantic_errors += 1;
@@ -273,7 +278,7 @@ void evaluate_condexp(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 }  
             }
             if (branch->label == Void){
-                printf("oui func void \n");
+                //printf("oui func void \n");
                 char* func_returntype = is_func_in_tab(tab_funks,root->word);
                     if(func_returntype){
                         if(!strcmp(func_returntype,"void")){
@@ -321,7 +326,12 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
             evaluate_condexp(condition->firstChild,global_tab,tab_funks,funcname);  
         }
         
-
+    } 
+    if (root->label == While){
+        Node* condition = root->firstChild;
+        if(condition->label == Exp){
+            evaluate_condexp(condition->firstChild,global_tab,tab_funks,funcname);  
+        }
     }
     if (root->label == ident) {
         int found = 0;

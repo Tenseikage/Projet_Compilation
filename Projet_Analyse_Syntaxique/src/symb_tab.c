@@ -20,14 +20,23 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
 		Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
 		index_tab = sym_tab->index_tab;
 		vars = sym_tab->vars;
-   	} else {
+   	} else if (type == GLOBAL) {
 		Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
 		index_tab = sym_tab->index_tab;
 		vars = sym_tab->vars;
-    } 
+    } else if (type == VARS){
+        Symbol_table_function* sym_tab = (Symbol_table_function*)tab;
+        index_tab = sym_tab->index_tabv;
+        vars = sym_tab->vars;
+    }
 	for (int i = 0; i < index_tab; i++) {
-        if (strcmp(vars[i].name, name) == 0) {
-            return vars[i].lineno; 
+        if(name){
+            //printf("mot recherché %s", vars[i].name);
+            if (strcmp(vars[i].name, name) == 0) {
+                return vars[i].lineno; 
+            }
+        } else {
+            return 0;
         }
     }
     return 0; 
@@ -57,6 +66,7 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
         index_tab = &sym_tab->index_tab;
         funcs = &sym_tab->tab_funcs;
     } else {
+        //printf("oui infunc\n");
         Symbol_table_function* func = (Symbol_table_function*)tab;
         table_size = &func->tabv_size;
         index_tab = &func->index_tabv;
@@ -123,6 +133,7 @@ void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
     if(root->label == type){
         Node* branch = root->nextSibling;
         if (branch->label == ident){
+            //printf("tname %s, type %s \n",branch->word,root->word);
             add_var(tab,types,branch->word,root->word,branch->lineno,0);
         }
         
@@ -216,6 +227,8 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
         if(branch_func->label == EnTeteFonct){
             char* funcname = branch_func->firstChild->nextSibling->word;
             char* return_type = branch_func->firstChild->word;
+            //printf("funcname %s \n", funcname);
+            //printf("return type %s \n", return_type);
             if(!is_func_in_tab(tab,funcname)){
                 add_var(tab, types, funcname,return_type, branch_func->lineno,0);
                 (*index)++;

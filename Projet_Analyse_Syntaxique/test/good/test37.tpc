@@ -1,21 +1,13 @@
 
 
-/*                    Compte
-
-bon retour
-
-caractère  */    
-int nbretourBonChar(char lettre){
-	int cpt;
-	while(lettre != 'a'){
-		cpt = cpt + 1;
-	}
-	return cpt;
+  
+int bonRetourChar(int lettre){
+	return 0;
 }
 
 int main(void){
 	static char b;
-	nbretourBonChar('c');
+	gttchar('c');
 	b = 'b';
 	return 0;
 }
