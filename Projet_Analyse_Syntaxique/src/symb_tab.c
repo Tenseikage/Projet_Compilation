@@ -181,17 +181,31 @@ void fill_symb_tab(void* tab, TableType type, Node* root) {
 
 }
 
-int is_func_in_tab(Symbol_table_functions* tab, const char* funcname) {
+char* is_func_in_tab(Symbol_table_functions* tab, const char* funcname) {
     if (!tab || !funcname) {
-        return 0;
+        return NULL;
     }
     for (int i = 0; i < tab->index_tab; i++) {
         if (strcmp(tab->tab_funcs[i].name, funcname) == 0) {
-            return 1; 
+            return tab->tab_funcs[i].returnType; 
 
         }
     }
-    return 0;
+    return NULL;
+}
+
+int nb_params_func(Symbol_table_functions* tab, const char* funcname){
+    if (!tab || !funcname) {
+        return -1;
+    }
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (strcmp(tab->tab_funcs[i].name, funcname) == 0) {
+            return tab->tab_funcs[i].index_tabv; 
+
+        }
+    }
+    return -1;
+
 }
 
 void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root, int* index){

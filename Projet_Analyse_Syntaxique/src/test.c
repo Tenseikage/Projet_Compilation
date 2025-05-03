@@ -1,10 +1,14 @@
 #include<stdio.h>
 //int main;
-char q(int a){
-  return 97;
+void q(int a){
+  return;
 }
 int main(int argc, char const *argv[])
 {
+  int b = 2;
+  if(m(97)){
+    printf("oui \n");
+  }
   int main;
 	int a = 0;
   a = a + 3;

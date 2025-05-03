@@ -93,4 +93,10 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
  */
 int is_var_in_table(void* tab, TableType type, const char* name);
 
+
+char* is_func_in_tab(Symbol_table_functions* tab, const char* funcname);
+
+
+int nb_params_func(Symbol_table_functions* tab, const char* funcname);
+
 #endif

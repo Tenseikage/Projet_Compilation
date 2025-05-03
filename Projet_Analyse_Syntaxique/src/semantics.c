@@ -234,6 +234,64 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
         }
 }
 
+void evaluate_condexp(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
+    if (!root) return;
+    if (root->label == Addsub || root->label == divstar || root->label == Or || root->label == And || root->label == Eq || root->label == Order) {
+        Node* left = root->firstChild;
+        Node* right = root->firstChild->nextSibling;
+        if (left) {
+            evaluate_condexp(left, global_tab, tab_funks, funcname);
+        }
+
+        if (right) {
+            evaluate_condexp(right, global_tab, tab_funks, funcname);
+        }
+    } else if (root->label == ident) {
+        //printf("esos \n");
+        Node* branch = root->firstChild;
+        if(branch){
+            if(branch->label == Arguments){
+                int nb_params = 0;
+                Node* branch_args = branch->firstChild;
+                while(branch_args){
+                    nb_params++;
+                    branch_args = branch_args->nextSibling;
+                }
+                char* func_returntype = is_func_in_tab(tab_funks,root->word);
+                int func_params = nb_params_func(tab_funks,root->word);
+                if(func_returntype){
+                    if(!strcmp(func_returntype,"void")){
+                       error_void_cond(root->lineno);
+                    } else if (nb_params < func_params){
+                        error_func_toofewargs(root->word, branch->lineno);
+                    } else if (nb_params > func_params) {
+                        error_func_toomanyargs(root->word, branch->lineno);
+                    }
+                } else {
+                    warn_implicit_func_declare(root->word,root->lineno);
+                }  
+            }
+            if (branch->label == Void){
+                printf("oui func void \n");
+                char* func_returntype = is_func_in_tab(tab_funks,root->word);
+                    if(func_returntype){
+                        if(!strcmp(func_returntype,"void")){
+                           error_void_cond(root->lineno);
+                        }
+
+                    } else {
+                        warn_implicit_func_declare(root->word,root->lineno);
+                    }
+            }
+
+        } else {
+            const char* type = calculate_expression_type(root, global_tab, tab_funks, funcname, 0);
+            if (!type) {
+                error_undeclare_var(root->word, root->lineno);
+            }
+        }
+    } 
+}
 
 
 void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname,int returnhere) {
@@ -252,8 +310,18 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
        return;
     }
     // Vérifier les if fonction
+
     right_list->list = NULL;
     right_list->index = 0;
+    if(root->label == If){
+        //check_if(root,global_tab,tab_funks,funcname,returnhere);
+        Node* condition = root->firstChild;
+        if(condition->label == Exp){
+            evaluate_condexp(condition->firstChild,global_tab,tab_funks,funcname);  
+        }
+        
+
+    }
     if (root->label == ident) {
         int found = 0;
         const char* left_type = calculate_expression_type(root, global_tab, tab_funks, funcname,0);
@@ -327,7 +395,6 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
         for(int i = 0; i < index_tab; i++){
             if (!strcmp(funcs[i].name,funcname)){
                 char* funcsignType = funcs[i].returnType;
-                //if()
                 Node* branch = root->firstChild;
                 if(branch){
                     if(branch->label == Num){
@@ -363,7 +430,9 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
     }
     if (root->label ==  Instr) {
         int returnhere = 0;
+        //printf("instr here \n");
         check_left_instr(root->firstChild,global_tab,tab_funcs,funcname,returnhere);
+
         
     }
     check_variables(root->firstChild, global_tab, tab_funcs,funcname);

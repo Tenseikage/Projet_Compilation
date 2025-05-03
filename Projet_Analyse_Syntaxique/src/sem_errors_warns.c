@@ -40,8 +40,12 @@ void error_incomp_affect(const char* left_type,const char* func_ret_type,int lin
 
 }
 
+/*void error_implicit_func_declare(const char* funcname, int lineno){
+	fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
+	semantic_errors++;
+}*/
 void warn_implicit_func_declare(const char* funcname, int lineno){
-	fprintf(stderr, "\033[1;35mWarning\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
+	fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
 	semantic_warns++;
 }
 
@@ -100,8 +104,22 @@ void warn_global_unitialized(const char* varname, int lineno){
 void warn_local_unitialized(const char* varname,const char* funcname,int lineno){
 	fprintf(stderr, "\033[1;35mWarning\033[0m: Variable locale '%s' dans la fonction '%s' déclarée mais non initialisée (ligne %d).\n",
 		varname,funcname,lineno);
+	semantic_warns++;
 
 }
+
+void error_void_cond(int lineno){
+	fprintf(stderr, "\033[1;31mErreur\033[0m: La condition du 'if' doit être de type arithmétique (ligne %d).\n",lineno);
+	semantic_errors++;
+}
+
+/*oid error_condition_ident(int lineno){
+	fprintf(stderr, "\033[1;31mErreur\033[0m: La condition du 'if' doit être de type 'int' (ligne %d).\n",lineno);
+	semantic_errors++;
+
+}*/
+
+
 
 
 

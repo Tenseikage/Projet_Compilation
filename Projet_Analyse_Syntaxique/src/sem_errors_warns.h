@@ -19,7 +19,8 @@ void warn_implicit_conv_int_char(int lineno);
 
 void error_incomp_affect(const char* left_type, const char* func_ret_type, int lineno);
 
-void warn_implicit_func_declare(const char* funcname, int lineno);
+//void error_implicit_func_declare(const char* funcname, int lineno);
+void warn_implicit_func_declare(const char* funcname,int lineno);
 
 void warn_div_by_zero(int lineno);
 
@@ -40,5 +41,8 @@ void warn_ret_void_func(const char* funcsignType, int lineno);
 void warn_global_unitialized(const char* varname, int lineno);
 
 void warn_local_unitialized(const char* varname, const char* funcname, int lineno);
+
+void error_void_cond(int lineno);
+
 
 #endif // SEM_ERRORS_WARNS_H

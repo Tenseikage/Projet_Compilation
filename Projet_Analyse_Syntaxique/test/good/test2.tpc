@@ -1,15 +1,29 @@
 int a;
 char b;
-int a;
+int c;
 /*fonction
 vraiment
 ÉTRANGE*/
+
+int p(int a, int b){
+	a()
+	return 0;
+}
 int main(void){
-	static int hello, goodbye, aa, bfdfff;
-	if (i && a){
-		i = 1;
-		if (i <= a){}
-		
+	//static int hello, goodbye, aa, bfdfff;
+	a = 1;
+	c = 1;
+	if ((a+b) + p(1,2,3)){
+		a = 2;
+		return 0;
+	} else {
+		a = 2;
 	}
+		
+	
 	return 1;
+}
+
+int a(void){
+	return 0;
 }
