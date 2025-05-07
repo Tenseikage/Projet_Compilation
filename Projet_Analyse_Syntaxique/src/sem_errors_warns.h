@@ -44,5 +44,6 @@ void warn_local_unitialized(const char* varname, const char* funcname, int linen
 
 void error_void_cond(int lineno);
 
+void error_no_main(void);
 
 #endif // SEM_ERRORS_WARNS_H

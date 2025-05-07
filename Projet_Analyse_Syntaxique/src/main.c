@@ -70,7 +70,7 @@ extern Node* root;
 }*/
  
 
-int main(int argc, char *argv[]) {
+/*int main(int argc, char *argv[]) {
     Symbol_table_global* global_tab = init_table(GLOBAL);
     Symbol_table_functions* tab_funcs = init_symb_tab_func();
     char* funcname = NULL;
@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
             fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
             fill_symb_tab(global_tab, GLOBAL, root);
             // Stocker les résultats des fonctions de vérification
+            is_main_in_code(tab_funcs) ;
             check_param_local_vars(tab_funcs);
             check_name_func_global(tab_funcs, global_tab);
             check_variables(root, global_tab, tab_funcs,funcname);
@@ -109,9 +110,9 @@ int main(int argc, char *argv[]) {
         }
     
     }
-}
+}*/
 
-/*int main(int argc,char *argv[]) {
+int main(int argc,char *argv[]) {
     // Afficher l'arbre fait planter le bac à sable
     Symbol_table_global* global_tab = init_table(GLOBAL);
     Symbol_table_functions* tab_funcs = init_symb_tab_func();
@@ -120,6 +121,7 @@ int main(int argc, char *argv[]) {
         int index = 0;
         fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
         fill_symb_tab(global_tab, GLOBAL, root);
+        is_main_in_code(tab_funcs);
         check_param_local_vars(tab_funcs);
         check_name_func_global(tab_funcs, global_tab);
         check_variables(root, global_tab, tab_funcs,funcname);
@@ -134,5 +136,5 @@ int main(int argc, char *argv[]) {
         free_all_tables(global_tab, tab_funcs);
         return 1;
     }
-}*/
+}
 

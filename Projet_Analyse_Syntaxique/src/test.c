@@ -1,21 +1,9 @@
 #include<stdio.h>
 //int main;
-void q(int a){
-  return;
+int q(int a){
+  //return;
 }
-int main(int argc, char const *argv[])
-{
-  int b = 2;
-  if(m(97)){
-    printf("oui \n");
-  }
-  int main;
-	int a = 0;
-  a = a + 3;
-  a;
-  printf("Nombre a %d\n",a);
-	return 0;
-}
+
 
 /*
 test.c:4:9: error: ‘a’ undeclared (first use in this function)

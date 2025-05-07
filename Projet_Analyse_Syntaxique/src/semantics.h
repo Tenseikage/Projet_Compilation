@@ -29,4 +29,7 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
 
 void check_unitialized_vars(Symbol_table_functions* tab_funk, Symbol_table_global* global_tab);
 
+
+void is_main_in_code(Symbol_table_functions* tab_funks);
+
 #endif

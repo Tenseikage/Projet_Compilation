@@ -6,7 +6,7 @@ int semantic_warns = 0;
 int semantic_errors = 0;
 
 void error_var_exists(int lineno){
-	fprintf(stderr, "\033[1;31mErreur \033[0m: la variable lllexiste déjà en ligne : %d\n", lineno);
+	fprintf(stderr, "\033[1;31mErreur \033[0m: la variable existe déjà en ligne : %d\n", lineno);
 	semantic_errors++;
 }
 
@@ -113,6 +113,13 @@ void error_void_cond(int lineno){
 	semantic_errors++;
 }
 
+
+void error_no_main(void){
+	fprintf(stderr, "\033[1;31mErreur\033[0m: La fonction 'main' est absente du code\n");
+    semantic_errors++;
+}
+
+//void error_type_main
 /*oid error_condition_ident(int lineno){
 	fprintf(stderr, "\033[1;31mErreur\033[0m: La condition du 'if' doit être de type 'int' (ligne %d).\n",lineno);
 	semantic_errors++;

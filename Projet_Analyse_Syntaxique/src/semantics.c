@@ -6,6 +6,28 @@
 #include "semantics.h"
 #include "sem_errors_warns.h"
 
+void is_main_in_code(Symbol_table_functions* tab_funks) {
+    if (!tab_funks) {
+        fprintf(stderr, "\033[1;31mErreur\033[0m: La table des fonctions est NULL.\n");
+        return;
+    }
+
+    for (int i = 0; i < tab_funks->index_tab; i++) {
+        if (strcmp(tab_funks->tab_funcs[i].name, "main") == 0) {
+            /*if (strcmp(tab_funks->tab_funcs[i].returnType, "int") != 0) {
+                fprintf(stderr, "\033[1;31mErreur\033[0m: La fonction 'main' doit être de type 'int' (ligne %d).\n", tab_funks->tab_funcs[i].lineno);
+                return 1; // Erreur : fonction main avec un type incorrect
+            }
+            if (tab_funks->tab_funcs[i].index_tabv != 0) {
+                fprintf(stderr, "\033[1;31mErreur\033[0m: La fonction 'main' ne doit pas avoir de paramètres (ligne %d).\n", tab_funks->tab_funcs[i].lineno);
+                return 1; // Erreur : fonction main avec des paramètres
+            }*/
+            return; 
+        }
+    }
+
+    error_no_main(); // fonction absente
+}
 
 void check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
     int line_return;
@@ -400,6 +422,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
         }
         free(right_list);
     } if(root->label == Return){
+        Node* return_next = root->nextSibling;
         returnhere = 1;
         int index_tab = tab_funks->index_tab;
         Symbol_table_function *funcs = tab_funks->tab_funcs;
@@ -422,6 +445,9 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                 }
 
             }
+        }
+        if(return_next){
+            return; // ignore la suite;
         }
 
     }
