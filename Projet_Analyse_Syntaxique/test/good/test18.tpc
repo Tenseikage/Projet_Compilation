@@ -1,12 +1,13 @@
-
+int a;
 int b;
 void ptut(void){
-
+   return 1;
 }
-char yeet(int a){
-	int a;
-	a = ptut();
-	return ptut();
+char yeet(int b){
+	static int a;
+	//int a;
+	//a = ptut();
+	return a;
 }
 
 

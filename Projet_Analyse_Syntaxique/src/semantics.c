@@ -492,10 +492,8 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                             if (!found) {
                                 error_undeclare_var(branch->word, branch->lineno);
                             } else {
-                                if (strcmp(left_type, funcsignType) != 0) {
-                                    fprintf(stderr, "\033[1;31mErreur\033[0m: Type de retour incorrect pour la fonction '%s' (attendu : %s, trouvé : %s) (ligne %d).\n",
-                                            funcname, funcsignType, left_type, root->lineno);
-                                    semantic_errors++;
+                                if(!strcmp(left_type,"int") && !strcmp(funcsignType,"char")){
+                                    warn_ret_int_func_char(root->lineno);
                                 }
                             }
                         }

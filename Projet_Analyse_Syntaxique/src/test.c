@@ -1,16 +1,17 @@
 #include<stdio.h>
-//int main;
+int a;
 void q(int a){
   //return;
 }
 
 int main(int argc, char const *argv[])
 {
-  int a;
-  a = q(1);
+  static int a;
+  a = 1;
+  //a = q(1);
   //a(1,2);
 
-  return q(1);
+  return a;
 }
 
 
