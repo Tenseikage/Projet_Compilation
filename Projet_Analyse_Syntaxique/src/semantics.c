@@ -14,14 +14,10 @@ void is_main_in_code(Symbol_table_functions* tab_funks) {
 
     for (int i = 0; i < tab_funks->index_tab; i++) {
         if (strcmp(tab_funks->tab_funcs[i].name, "main") == 0) {
-            /*if (strcmp(tab_funks->tab_funcs[i].returnType, "int") != 0) {
-                fprintf(stderr, "\033[1;31mErreur\033[0m: La fonction 'main' doit être de type 'int' (ligne %d).\n", tab_funks->tab_funcs[i].lineno);
-                return 1; // Erreur : fonction main avec un type incorrect
+            if (strcmp(tab_funks->tab_funcs[i].returnType, "int") != 0) {
+                error_diff_main_ret(tab_funks->tab_funcs[i].lineno);
+                return; // Erreur : fonction main avec un type incorrect
             }
-            if (tab_funks->tab_funcs[i].index_tabv != 0) {
-                fprintf(stderr, "\033[1;31mErreur\033[0m: La fonction 'main' ne doit pas avoir de paramètres (ligne %d).\n", tab_funks->tab_funcs[i].lineno);
-                return 1; // Erreur : fonction main avec des paramètres
-            }*/
             return; 
         }
     }
@@ -362,6 +358,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
             found = 1;
         }
         Node * branch = root->firstChild;
+        //Node * branch = branch->firstChild;
         if (branch){
             if (branch->label == Arguments || branch->label == Void) {
                 int nb_params = 0;
@@ -402,7 +399,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                     if (!strcmp(tab_funks->tab_funcs[i].name, funcname)) {
                         if (is_var_in_table(tab_funks->tab_funcs[i].local_tab, LOCAL, root->word)) {
                             found = 1;
-                        }
+                        } 
                         for (int j = 0; j < tab_funks->tab_funcs[i].index_tabv; j++) {
                             if (!strcmp(tab_funks->tab_funcs[i].vars[j].name, root->word)) {
                                 found = 1;
@@ -437,7 +434,71 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                         } else if(!strcmp("void",funcsignType)){
                             warn_ret_int_func_void(root->lineno);
                         }
-                    } 
+                    } else if (branch->label == ident) {
+                        int found = 0;
+                        const char* left_type = calculate_expression_type(branch, global_tab, tab_funks, funcname, 0);
+                    
+                        if (is_var_in_table(global_tab, GLOBAL, branch->word)) {
+                            found = 1;
+                        }
+                        for (int i = 0; i < tab_funks->index_tab; i++) {
+                            if (!strcmp(tab_funks->tab_funcs[i].name, funcname)) {
+                                if (is_var_in_table(tab_funks->tab_funcs[i].local_tab, LOCAL, branch->word)) {
+                                    found = 1;
+                                }
+                                for (int j = 0; j < tab_funks->tab_funcs[i].index_tabv; j++) {
+                                    if (!strcmp(tab_funks->tab_funcs[i].vars[j].name, branch->word)) {
+                                        found = 1;
+                                        left_type = tab_funks->tab_funcs[i].vars[j].type;
+                                    }
+                                }
+                            }
+                        }
+                        Node* minibranch = branch->firstChild;
+                        if (minibranch) {
+                            if (minibranch->label == Arguments) {
+                                int nb_params = 0;
+                                Node* branch_args = minibranch->firstChild;
+                                while (branch_args) {
+                                    nb_params++;
+                                    branch_args = branch_args->nextSibling;
+                                }
+                                char* func_returntype = is_func_in_tab(tab_funks, branch->word);
+                                int func_params = nb_params_func(tab_funks, branch->word);
+                        
+                                if (func_returntype) {
+                                    if (nb_params < func_params) {
+                                        error_func_toofewargs(branch->word, minibranch->lineno);
+                                    } else if (nb_params > func_params) {
+                                        error_func_toomanyargs(branch->word, minibranch->lineno);
+                                    }
+                                } else {
+                                    warn_implicit_func_declare(branch->word, minibranch->lineno);
+                                }
+                            } else if (minibranch->label == Void) {
+                                char* func_returntype = is_func_in_tab(tab_funks, branch->word);
+                                if (func_returntype) {
+                                    if (strcmp(func_returntype, "void") == 0) {
+                                    } else {
+                                        error_void_cond(minibranch->lineno);
+                                    }
+                                } else {
+                                    warn_implicit_func_declare(branch->word, minibranch->lineno);
+                                }
+                            }
+                        } else {
+                            if (!found) {
+                                error_undeclare_var(branch->word, branch->lineno);
+                            } else {
+                                if (strcmp(left_type, funcsignType) != 0) {
+                                    fprintf(stderr, "\033[1;31mErreur\033[0m: Type de retour incorrect pour la fonction '%s' (attendu : %s, trouvé : %s) (ligne %d).\n",
+                                            funcname, funcsignType, left_type, root->lineno);
+                                    semantic_errors++;
+                                }
+                            }
+                        }
+                        
+                    }
                 } else {
                     if(strcmp(funcsignType,"void")){
                         warn_ret_void_func(funcsignType,root->lineno);

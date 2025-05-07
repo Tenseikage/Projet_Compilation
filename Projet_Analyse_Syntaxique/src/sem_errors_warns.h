@@ -46,4 +46,6 @@ void error_void_cond(int lineno);
 
 void error_no_main(void);
 
+void error_diff_main_ret(int lineno);
+
 #endif // SEM_ERRORS_WARNS_H

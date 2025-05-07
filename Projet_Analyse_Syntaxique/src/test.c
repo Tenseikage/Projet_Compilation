@@ -4,6 +4,13 @@ int q(int a){
   //return;
 }
 
+int main(int argc, char const *argv[])
+{
+  a(1,2);
+  return 0;
+}
+
+
 
 /*
 test.c:4:9: error: ‘a’ undeclared (first use in this function)
