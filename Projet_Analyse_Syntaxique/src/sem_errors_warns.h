@@ -50,4 +50,6 @@ void error_diff_main_ret(int lineno);
 
 void error_retour_incomp(const char* funcbody_ret,const char* func_ret_type,int lineno);
 
+
+void error_void_non_ignore(int lineno);
 #endif // SEM_ERRORS_WARNS_H
