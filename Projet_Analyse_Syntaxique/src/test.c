@@ -4,6 +4,19 @@ void q(int a){
   //return;
 }
 
+
+char a;
+void ptut(void){
+   return;
+}
+void yeet(int b){
+	//static int a;
+	//static char a;
+	//int a;
+	//a = ptut();
+	return a + 2 + 3  + ptut();
+}
+
 int main(int argc, char const *argv[])
 {
   static int a;
