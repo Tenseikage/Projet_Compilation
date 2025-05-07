@@ -1,13 +1,16 @@
 #include<stdio.h>
 //int main;
-int q(int a){
+void q(int a){
   //return;
 }
 
 int main(int argc, char const *argv[])
 {
-  a(1,2);
-  return 0;
+  int a;
+  a = q(1);
+  //a(1,2);
+
+  return q(1);
 }
 
 

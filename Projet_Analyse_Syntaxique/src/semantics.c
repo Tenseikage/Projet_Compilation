@@ -476,11 +476,13 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                                     warn_implicit_func_declare(branch->word, minibranch->lineno);
                                 }
                             } else if (minibranch->label == Void) {
+                                //printf("oui void yaa %s %s\n", branch->word,funcname);
                                 char* func_returntype = is_func_in_tab(tab_funks, branch->word);
+                                char* func_returntype_body = is_func_in_tab(tab_funks,funcname); // retour fonction
                                 if (func_returntype) {
-                                    if (strcmp(func_returntype, "void") == 0) {
+                                    if (strcmp(func_returntype, func_returntype_body) == 0) {
                                     } else {
-                                        error_void_cond(minibranch->lineno);
+                                        error_retour_incomp(func_returntype_body,func_returntype,minibranch->lineno);
                                     }
                                 } else {
                                     warn_implicit_func_declare(branch->word, minibranch->lineno);
