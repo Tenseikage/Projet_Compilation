@@ -1,4 +1,4 @@
-char a;
+//char a;
 void ptut(void){
    return;
 }
@@ -7,6 +7,7 @@ int caca(int a,int b){
 	return 0;
 }
 void yeet(int b){
+	int a;
 	//static int a;
 	//static char a;
 	//int a;
@@ -18,7 +19,7 @@ void yeet(int b){
 		return 1;
 	}
 	//yeet;
-	return a + 2 + 3  + ptut(1,2);
+	return a;
 }
 
 

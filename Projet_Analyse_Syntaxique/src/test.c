@@ -14,7 +14,7 @@ void yeet(int b){
 	//static char a;
 	//int a;
 	//a = ptut();
-	return a + 2 + 3  + ptut();
+	return 2;
 }
 
 int main(int argc, char const *argv[])

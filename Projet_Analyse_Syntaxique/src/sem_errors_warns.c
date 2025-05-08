@@ -82,9 +82,9 @@ void warn_ret_int_func_char(int lineno){
 }
 
 
-void warn_ret_int_func_void(int lineno){
-	fprintf(stderr, "\033[1;35mWarning\033[0m: Retour int dans une fonction de retour void (ligne %d).\n",lineno);   
-	semantic_warns++;
+void error_ret_value_func_void(int lineno){
+	fprintf(stderr, "\033[1;31mErreur\033[0m: Retour avec une valeur dans une fonction de retour void (ligne %d).\n",lineno);   
+	semantic_errors++;
 }
 
 

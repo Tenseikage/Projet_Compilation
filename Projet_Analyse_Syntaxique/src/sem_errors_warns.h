@@ -34,7 +34,7 @@ void error_undeclare_var(const char* varname, int lineno);
 
 void warn_ret_int_func_char(int lineno);
 
-void warn_ret_int_func_void(int lineno);
+void error_ret_value_func_void(int lineno);
 
 void warn_ret_void_func(const char* funcsignType, int lineno);
 
