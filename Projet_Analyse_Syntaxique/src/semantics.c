@@ -25,11 +25,12 @@ void is_main_in_code(Symbol_table_functions* tab_funks) {
     error_no_main(); // fonction absente
 }
 
+
 void same_var_name_func(Symbol_table_functions*tab){
     for(int i = 0; i < tab->index_tab; i++){
-        for(int j = 0; j < tab->tab_funcs[i].local_tab->index_tab; j++){
-            if(!strcmp(tab->tab_funcs[i].local_tab->vars[j].name, tab->tab_funcs[i].name)){
-                error_same_var_func(tab->tab_funcs[i].local_tab->vars[j].lineno);
+        for(int j = i + 1; j < tab->index_tab; j++){
+            if(!strcmp(tab->tab_funcs[i].name, tab->tab_funcs[j].name)){
+                error_same_var_func(tab->tab_funcs[i].lineno);
             }
         }
     }
@@ -112,6 +113,41 @@ int evaluate_constant_expression(Node* root, int* result) {
 }
 
 
+/*const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname, int isleft_var) {
+    if (!root) return NULL;
+    if (root->label == ident) {
+
+        const char* type = get_var_type(global_tab, GLOBAL, root->word);
+        if (type) return type;
+        for (int i = 0; i < tab_funcs->index_tab; i++) {
+            if (!strcmp(tab_funcs->tab_funcs[i].name, funcname)) {
+                type = get_var_type(tab_funcs->tab_funcs[i].local_tab, LOCAL, root->word);
+                if (type) return type;
+                for (int j = 0; j < tab_funcs->tab_funcs[i].index_tabv; j++) {
+                    if (!strcmp(tab_funcs->tab_funcs[i].vars[j].name, root->word)) {
+                        if(isleft_var == 0){
+                            //printf("oui yaaa %s\n", root->word);
+                            tab_funcs->tab_funcs[i].vars[j].is_affected = 1;
+                        }
+                        return tab_funcs->tab_funcs[i].vars[j].type;
+                    }
+                }
+            }
+        }
+
+        //fprintf(stderr, "\033[1;31mErreur\033[0m: Variabless ou paramètre '%s' utilisé mais non déclaré (ligne %d).\n", root->word, root->lineno);
+        return NULL;
+    }
+
+    if(root->label == Num){
+        return "int";
+    } if (root->label == Character){
+        return "char";
+    }
+    return NULL;
+}*/
+
+
 const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname, int isleft_var) {
     if (!root) return NULL;
     if (root->label == ident) {
@@ -134,12 +170,16 @@ const char* calculate_expression_type(Node* root, Symbol_table_global* global_ta
                 }
             }
         }
-        const char* type = get_var_type(global_tab, GLOBAL, root->word);
-        if (type) return type;
+        const char* global_type = get_var_type(global_tab, GLOBAL, root->word);
+        //if (global_type) return global_type;
         for (int i = 0; i < tab_funcs->index_tab; i++) {
             if (!strcmp(tab_funcs->tab_funcs[i].name, funcname)) {
-                type = get_var_type(tab_funcs->tab_funcs[i].local_tab, LOCAL, root->word);
-                if (type) return type;
+                const char* local_type = get_var_type(tab_funcs->tab_funcs[i].local_tab, LOCAL, root->word);
+                if (global_type && !local_type) {
+                    return global_type;
+                } else if ((global_type || !global_type) &&local_type) {
+                    return local_type;
+                }
                 for (int j = 0; j < tab_funcs->tab_funcs[i].index_tabv; j++) {
                     if (!strcmp(tab_funcs->tab_funcs[i].vars[j].name, root->word)) {
                         if(isleft_var == 0){
@@ -186,11 +226,21 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                 int found = 0;
                 if (branch->label == Arguments) {
                     //printf("func \n");
+                    int nb_params = 0;
+                    Node* branch_args = branch->firstChild;
+                    while(branch_args){
+                        nb_params++;
+                        branch_args = branch_args->nextSibling;
+                    }
                     char* word_func = root->word;
                     for (int i = 0; i < tab_funks->index_tab; i++) {
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
                             //printf("retour fonction %s, type gauche %s \n",tab_funks->tab_funcs[i].returnType,type_left);
-                            if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
+                            if (nb_params < tab_funks->tab_funcs[i].index_tabv) {
+                                error_func_toofewargs(word_func, branch->lineno);
+                            } else if (nb_params > tab_funks->tab_funcs[i].index_tabv) {
+                                error_func_toomanyargs(word_func, branch->lineno);
+                            } else if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
                                 //printf("pipi");
                                 error_incomp_affect(type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
                                 return;
@@ -389,7 +439,7 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
                     // Vérifier les opérandes gauche et droit
                     if (left) {
                         const char* left_type = calculate_expression_type(left, global_tab, tab_funks, funcname, 0);
-                        printf("left type %s %s\n", left_type, left->word);
+                        printf("left type %s \n", left_type);
                         if(left_type){
                             if(!strcmp("void",left_type)){
                                 error_void_non_ignore(left->lineno);
@@ -402,7 +452,7 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
                     }
                     if (right) {
                         const char* right_type = calculate_expression_type(right, global_tab, tab_funks, funcname, 0);
-                        printf("right type %s %s\n", right_type, right->word);
+                        printf("right type %s \n", right_type);
                         if(right_type){
                             if(!strcmp("void",right_type)){
                                 error_void_non_ignore(right->lineno);
