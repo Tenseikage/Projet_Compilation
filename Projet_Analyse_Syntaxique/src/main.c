@@ -70,7 +70,7 @@ extern Node* root;
 }*/
  
 
-int main(int argc, char *argv[]) {
+/*int main(int argc, char *argv[]) {
     Symbol_table_global* global_tab = init_table(GLOBAL);
     Symbol_table_functions* tab_funcs = init_symb_tab_func();
     char* funcname = NULL;
@@ -110,9 +110,9 @@ int main(int argc, char *argv[]) {
         }
     
     }
-}
+}*/
 
-/*int main(int argc,char *argv[]) {
+int main(int argc,char *argv[]) {
     // Afficher l'arbre fait planter le bac à sable
     Symbol_table_global* global_tab = init_table(GLOBAL);
     Symbol_table_functions* tab_funcs = init_symb_tab_func();
@@ -136,5 +136,5 @@ int main(int argc, char *argv[]) {
         free_all_tables(global_tab, tab_funcs);
         return 1;
     }
-}*/
+}
 
