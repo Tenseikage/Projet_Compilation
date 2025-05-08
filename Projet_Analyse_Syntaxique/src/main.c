@@ -121,6 +121,7 @@ int main(int argc,char *argv[]) {
         int index = 0;
         fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
         fill_symb_tab(global_tab, GLOBAL, root);
+        same_var_name_func(tab_funcs);
         is_main_in_code(tab_funcs);
         check_param_local_vars(tab_funcs);
         check_name_func_global(tab_funcs, global_tab);

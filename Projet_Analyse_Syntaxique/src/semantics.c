@@ -25,6 +25,16 @@ void is_main_in_code(Symbol_table_functions* tab_funks) {
     error_no_main(); // fonction absente
 }
 
+void same_var_name_func(Symbol_table_functions*tab){
+    for(int i = 0; i < tab->index_tab; i++){
+        for(int j = 0; j < tab->tab_funcs[i].local_tab->index_tab; j++){
+            if(!strcmp(tab->tab_funcs[i].local_tab->vars[j].name, tab->tab_funcs[i].name)){
+                error_same_var_func(tab->tab_funcs[i].local_tab->vars[j].lineno);
+            }
+        }
+    }
+}
+
 void check_name_func_global(Symbol_table_functions* tab, Symbol_table_global* global_tab){
     int line_return;
     for(int i = 0; i < tab->index_tab; i++){
@@ -46,15 +56,15 @@ void check_param_local_vars(Symbol_table_functions* tab){
     }
 }
 
-const char* get_var_type(void* tab, TableType type, const char* name, const char* funcname) {
+const char* get_var_type(void* tab, TableType type, const char* name) {
     int index_tab;
     Data* vars;
 
-    if (type == LOCAL && funcname) {
+    if (type == LOCAL) {
         Symbol_table_locale* sym_tab = (Symbol_table_locale*)tab;
         index_tab = sym_tab->index_tab;
         vars = sym_tab->vars;
-    } else if (type == GLOBAL && !funcname) {
+    } else if (type == GLOBAL) {
         Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
         index_tab = sym_tab->index_tab;
         vars = sym_tab->vars;
@@ -82,19 +92,17 @@ int evaluate_constant_expression(Node* root, int* result) {
         int left_result = 0, right_result = 0;
         if (evaluate_constant_expression(root->firstChild, &left_result) &&
             evaluate_constant_expression(root->firstChild->nextSibling, &right_result)) {
-            if(root->word){
-                if (strcmp(root->word, "+") == 0) {
-                    *result = left_result + right_result;
-                } else if (strcmp(root->word, "-") == 0) {
-                    *result = left_result - right_result;
-                } else if (strcmp(root->word, "*") == 0) {
-                    *result = left_result * right_result;
-                } else if (strcmp(root->word, "/") == 0) {
-                    if (right_result == 0) {
-                        return 0;
-                    }
-                    *result = left_result / right_result;
+            if (strcmp(root->word, "+") == 0) {
+                *result = left_result + right_result;
+            } else if (strcmp(root->word, "-") == 0) {
+                *result = left_result - right_result;
+            } else if (strcmp(root->word, "*") == 0) {
+                *result = left_result * right_result;
+            } else if (strcmp(root->word, "/") == 0) {
+                if (right_result == 0) {
+                    return 0;
                 }
+                *result = left_result / right_result;
             }
             return 1;
         }
@@ -104,10 +112,28 @@ int evaluate_constant_expression(Node* root, int* result) {
 }
 
 
-/*const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname, int isleft_var) {
+const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname, int isleft_var) {
     if (!root) return NULL;
     if (root->label == ident) {
-
+        Node* branch = root->firstChild;
+        if (branch) {
+            if (branch->label == Arguments) {
+                //printf("func \n");
+                char* word_func = root->word;
+                for (int i = 0; i < tab_funcs->index_tab; i++) {
+                    if (!strcmp(tab_funcs->tab_funcs[i].name, word_func)) {
+                        return tab_funcs->tab_funcs[i].returnType;
+                    }
+                }
+            } else if (branch->label == Void){
+                char* word_func = root->word;
+                for (int i = 0; i < tab_funcs->index_tab; i++) {
+                    if (!strcmp(tab_funcs->tab_funcs[i].name, word_func)) {
+                        return tab_funcs->tab_funcs[i].returnType;
+                    }
+                }
+            }
+        }
         const char* type = get_var_type(global_tab, GLOBAL, root->word);
         if (type) return type;
         for (int i = 0; i < tab_funcs->index_tab; i++) {
@@ -136,54 +162,7 @@ int evaluate_constant_expression(Node* root, int* result) {
         return "char";
     }
     return NULL;
-}*/
-
-const char* calculate_expression_type(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funcs, char* funcname, int isleft_var) {
-    if (!root) return NULL;
-    //printf("fFUNCNC %s\n", funcname);
-    if (root->label == ident) {
-        Node* branch = root->firstChild;
-        if(branch){
-            if(branch->label == Arguments){
-                //printf("funcname %s \n", root->word);
-                char* func_retype = is_func_in_tab(tab_funcs,root->word);
-                if(func_retype){
-                    return func_retype;
-                }
-            } else if(branch->label == Void){
-                char* func_retype = is_func_in_tab(tab_funcs,root->word);
-                if(func_retype){
-                    return func_retype;
-                }
-            } else {
-                const char* global_type = get_var_type(global_tab, GLOBAL, root->word,NULL);
-                for(int i = 0; i <tab_funcs->index_tab; i++){
-                    if(!strcmp(tab_funcs->tab_funcs[i].name,funcname)){
-                        //printf("funcname pui %s\n", funcname);
-                        const char* local_type = get_var_type(tab_funcs->tab_funcs[i].local_tab,LOCAL,root->word,funcname);
-                        //printf("local var and type %s %s %s\n", root->word, local_type, funcname);
-                        if(global_type && !local_type){
-                            return global_type;
-                        } else if(!global_type && local_type){
-                            return local_type;
-                        } else if(global_type && local_type){
-                            return local_type;
-                        } 
-                    }
-                }
-            } 
-        } 
-        
-    }
-
-    if(root->label == Num){
-        return "int";
-    } if (root->label == Character){
-        return "char";
-    }
-    return NULL;
 }
-
 
 void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname, const char* type_left,List_Right* right_list) {    
     if (!root) return;
@@ -388,48 +367,6 @@ void add_to_return_list(List_Right* return_list, const char* type) {
     return_list->index++;
 }
 
-const char* calculate_exp_return(Node* root, Symbol_table_global* global_tab,Symbol_table_functions* tab_funcs,const char* funcname){
-    if(!root) return NULL;
-    if(root->label == ident){
-        Node* branch = root->firstChild;
-        if(branch){
-            if(branch->label == Arguments){
-                //printf("funcname %s \n", root->word);
-                char* func_retype = is_func_in_tab(tab_funcs,root->word);
-                if(func_retype){
-                    return func_retype;
-                }
-            } else if(branch->label == Void){
-                char* func_retype = is_func_in_tab(tab_funcs,root->word);
-                if(func_retype){
-                    return func_retype;
-                }
-            } 
-        } else {
-            const char* global_type = get_var_type(global_tab, GLOBAL, root->word,NULL);
-            //if (type) return type;
-            for (int i = 0; i < tab_funcs->index_tab; i++) {
-                if (!strcmp(tab_funcs->tab_funcs[i].name, funcname)) {
-                    const char* local_type = get_var_type(tab_funcs->tab_funcs[i].local_tab, LOCAL, root->word,funcname);
-                    if((!global_type || global_type) && local_type) return local_type;
-                    for (int j = 0; j < tab_funcs->tab_funcs[i].index_tabv; j++) {
-                        if (!strcmp(tab_funcs->tab_funcs[i].vars[j].name, root->word)) {
-                            return tab_funcs->tab_funcs[i].vars[j].type;
-                        }
-                    }
-                }
-            }
-        }
-        return NULL;
-
-    }
-    if(root->label == Num){
-        return "int";
-    } if (root->label == Character){
-        return "char";
-    }
-    return NULL;
-}
 void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
     if (!root) return;
 
@@ -451,8 +388,8 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
 
                     // Vérifier les opérandes gauche et droit
                     if (left) {
-                        const char* left_type = calculate_exp_return(left, global_tab, tab_funks, funcname);
-                        //printf("left type %s \n", left_type);
+                        const char* left_type = calculate_expression_type(left, global_tab, tab_funks, funcname, 0);
+                        printf("left type %s %s\n", left_type, left->word);
                         if(left_type){
                             if(!strcmp("void",left_type)){
                                 error_void_non_ignore(left->lineno);
@@ -464,8 +401,8 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
                         
                     }
                     if (right) {
-                        const char* right_type = calculate_exp_return(right, global_tab, tab_funks, funcname);
-                        //printf("right type %s \n", right_type);
+                        const char* right_type = calculate_expression_type(right, global_tab, tab_funks, funcname, 0);
+                        printf("right type %s %s\n", right_type, right->word);
                         if(right_type){
                             if(!strcmp("void",right_type)){
                                 error_void_non_ignore(right->lineno);
@@ -488,7 +425,7 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
                 // Gestion des identifiants
                 else if (branch->label == ident) {
                     int found = 0;
-                    const char* left_type = calculate_exp_return(branch, global_tab, tab_funks, funcname);
+                    const char* left_type = calculate_expression_type(branch, global_tab, tab_funks, funcname, 0);
 
                     if (is_var_in_table(global_tab, GLOBAL, branch->word)) {
                         found = 1;
@@ -599,10 +536,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
     }
     if (root->label == ident) {
         int found = 0;
-        //printf("type var %s %s func\n",root->word,funcname);
         const char* left_type = calculate_expression_type(root, global_tab, tab_funks, funcname,0);
-        //printf("type var %s %s func %s \n",root->word,funcname,left_type); //// 614
-        //printf("ouii yayyaya \n");
         if (is_var_in_table(global_tab, GLOBAL, root->word)) {
             found = 1;
         }

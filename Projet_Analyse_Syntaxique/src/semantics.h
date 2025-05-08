@@ -32,4 +32,6 @@ void check_unitialized_vars(Symbol_table_functions* tab_funk, Symbol_table_globa
 
 void is_main_in_code(Symbol_table_functions* tab_funks);
 
+void same_var_name_func(Symbol_table_functions*tab);
+
 #endif

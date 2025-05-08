@@ -6,7 +6,13 @@ void yeet(int b){
 	//static int a;
 	//static char a;
 	//int a;
+	//int yeet;
 	//a = ptut();
+	yeet = a;
+	if(a && ptut()){
+		return 1;
+	}
+	//yeet;
 	return a + 2 + 3  + ptut();
 }
 

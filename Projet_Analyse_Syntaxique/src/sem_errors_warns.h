@@ -52,4 +52,6 @@ void error_retour_incomp(const char* funcbody_ret,const char* func_ret_type,int 
 
 
 void error_void_non_ignore(int lineno);
+
+void error_same_var_func(int lineno);
 #endif // SEM_ERRORS_WARNS_H
