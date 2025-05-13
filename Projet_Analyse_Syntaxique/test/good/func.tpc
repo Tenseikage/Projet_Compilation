@@ -9,13 +9,31 @@ int magma(void){
     return 0;
 }
     
-int main(void)  {
+/*int main(void)  {
    produit=24;
    quotient=24/12;
    letter='c';
    digit='0';
    uppercase=letter+('A'-'a');
    reste=getint();
+   magma();
+   putchar('\n');
+   putint(reste);
+   return 0;
+}*/
+
+int main(void)  {
+   produit=24;
+   quotient=24/12;
+   letter='c';
+   digit='0';
+   uppercase=letter+('A'-'a');
+   if(produit - 24){
+        reste = 3;
+   } else {
+        reste = 4;
+   }
+   //reste=getint();
    magma();
    putchar('\n');
    putint(reste);

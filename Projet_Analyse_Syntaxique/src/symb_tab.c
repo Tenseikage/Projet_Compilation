@@ -12,6 +12,7 @@
 
 int global_offset = 0;
 int static_offset = 0;
+int local_offset;
 
 
 int is_var_in_table(void* tab, TableType type, const char* name) {
@@ -102,6 +103,31 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
                   (*vars)[*index_tab].size = 1;
                   (*vars)[*index_tab].offset = global_offset;
                   global_offset++;
+            }
+        } else if(type == LOCAL){
+            if (*index_tab == 0){
+                local_offset = 0;
+            }
+            if(!strcmp(str_type,"int")){
+                (*vars)[*index_tab].size = 4;
+                if(state){
+                    (*vars)[*index_tab].offset = static_offset;
+                    static_offset += 4;
+                } else {
+                    (*vars)[*index_tab].offset = local_offset;
+                    local_offset += 4;
+                }
+                
+      
+            } else if(!strcmp(str_type, "char")){
+                  (*vars)[*index_tab].size = 1;
+                  if(state){
+                    (*vars)[*index_tab].offset = static_offset;
+                    static_offset += 1;
+                } else {
+                    (*vars)[*index_tab].offset = local_offset;
+                    local_offset += 1;
+                }
             }
         }
         
