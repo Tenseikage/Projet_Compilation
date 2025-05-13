@@ -11,6 +11,7 @@
 #define RESIZE_FACTOR 2
 
 int global_offset = 0;
+int static_offset = 0;
 
 
 int is_var_in_table(void* tab, TableType type, const char* name) {

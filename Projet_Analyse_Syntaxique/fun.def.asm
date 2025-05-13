@@ -9,7 +9,7 @@ global my_putint
 
 extern exit
 
-my_getchar:
+getchar:
     sub rsp, 8
     mov rax, 0          ; syscall read
     mov rdi, 0          ; stdin
@@ -19,11 +19,11 @@ my_getchar:
     movzx rax, byte [rsp]  ; lire le caractère (0-étendu à 64 bits)
     add rsp, 8
     ret
-my_getint:
+getint:
     xor rbx, rbx        ; accumule le nombre dans rbx
     mov r8, 1           ; signe = +1
 
-    call my_getchar
+    call getchar
     cmp rax, -1
     je .erreur
 
@@ -39,7 +39,7 @@ my_getint:
 
 .set_neg:
     mov r8, -1
-    call my_getchar
+    call getchar
     cmp rax, -1
     je .erreur
     cmp rax, '0'
@@ -52,7 +52,7 @@ my_getint:
     mov rbx, rax
 
 .read_loop:
-    call my_getchar
+    call getchar
     cmp rax, -1
     je .done
     cmp rax, '0'
@@ -75,7 +75,7 @@ my_getint:
     syscall
 
 
-my_putchar:
+putchar:
     sub rsp, 8
     mov [rsp], dil      ; écrire 1 octet
     mov rax, 1          ; syscall write
@@ -85,7 +85,7 @@ my_putchar:
     syscall
     add rsp, 8
     ret
-my_putint:
+putint:
     push rbx
     push r12
     mov rax, rdi
@@ -95,7 +95,7 @@ my_putint:
     cmp rax, 0
     jge .convert
     mov rdi, '-'
-    call my_putchar
+    call putchar
     neg rax
 .convert:
 .convert_loop:
@@ -108,7 +108,7 @@ my_putint:
     jnz .convert_loop
 .print_loop:
     pop rdi
-    call my_putchar
+    call putchar
     dec rbx
     jnz .print_loop
     pop r12

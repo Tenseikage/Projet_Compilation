@@ -4,15 +4,20 @@
     int somme,produit,quotient,reste,difference ;
     char letter, digit, punct;
 	int uppercase;
+int magma(void){
+    somme = somme + 14;
+    return 0;
+}
     
 int main(void)  {
-   somme=12;
    produit=24;
    quotient=24/12;
    letter='c';
    digit='0';
    uppercase=letter+('A'-'a');
    reste=getint();
+   magma();
    putchar('\n');
+   putint(reste);
    return 0;
 }

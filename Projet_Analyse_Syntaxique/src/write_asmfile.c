@@ -76,12 +76,13 @@ void write_asm_getchar(FILE* file) {
     fprintf(file,
         "getchar:\n"
         "    sub rsp, 8\n"
-        "    mov rax, 0          ; syscall read\n"
-        "    mov rdi, 0          ; stdin\n"
-        "    mov rsi, rsp        ; buffer\n"
+        "    mov rax, 0\n"
+        "    mov rdi, 0\n"
+        "    mov rsi, rsp\n"
         "    mov rdx, 1\n"
         "    syscall\n"
-        "    pop rax             ; récupérer caractère\n"
+        "    movzx rax, byte [rsp]\n"
+        "    add rsp, 8\n"
         "    ret\n");
 }
 
@@ -89,48 +90,62 @@ void write_asm_putchar(FILE* file) {
     fprintf(file,
         "putchar:\n"
         "    sub rsp, 8\n"
-        "    mov [rsp], dil      ; écrire 1 octet\n"
-        "    mov rax, 1          ; syscall write\n"
-        "    mov rdi, 1          ; stdout\n"
-        "    mov rsi, rsp        ; adresse du caractère\n"
-        "    mov rdx, 1          ; taille (1 octet)\n"
+        "    mov [rsp], dil\n"
+        "    mov rax, 1\n"
+        "    mov rdi, 1\n"
+        "    mov rsi, rsp\n"
+        "    mov rdx, 1\n"
         "    syscall\n"
         "    add rsp, 8\n"
         "    ret\n");
 }
 
-void write_asm_getint(FILE* file) {
+void write_asm_getint(FILE *file) {
     fprintf(file,
         "getint:\n"
-        "    mov rbx, 0          ; accumulateur\n"
-        "    mov r8, 1           ; signe positif par défaut\n"
-        ".boucle_getint:\n"
+        "    xor rbx, rbx\n"
+        "    mov r8, 1\n"
         "    call getchar\n"
-        "    mov rcx, rax\n"
-        "    cmp rcx, 10         ; saut de ligne ?\n"
-        "    je .fin_getint\n"
-        "    cmp rcx, '-'\n"
-        "    je .negatif_getint\n"
-        "    cmp rcx, '0'\n"
-        "    jl .erreur_getint\n"
-        "    cmp rcx, '9'\n"
-        "    jg .erreur_getint\n"
-        "    sub rcx, '0'\n"
-        "    imul rbx, 10\n"
-        "    add rbx, rcx\n"
-        "    jmp .boucle_getint\n"
-        ".negatif_getint:\n"
+        "    cmp rax, -1\n"
+        "    je .erreur_getint\n"
+        "    cmp rax, '-'\n"
+        "    je .set_neg\n"
+        "    cmp rax, '0'\n"
+        "    jb .erreur_getint\n"
+        "    cmp rax, '9'\n"
+        "    ja .erreur_getint\n"
+        "    jmp .read_digits_first_char\n"
+        ".set_neg:\n"
         "    mov r8, -1\n"
-        "    jmp .boucle_getint\n"
-        ".fin_getint:\n"
+        "    call getchar\n"
+        "    cmp rax, -1\n"
+        "    je .erreur_getint\n"
+        "    cmp rax, '0'\n"
+        "    jb .erreur_getint\n"
+        "    cmp rax, '9'\n"
+        "    ja .erreur_getint\n"
+        ".read_digits_first_char:\n"
+        "    sub rax, '0'\n"
+        "    mov rbx, rax\n"
+        ".read_digits_loop:\n"
+        "    call getchar\n"
+        "    cmp rax, '0'\n"
+        "    jb .end_read_digits\n"
+        "    cmp rax, '9'\n"
+        "    ja .end_read_digits\n"
+        "    sub rax, '0'\n"
+        "    imul rbx, 10\n"
+        "    add rbx, rax\n"
+        "    jmp .read_digits_loop\n"
+        ".end_read_digits:\n"
         "    imul rbx, r8\n"
         "    mov rax, rbx\n"
         "    ret\n"
         ".erreur_getint:\n"
         "    mov rdi, 5\n"
-        "    call exit\n");
+        "    call exit\n"
+    );
 }
-
 
 void write_asm_putint(FILE* file) {
     fprintf(file,
@@ -139,8 +154,8 @@ void write_asm_putint(FILE* file) {
         "    push r12\n"
         "    mov rax, rdi\n"
         "    mov rcx, 10\n"
-        "    xor rbx, rbx        ; compteur de chiffres\n"
-        "    mov r12, rsp        ; sauvegarde pile\n"
+        "    xor rbx, rbx\n"
+        "    mov r12, rsp\n"
         "    cmp rax, 0\n"
         "    jge .convert\n"
         "    mov rdi, '-'\n"
@@ -149,7 +164,7 @@ void write_asm_putint(FILE* file) {
         ".convert:\n"
         ".convert_loop:\n"
         "    xor rdx, rdx\n"
-        "    div rcx             ; rax / 10, reste dans rdx\n"
+        "    div rcx\n"
         "    add dl, '0'\n"
         "    push rdx\n"
         "    inc rbx\n"
@@ -331,6 +346,12 @@ void write_asm_main(FILE* file){
     fprintf(file, "_start:\n");
 }
 
+void write_asm_func(FILE*  file, const char* funcname){
+    if(funcname){
+        fprintf(file,"%s:\n",funcname);
+    }
+}
+
 /*void write_end_asm_file(FILE *file){
     fprintf(file,"  mov rbx, rcx \n");
     fprintf(file,"  mov r12, rax \n");
@@ -361,7 +382,7 @@ char decode_escape_sequence(const char* s) {
             default: return '?'; // ou gérer d'autres cas
         }
     } else {
-        return s[0];
+        return s[1];
     }
 }
 
@@ -375,7 +396,7 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                 Node* ident_branch = branch_instr->firstChild;
                 char* str_ident = branch_instr->word;
                 //printf("word instr %s \n", branch_instr->word);
-                if(ident_branch->label != Arguments){
+                if(ident_branch->label != Arguments && ident_branch->label != Void){
                     int offset_ident = get_var_global_offset(str_ident,global_tab);
                     //printf("Mot global var %s offset : %d \n",str_ident,offset_ident);
                     Node* right_expr = branch_instr->firstChild;
@@ -390,18 +411,35 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                     }
                     
                 } else if(ident_branch->label == Arguments){
-                    //printf("word instr %s \n", branch_instr->word);
                     //printf("oui yaaah \n");
                     Node* arg = ident_branch->firstChild;
                     int nb_args = 0;
                     while(arg){
+                        //printf("nombre args %d \n",nb_args);
+                        printf("word instr %s \n", branch_instr->word);
                         if(nb_args == 0 && arg->label == Character && !strcmp("putchar",branch_instr->word)){
-                            printf(" arg word %ld\n", strlen(arg->word));
+                            //printf(" arg word %ld\n", strlen(arg->word));
                             fprintf(file, "  mov rdi, %d\n",decode_escape_sequence(arg->word));
                             fprintf(file, "  call putchar\n");
+                        } else if(nb_args == 0 && arg->label == Character && !strcmp("putint",branch_instr->word)){
+                            fprintf(file, "  mov rdi, %d\n",decode_escape_sequence(arg->word));
+                            fprintf(file, "  call putint\n");
+
+                        } else if(nb_args == 0 && arg->label == Num && !strcmp("putint",branch_instr->word)){
+                            //printf("oui yayya \n");
+                            fprintf(file, "  mov edi, %d\n",arg->value);
+                            fprintf(file, "  call putint\n");
+                        } else if(nb_args == 0 && arg->label == ident && !strcmp("putint",branch_instr->word)){
+                            //printf(" word %s , of")
+                            int offset_ident = get_var_global_offset(arg->word,global_tab);
+                            fprintf(file, "  mov edi, [TAB_GLOBAL + %d]\n",offset_ident);
+                            fprintf(file, "  call putint\n");
                         }
                         arg = arg->nextSibling;
+                        nb_args++;
+                        
                     }
+                    
                 }
             }
             branch_instr = branch_instr->nextSibling;
@@ -434,8 +472,10 @@ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab) {
             //Cas du main // var globales
             if(!strcmp(branch_func_name->word,"main")){
                 write_asm_main(file);
-                parcours_corps_func(corps_fonc,file,global_tab);
+            } else {
+                write_asm_func(file,branch_func_name->word);
             }
+            parcours_corps_func(corps_fonc,file,global_tab);
             // Autres fonctions à venir
             //parcours_corps_func(corps_fonc,file,global_tab);
         }

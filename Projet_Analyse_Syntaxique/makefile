@@ -11,6 +11,16 @@ LEX := lex
 TREE := tree
 ARGS := args
 OUTPUT := tpcc
+EXE := asmtest
+AFLAGS := -nostartfiles -no-pie
+EXE := asmtest
+NASM := nasm
+ASM_SRCS := $(wildcard $(SRC)/*.asm)
+ASM_OBJS := $(patsubst $(SRC)/%.asm, $(OBJ)/%.o, $(ASM_SRCS))
+TARGET := $(EXE)
+
+.PHONY: all asm clean
+
 
 # Cible par défaut
 all: $(BIN) $(OBJ) $(BIN)/$(OUTPUT)
@@ -64,6 +74,17 @@ $(OBJ)/write_asmfile.o: $(SRC)/write_asmfile.c
 # Génération du fichier Flex
 $(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l
 	flex -o $@ $<
+
+
+# Partie asm
+
+asm: $(TARGET)
+
+$(TARGET): $(ASM_OBJS)
+	$(CC) $(CFLAGS) $(ASM_OBJS) -o $(TARGET) $(AFLAGS)
+
+$(OBJ)/%.o: $(SRC)/%.asm
+	$(NASM) -f elf64 $< -o $@
 
 # Nettoyage des fichiers générés
 clean:

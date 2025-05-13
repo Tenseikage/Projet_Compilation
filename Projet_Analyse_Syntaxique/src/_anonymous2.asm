@@ -9,35 +9,50 @@ extern exit
 
 getchar:
     sub rsp, 8
-    mov rax, 0          ; syscall read
-    mov rdi, 0          ; stdin
-    mov rsi, rsp        ; buffer
+    mov rax, 0
+    mov rdi, 0
+    mov rsi, rsp
     mov rdx, 1
     syscall
-    pop rax             ; récupérer caractère
+    movzx rax, byte [rsp]
+    add rsp, 8
     ret
 getint:
-    mov rbx, 0          ; accumulateur
-    mov r8, 1           ; signe positif par défaut
-.boucle_getint:
+    xor rbx, rbx
+    mov r8, 1
     call getchar
-    mov rcx, rax
-    cmp rcx, 10         ; saut de ligne ?
-    je .fin_getint
-    cmp rcx, '-'
-    je .negatif_getint
-    cmp rcx, '0'
-    jl .erreur_getint
-    cmp rcx, '9'
-    jg .erreur_getint
-    sub rcx, '0'
-    imul rbx, 10
-    add rbx, rcx
-    jmp .boucle_getint
-.negatif_getint:
+    cmp rax, -1
+    je .erreur_getint
+    cmp rax, '-'
+    je .set_neg
+    cmp rax, '0'
+    jb .erreur_getint
+    cmp rax, '9'
+    ja .erreur_getint
+    jmp .read_digits_first_char
+.set_neg:
     mov r8, -1
-    jmp .boucle_getint
-.fin_getint:
+    call getchar
+    cmp rax, -1
+    je .erreur_getint
+    cmp rax, '0'
+    jb .erreur_getint
+    cmp rax, '9'
+    ja .erreur_getint
+.read_digits_first_char:
+    sub rax, '0'
+    mov rbx, rax
+.read_digits_loop:
+    call getchar
+    cmp rax, '0'
+    jb .end_read_digits
+    cmp rax, '9'
+    ja .end_read_digits
+    sub rax, '0'
+    imul rbx, 10
+    add rbx, rax
+    jmp .read_digits_loop
+.end_read_digits:
     imul rbx, r8
     mov rax, rbx
     ret
@@ -46,11 +61,11 @@ getint:
     call exit
 putchar:
     sub rsp, 8
-    mov [rsp], dil      ; écrire 1 octet
-    mov rax, 1          ; syscall write
-    mov rdi, 1          ; stdout
-    mov rsi, rsp        ; adresse du caractère
-    mov rdx, 1          ; taille (1 octet)
+    mov [rsp], dil
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, rsp
+    mov rdx, 1
     syscall
     add rsp, 8
     ret
@@ -59,8 +74,8 @@ putint:
     push r12
     mov rax, rdi
     mov rcx, 10
-    xor rbx, rbx        ; compteur de chiffres
-    mov r12, rsp        ; sauvegarde pile
+    xor rbx, rbx
+    mov r12, rsp
     cmp rax, 0
     jge .convert
     mov rdi, '-'
@@ -69,7 +84,7 @@ putint:
 .convert:
 .convert_loop:
     xor rdx, rdx
-    div rcx             ; rax / 10, reste dans rdx
+    div rcx
     add dl, '0'
     push rdx
     inc rbx
@@ -83,12 +98,19 @@ putint:
     pop r12
     pop rbx
     ret
-_start:
-  push 12
+magma:
+  mov eax, dword [TAB_GLOBAL + 0]
+  push rax 
+  push 14
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
 
   pop rax
   mov [TAB_GLOBAL + 0], eax
 
+_start:
   push 24
 
   pop rax
@@ -145,6 +167,8 @@ _start:
 
   mov rdi, 10
   call putchar
+  mov edi, [TAB_GLOBAL + 12]
+  call putint
   mov rax, 60
   xor rdi, rdi
   syscall
