@@ -7,6 +7,7 @@
 #include "symb_tab.h"
 #include "semantics.h"
 #include "sem_errors_warns.h"
+#include "write_asmfile.h"
 //#include "write_asmfile.h"
 
 extern Node* root;
@@ -131,6 +132,16 @@ int main(int argc,char *argv[]) {
             free_all_tables(global_tab, tab_funcs);
             return 2;
         }
+        FILE* file = fopen("./src/_anonymous2.asm", "w");
+        if (!file) {
+                fprintf(stderr, "Erreur à l'ouverture du fichier\n");
+                return 3;
+        }
+        write_asm_tab_global(file,global_tab);
+        write_asm_file(file);
+        parcours_arbre(root,file,global_tab);
+        write_end_asm_file(file);
+        fclose(file);
         free_all_tables(global_tab, tab_funcs);
         return 0;
     } else {

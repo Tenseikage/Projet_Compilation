@@ -197,7 +197,7 @@ const char* calculate_expression_type(Node* root, Symbol_table_global* global_ta
     }
 
     if(root->label == Num){
-        printf("tatata  %d %d\n", root->value, root->lineno);
+        //printf("tatata  %d %d\n", root->value, root->lineno);
         return "int";
     } if (root->label == Character){
         return "char";
@@ -516,7 +516,7 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
                         int found = 0;
                         const char* left_type = calculate_expression_type(branch, global_tab, tab_funks, funcname, 0);
                         const char* funcsignType = funcs[i].returnType;
-                        printf("left type %s %s %s\n", left_type, branch->word, funcsignType);
+                        //printf("left type %s %s %s\n", left_type, branch->word, funcsignType);
                         if (is_var_in_table(global_tab, GLOBAL, branch->word)) {
                             found = 1;
                         }
@@ -547,7 +547,8 @@ void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table
             } else {
                 // Cas où le return est vide
                 if (strcmp(funcsignType, "void") != 0) {
-                    fprintf(stderr, "\033[1;31mErreur\033[0m: Retour vide dans une fonction de type '%s' (ligne %d).\n", funcsignType, root->lineno);
+                    //fprintf(stderr, "\033[1;31mErreur\033[0m: Retour vide dans une fonction de type '%s' (ligne %d).\n", funcsignType, root->lineno);
+                    error_ret_void_func(funcsignType,root->lineno);
                     semantic_errors++;
                 }
             }

@@ -36,7 +36,7 @@ void warn_ret_int_func_char(int lineno);
 
 void error_ret_value_func_void(int lineno);
 
-void warn_ret_void_func(const char* funcsignType, int lineno);
+void error_ret_void_func(const char* funcsignType, int lineno);
 
 void warn_global_unitialized(const char* varname, int lineno);
 

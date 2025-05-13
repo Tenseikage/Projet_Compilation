@@ -1,0 +1,23 @@
+CC := gcc
+CFLAGS := -Wall
+SRC := ./src
+OBJ := ./obj
+AFLAGS := -nostartfiles -no-pie
+EXE := asmtest
+NASM := nasm
+
+ASM_SRCS := $(wildcard $(SRC)/*.asm)
+ASM_OBJS := $(patsubst $(SRC)/%.asm, $(OBJ)/%.o, $(ASM_SRCS))
+TARGET := $(EXE)
+
+all: $(TARGET)
+
+$(TARGET): $(ASM_OBJS)
+	$(CC) $(CFLAGS) $(ASM_OBJS) -o $(TARGET) $(AFLAGS)
+
+$(OBJ)/%.o: $(SRC)/%.asm
+	$(NASM) -f elf64 $< -o $@
+
+clean:
+	rm -f $(OBJ)/*.o $(TARGET)
+

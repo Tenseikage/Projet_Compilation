@@ -1,5 +1,0 @@
-
-char retourChar
-(void){
-  return 'a';
-}

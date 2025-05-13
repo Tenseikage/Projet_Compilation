@@ -5,22 +5,10 @@ void q(int a){
 }
 
 
-char a;
-void ptut(void){
-   return;
-}
-void yeet(int b){
-	//static int a;
-	//static char a;
-	//int a;
-	//a = ptut();
-	return 2;
-}
 
 int main(int argc, char const *argv[])
 {
   static int a;
-  a = 1;
   //a = q(1);
   //a(1,2);
 

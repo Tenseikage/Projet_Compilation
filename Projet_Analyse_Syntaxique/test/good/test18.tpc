@@ -1,33 +1,26 @@
-//char a;
-void ptut(void){
-   return;
-}
-
-int caca(int a,int b){
-	return 0;
-}
-void yeet(int b){
-	int a;
-	//static int a;
-	//static char a;
-	//int a;
-	//int yeet;
-	//a = ptut();
-	int q;
-	q = caca(1,2,3);
-	if(a && ptut()){
-		return 1;
-	}
-	//yeet;
-	return a;
-}
+int a;
+int b;
+int c;
 
 
-
-/*int sub(int a, int b){
-	return 0;
-}*/
 
 int main(void){
+	a = 1;
+	b = 2 * 3;
+	c = 4 * 3;
+	//b  = a * 2;
+	//c = a + b / 3;
 	return 0;
+
 }
+
+/*mov ebx, dword [TAB_GLOBAL]
+  mov r12d, dword [TAB_GLOBAL + 4]
+  mov r13d, dword [TAB_GLOBAL + 8]
+  sub rsp,8
+  call show_registers
+  add rsp,8*/
+
+
+// 1 Conversion assembleur
+// 2 typage 

@@ -16,7 +16,7 @@ OUTPUT := tpcc
 all: $(BIN) $(OBJ) $(BIN)/$(OUTPUT)
 
 # Cible pour l'exécutable final
-$(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o $(OBJ)/$(ARGS).o $(OBJ)/main.o $(OBJ)/symb_tab.o $(OBJ)/semantics.o $(OBJ)/sem_errors_warns.o
+$(BIN)/$(OUTPUT): $(OBJ)/$(TREE).o $(OBJ)/$(BISON).tab.o $(OBJ)/$(LEX).yy.o $(OBJ)/$(ARGS).o $(OBJ)/main.o $(OBJ)/symb_tab.o $(OBJ)/semantics.o $(OBJ)/write_asmfile.o $(OBJ)/sem_errors_warns.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Génération des fichiers Bison
@@ -53,6 +53,11 @@ $(OBJ)/semantics.o : $(SRC)/semantics.c
 
 #Compilation erreurs sémantiques
 $(OBJ)/sem_errors_warns.o : $(SRC)/sem_errors_warns.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+
+# Compilation création fichier asm opérations
+$(OBJ)/write_asmfile.o: $(SRC)/write_asmfile.c 
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 	
