@@ -122,6 +122,16 @@ int main(int argc,char *argv[]) {
         int index = 0;
         fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
         fill_symb_tab(global_tab, GLOBAL, root);
+        printTree(root);
+        /*printf("========Table des Symboles=====================\n");
+        printf("\n");
+        display_symb_tab(global_tab, GLOBAL);
+        printf("============================================\n");
+        printf("Fonctions et variables locales \n");
+        printf("============================================\n");
+        display_symb_tab(tab_funcs, FUNCTION);
+        printf("============================================\n");
+        */
         same_var_name_func(tab_funcs);
         is_main_in_code(tab_funcs);
         check_param_local_vars(tab_funcs);
@@ -129,6 +139,7 @@ int main(int argc,char *argv[]) {
         check_variables(root, global_tab, tab_funcs,funcname);
         check_unitialized_vars(tab_funcs,global_tab);
         if(semantic_errors > 0){
+            deleteTree(root);
             free_all_tables(global_tab, tab_funcs);
             return 2;
         }
@@ -138,11 +149,12 @@ int main(int argc,char *argv[]) {
                 return 3;
         }
         write_asm_tab_global(file,global_tab);
-        write_asm_file(file);
+        write_asm_file_and_built_funcs(file);
         parcours_arbre(root,file,global_tab);
         write_end_asm_file(file);
         fclose(file);
         free_all_tables(global_tab, tab_funcs);
+        deleteTree(root);
         return 0;
     } else {
         free_all_tables(global_tab, tab_funcs);

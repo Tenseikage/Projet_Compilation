@@ -72,6 +72,104 @@ int parcours_arbre_main(Node* root) {
 
 */
 
+void write_asm_getchar(FILE* file) {
+    fprintf(file,
+        "getchar:\n"
+        "    sub rsp, 8\n"
+        "    mov rax, 0          ; syscall read\n"
+        "    mov rdi, 0          ; stdin\n"
+        "    mov rsi, rsp        ; buffer\n"
+        "    mov rdx, 1\n"
+        "    syscall\n"
+        "    pop rax             ; récupérer caractère\n"
+        "    ret\n");
+}
+
+void write_asm_putchar(FILE* file) {
+    fprintf(file,
+        "putchar:\n"
+        "    sub rsp, 8\n"
+        "    mov [rsp], dil      ; écrire 1 octet\n"
+        "    mov rax, 1          ; syscall write\n"
+        "    mov rdi, 1          ; stdout\n"
+        "    mov rsi, rsp        ; adresse du caractère\n"
+        "    mov rdx, 1          ; taille (1 octet)\n"
+        "    syscall\n"
+        "    add rsp, 8\n"
+        "    ret\n");
+}
+
+void write_asm_getint(FILE* file) {
+    fprintf(file,
+        "getint:\n"
+        "    mov rbx, 0          ; accumulateur\n"
+        "    mov r8, 1           ; signe positif par défaut\n"
+        ".boucle_getint:\n"
+        "    call getchar\n"
+        "    mov rcx, rax\n"
+        "    cmp rcx, 10         ; saut de ligne ?\n"
+        "    je .fin_getint\n"
+        "    cmp rcx, '-'\n"
+        "    je .negatif_getint\n"
+        "    cmp rcx, '0'\n"
+        "    jl .erreur_getint\n"
+        "    cmp rcx, '9'\n"
+        "    jg .erreur_getint\n"
+        "    sub rcx, '0'\n"
+        "    imul rbx, 10\n"
+        "    add rbx, rcx\n"
+        "    jmp .boucle_getint\n"
+        ".negatif_getint:\n"
+        "    mov r8, -1\n"
+        "    jmp .boucle_getint\n"
+        ".fin_getint:\n"
+        "    imul rbx, r8\n"
+        "    mov rax, rbx\n"
+        "    ret\n"
+        ".erreur_getint:\n"
+        "    mov rdi, 5\n"
+        "    call exit\n");
+}
+
+
+void write_asm_putint(FILE* file) {
+    fprintf(file,
+        "putint:\n"
+        "    push rbx\n"
+        "    push r12\n"
+        "    mov rax, rdi\n"
+        "    mov rcx, 10\n"
+        "    xor rbx, rbx        ; compteur de chiffres\n"
+        "    mov r12, rsp        ; sauvegarde pile\n"
+        "    cmp rax, 0\n"
+        "    jge .convert\n"
+        "    mov rdi, '-'\n"
+        "    call putchar\n"
+        "    neg rax\n"
+        ".convert:\n"
+        ".convert_loop:\n"
+        "    xor rdx, rdx\n"
+        "    div rcx             ; rax / 10, reste dans rdx\n"
+        "    add dl, '0'\n"
+        "    push rdx\n"
+        "    inc rbx\n"
+        "    test rax, rax\n"
+        "    jnz .convert_loop\n"
+        ".print_loop:\n"
+        "    pop rdi\n"
+        "    call putchar\n"
+        "    dec rbx\n"
+        "    jnz .print_loop\n"
+        "    pop r12\n"
+        "    pop rbx\n"
+        "    ret\n");
+}
+
+
+
+
+
+
 int get_total_global_size(Symbol_table_global* global_tab){
     int total_global_size = 0;
     //printf("mehhh %d\n", global_tab->index_tab);
@@ -85,11 +183,12 @@ int get_total_global_size(Symbol_table_global* global_tab){
 
 int get_var_global_offset(const char* str_ident, Symbol_table_global* global_tab) {
     for (int i = 0; i < global_tab->index_tab; i++) {
-        //printf("mehhh %d\n", global_tab->index_tab);
+        //printf("mehhh %s\n", global_tab->vars[i].name);
         if (!strcmp(global_tab->vars[i].name, str_ident)) {
             return global_tab->vars[i].offset;
         }
-    }
+    } 
+    return -1;
     //fprintf(stderr, "Erreur : Variable globale '%s' non trouvée dans la table des symboles.\n", str_ident);
     //exit(EXIT_FAILURE);
 }
@@ -135,11 +234,27 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         return;
     }
 
-    if (root->label == ident) {
-        int offset = get_var_global_offset(root->word, global_tab);
-        fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
+    if(root->label == Character){
+        fprintf(file, "  mov al, %s \n", root->word);
         fprintf(file, "  push rax \n");
-        return;
+    }
+
+    if (root->label == ident) {
+        //printf("mot cherché %s \n",root->word);
+        Node* branch = root->firstChild;
+        if(!branch){
+            int offset = get_var_global_offset(root->word, global_tab);
+            fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
+            fprintf(file, "  push rax \n");
+            return;
+        } else if(branch->label == Void){
+            //printf("oui yaah %s\n", root->word);
+            fprintf(file, "  sub rsp, 8\n");
+            fprintf(file, "  call %s\n", root->word);
+            fprintf(file, "  add rsp, 8\n");
+            fprintf(file, "  push rax\n"); 
+        }
+        
     }
 
     if (root->label == divstar) {
@@ -173,7 +288,7 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         if (strcmp(root->word, "+") == 0) {
             fprintf(file, "  add rax, rcx\n"); // Addition
         } else if (strcmp(root->word, "-") == 0) {
-            fprintf(file, "  sub rax, rcx"); // Soustraction
+            fprintf(file, "  sub rax, rcx\n"); // Soustraction
         }
 
         // Empiler le résultat
@@ -191,7 +306,7 @@ void write_asm_tab_global(FILE* file,Symbol_table_global* global_tab){
     fprintf(file, "  TAB_GLOBAL resb %d\n",byte_global);
 
 }
-void write_asm_file(FILE *file) {
+void write_asm_file_and_built_funcs(FILE *file) {
     if (!file) {
         fprintf(stderr, "Erreur : fichier non existant\n");
         exit(EXIT_FAILURE);
@@ -199,6 +314,15 @@ void write_asm_file(FILE *file) {
     fprintf(file, "global _start\n");
     fprintf(file, "section .text\n");
     fprintf(file, "extern show_registers\n");
+    fprintf(file, "extern exit\n");
+    fprintf(file,"\n");
+    fprintf(file,"\n");
+    fprintf(file,"\n");
+    write_asm_getchar(file);
+    write_asm_getint(file);
+    write_asm_putchar(file);
+    write_asm_putint(file);
+    //fprintf(file, "extern getint")
     
     
 }
@@ -225,6 +349,22 @@ void write_end_asm_file(FILE *file) {
 }
 
 
+char decode_escape_sequence(const char* s) {
+    if (s[1] == '\\') {
+        switch (s[2]) {
+            case 'n': return '\n';
+            case 't': return '\t';
+            case 'r': return '\r';
+            case '\\': return '\\';
+            case '\'': return '\'';
+            case '\"': return '\"';
+            default: return '?'; // ou gérer d'autres cas
+        }
+    } else {
+        return s[0];
+    }
+}
+
 void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab){
     //cas main 
     if(!root) return;
@@ -232,19 +372,36 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
         Node * branch_instr = root->firstChild;
         while(branch_instr){
             if(branch_instr->label == ident){
-                //printf("Instr b \n");
+                Node* ident_branch = branch_instr->firstChild;
                 char* str_ident = branch_instr->word;
-                //printf("Mot global var %s \n",str_ident);
-                int offset_ident = get_var_global_offset(str_ident,global_tab);
-                //printf("Mot global var %s offset : %d \n",str_ident,offset_ident);
-                Node* right_expr = branch_instr->firstChild;
-                //parcours_operators(rig)
-                if(right_expr){
-                    parcours_expr_droite(right_expr,file,global_tab);
-                    fprintf(file,"\n");
-                    fprintf(file, "  pop rax\n");
-                    fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);
-                    fprintf(file,"\n");
+                //printf("word instr %s \n", branch_instr->word);
+                if(ident_branch->label != Arguments){
+                    int offset_ident = get_var_global_offset(str_ident,global_tab);
+                    //printf("Mot global var %s offset : %d \n",str_ident,offset_ident);
+                    Node* right_expr = branch_instr->firstChild;
+                    //parcours_operators(rig)
+                    if(right_expr){
+                        parcours_expr_droite(right_expr,file,global_tab);
+                        fprintf(file,"\n");
+                        fprintf(file, "  pop rax\n");
+                        //fprintf(file, "%s \n", str_ident);
+                        fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);
+                        fprintf(file,"\n");
+                    }
+                    
+                } else if(ident_branch->label == Arguments){
+                    //printf("word instr %s \n", branch_instr->word);
+                    //printf("oui yaaah \n");
+                    Node* arg = ident_branch->firstChild;
+                    int nb_args = 0;
+                    while(arg){
+                        if(nb_args == 0 && arg->label == Character && !strcmp("putchar",branch_instr->word)){
+                            printf(" arg word %ld\n", strlen(arg->word));
+                            fprintf(file, "  mov rdi, %d\n",decode_escape_sequence(arg->word));
+                            fprintf(file, "  call putchar\n");
+                        }
+                        arg = arg->nextSibling;
+                    }
                 }
             }
             branch_instr = branch_instr->nextSibling;
@@ -286,3 +443,5 @@ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab) {
     parcours_arbre(root->firstChild,file,global_tab);
     parcours_arbre(root->nextSibling,file,global_tab);
 }
+
+

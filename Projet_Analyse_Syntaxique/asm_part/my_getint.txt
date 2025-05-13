@@ -1,47 +1,38 @@
 section .text
 global getint
-;extern show_registers
-
 extern getchar
-
 extern exit
 
 fin:
-    imul rbx, r8
-    mov rax, rbx
-    ret
+    imul rbx, r8          ; Appliquer le signe
+    mov rax, rbx          ; Placer le résultat dans rax
+    ret                   ; Retourner
 
 erreur:
-   mov rdi, 5
-   call exit
+    mov rdi, 5            ; Code de retour 5 pour erreur
+    call exit             ; Terminer le programme
 
 negatif:
-    mov r8, -1
-    jmp boucle
+    mov r8, -1            ; Marquer le nombre comme négatif
+    jmp boucle            ; Continuer la lecture
 
 boucle:
-    call getchar
-    mov rcx, rax
+    call getchar          ; Lire un caractère
+    mov rcx, rax          ; Stocker le caractère lu dans rcx
+    cmp rcx, 10           ; Vérifier si c'est une nouvelle ligne ('\n')
+    je fin                ; Si oui, terminer la lecture
     cmp rcx, '-'
-    je negatif
+    je negatif            ; Si c'est un signe moins, gérer le signe
     cmp rcx, '0'
-    jl erreur
+    jl erreur             ; Si c'est en dessous de '0', erreur
     cmp rcx, '9'
-    jg erreur
-    sub rcx, 48
-    imul rbx, 10
-    add rbx, rcx
-    jmp boucle
+    jg erreur             ; Si c'est au-dessus de '9', erreur
+    sub rcx, 48           ; Convertir le caractère en valeur numérique
+    imul rbx, 10          ; Multiplier le résultat actuel par 10
+    add rbx, rcx          ; Ajouter le chiffre au résultat
+    jmp boucle            ; Continuer la lecture
 
 getint:
-    mov rbx, 0
-    mov r8, 1
-    jmp boucle
-
-
-;_start:
-    ;call getint
-    ;mov rdi, rax
-    ;call show_registers
-    ;mov rdi, 0
-    ;call exit
+    mov rbx, 0            ; Initialiser le résultat à 0
+    mov r8, 1             ; Initialiser le signe à positif (1)
+    jmp boucle            ; Commencer la lecture

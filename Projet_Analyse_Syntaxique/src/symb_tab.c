@@ -128,6 +128,7 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
     }
 }
 
+
 void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
     if(!root) return;
     if(root->label == type){

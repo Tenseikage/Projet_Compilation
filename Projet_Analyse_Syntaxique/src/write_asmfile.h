@@ -4,7 +4,7 @@
 /**
  *  Écrit dans le fichier asm nouvellement crée
  */
-void write_asm_file(FILE *file);
+void write_asm_file_and_built_funcs(FILE *file);
 
 /**
  *  Écrit la fin de fichier asm
@@ -25,6 +25,9 @@ void write_end_asm_file(FILE *file);
  */
 
  void write_asm_tab_global(FILE* file,Symbol_table_global* global_tab);
+
+
+ void write_builtin_funcs(FILE* file);
 
 
 #endif

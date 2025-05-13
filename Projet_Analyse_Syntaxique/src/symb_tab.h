@@ -99,4 +99,5 @@ char* is_func_in_tab(Symbol_table_functions* tab, const char* funcname);
 
 int nb_params_func(Symbol_table_functions* tab, const char* funcname);
 
+
 #endif

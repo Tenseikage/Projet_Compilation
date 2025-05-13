@@ -256,6 +256,9 @@ void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbol_table
                     }
                 } else if (branch->label == Void){
                     char* word_func = root->word;
+                    if (!strcmp(word_func, "getint") || !strcmp(word_func, "getchar")) {
+                        found = 1;
+                    }
                     for (int i = 0; i < tab_funks->index_tab; i++) {
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
                             if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
@@ -373,6 +376,7 @@ void evaluate_condexp(Node* root, Symbol_table_global* global_tab, Symbol_table_
                         error_func_toomanyargs(root->word, branch->lineno);
                     }
                 } else {
+                    //printf("frfreee \n");
                     warn_implicit_func_declare(root->word,root->lineno);
                 }  
             }
@@ -610,6 +614,9 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
 
                 char* word_func = root->word;
                 found = 0;
+                if (!strcmp(word_func, "putint") || !strcmp(word_func, "putchar")) {
+                    found = 1;
+                }
                 for (int i = 0; i < tab_funks->index_tab; i++) {
                         //printf(" Fonction  %s \n",tab_funks->tab_funcs[i].name);
                     if (strcmp(tab_funks->tab_funcs[i].name, word_func) == 0) {
@@ -624,6 +631,7 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
                     }
                 }
                 if (!found) {
+                    //printf("yaah\n");
                     warn_implicit_func_declare(word_func,root->lineno);
                 }  
             } else {
