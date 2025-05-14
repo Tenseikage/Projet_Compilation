@@ -1,5 +1,5 @@
 section .bss
-  TAB_GLOBAL resb 0
+  TAB_GLOBAL resb 4
 global _start
 section .text
 extern show_registers
@@ -98,7 +98,24 @@ putint:
     pop r12
     pop rbx
     ret
+caca:
+  mov rax, 5
+  push rax
+
+  pop rax
+  mov [TAB_GLOBAL + 0], eax
+
+  mov rax, 0
+  ret
 main:
+  sub rsp, 8
+  call caca
+  add rsp, 8
+  mov eax, dword [TAB_GLOBAL + 0]
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
   mov rax, 25
   push rax
   mov rax, 32
@@ -112,8 +129,6 @@ main:
   pop rcx
   pop rax
   sub rax, rcx
-  push rax
-  pop rax
   ret
 _start:
   sub rsp, 8

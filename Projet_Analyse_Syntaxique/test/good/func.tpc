@@ -6,6 +6,9 @@
 	int uppercase;
 int magma(void){
     somme = somme + 14;
+    if(somme){
+        somme = 15;
+    }
     return 0;
 }
     
@@ -41,6 +44,8 @@ int main(void)  {
    magma();
    putchar('\n');
    putint(reste);
+   putchar('\n');
+   putint(somme);
    putchar('\n');
    //putchar(uppercase);
    //putint(5);

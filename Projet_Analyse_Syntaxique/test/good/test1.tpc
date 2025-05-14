@@ -1,7 +1,14 @@
-void caca(void){
-	return;
+
+int pipi;
+
+
+int caca(void){
+	pipi = 5;
+	return 0;
 }
 
 int main(void){
+	caca();
+	putint(pipi);
 	return 25 + 32 - 10;
 }
