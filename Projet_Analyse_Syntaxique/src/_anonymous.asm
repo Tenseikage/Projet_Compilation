@@ -112,17 +112,41 @@ add:
   mov byte [rbp-24], r9b
   mov al, 99 
   mov byte [rbp-25], al
-  mov rax, 4
+  mov eax, dword [rbp-4]
+  push rax 
+  mov eax, dword [rbp-8]
+  push rax 
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
+  mov eax, dword [rbp-12]
+  push rax 
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
+  mov eax, dword [rbp-16]
+  push rax 
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
+  mov eax, dword [rbp-20]
+  push rax 
+  pop rcx
+  pop rax
+  add rax, rcx
+  push rax
+  mov al, byte [rbp-24]
+  push rax 
+  pop rcx
+  pop rax
+  add rax, rcx
   mov dword [rbp-4], eax
   mov rax, 1
   mov dword [static_add_q], eax
   mov eax, dword [rbp-4]
-  push rax 
-  mov rax, 1
-  push rax
-  pop rcx
-  pop rax
-  add rax, rcx
   mov rdi, rax
   sub rsp, 8
   call putint

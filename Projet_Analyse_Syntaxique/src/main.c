@@ -143,7 +143,7 @@ int main(int argc,char *argv[]) {
             free_all_tables(global_tab, tab_funcs);
             return 2;
         }
-        FILE* file = fopen("./src/_anonymous2.asm", "w");
+        FILE* file = fopen("./src/_anonymous.asm", "w");
         if (!file) {
                 fprintf(stderr, "Erreur à l'ouverture du fichier\n");
                 return 3;

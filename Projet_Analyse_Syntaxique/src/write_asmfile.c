@@ -14,8 +14,10 @@ static int _else_label = 0;
 static int _false_label = 0;
 static int _true_label = 0;
 static int cond_elem_count = 0;
+static int while_label = 0;
 //Fonctions s'appelant mutuellement
 void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,Symbol_table_functions* tab_funks,char* funcname);
+void write_asm_while(Node* root, FILE* file, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname);
 
 void write_asm_getchar(FILE* file) {
     fprintf(file,
@@ -546,9 +548,6 @@ void write_asm_cmp_expr(Node* root, FILE* file, Symbol_table_global* global_tab,
     fprintf(file, ".Lfalse_%d:\n", lbl_false);
     fprintf(file, "  mov rax, 0\n");
     //int label_cond = _if_label++;
-    fprintf(file,
-        "  cmp rax, 0\n"
-        "  je  .Lelse_%d\n\n", _else_label);
     fprintf(file, ".Lend_%d:\n", lbl_end);
 }
 
@@ -673,12 +672,14 @@ void write_asm_if_test(Node* root, FILE* file, Symbol_table_global* global_tab,S
     // 1) On évalue l’expression conditionnelle
     cond_elem_count = 0;
     int else_label = _else_label;
+    //int lbl_end = _if_label;
     write_asm_condexp(root, file, global_tab,tab_funks,funcname);
     // 2) On dépile et compare à zéro
     fprintf(file,
         "  cmp rax, 0\n"
         "  je  .Lelse_%d\n\n",  else_label);
-
+    //printf("  .Lend_%d:\n", lbl_end");
+    //fprintf(file, ".Lend_%d:\n", lbl_end);
     //fprintf(file, ".Lif_%d:\n", label_cond);
 }
 
@@ -756,6 +757,7 @@ Data* get_func_params(Symbol_table_functions* tab, const char* funcname, int* nb
 
 void write_asm_func(FILE* file, const char* funcname, Symbol_table_functions* tab_funks) {
     if(funcname){
+        printf("funcname %s \n",funcname);
         fprintf(file, "%s:\n", funcname);
         fprintf(file, "  push rbp\n");
         fprintf(file, "  mov rbp, rsp\n");
@@ -867,6 +869,7 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab,
                     parcours_instr_cond(else_block, file, global_tab,tab_funks,funcname);
                     //return;
                 }
+                //fprintf(file, ".Lend_if_%d:\n", end_if_label);
                 fprintf(file, ".Lend_if_%d:\n\n", _if_label);
             } else if (branch_instr->label == Return) {
                 Node* expr = branch_instr->firstChild;
@@ -881,6 +884,8 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab,
                 fprintf(file, "  ret\n");
                 // Optionnel : return ici si tu veux arrêter le parcours après un return
                 return;
+            } else if (branch_instr->label == While) {
+                write_asm_while(branch_instr, file, global_tab, tab_funks, funcname);
             }
             branch_instr = branch_instr->nextSibling;
 
@@ -888,6 +893,28 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab,
     }
     parcours_instr_cond(root->firstChild,file,global_tab,tab_funks,funcname);
     parcours_instr_cond(root->nextSibling,file,global_tab,tab_funks,funcname);
+}
+
+
+void write_asm_while(Node* root, FILE* file, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
+    int lbl = while_label++;
+    fprintf(file, ".Lwhile_start_%d:\n", lbl);
+
+    // Générer le code pour la condition
+    Node* cond = root->firstChild; // Exp
+    write_asm_condexp(cond->firstChild, file, global_tab, tab_funks, funcname);
+    fprintf(file, "  cmp rax, 0\n");
+    fprintf(file, "  je .Lwhile_end_%d\n", lbl);
+
+    // Générer le corps de la boucle
+    Node* body = cond->nextSibling;
+    if (body && body->label == SuiteInstr) {
+        parcours_instr_cond(body, file, global_tab, tab_funks, funcname);
+    }
+
+    // Retour au début
+    fprintf(file, "  jmp .Lwhile_start_%d\n", lbl);
+    fprintf(file, ".Lwhile_end_%d:\n", lbl);
 }
 
 
@@ -963,6 +990,8 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab,
                 fprintf(file, "  ret\n");
                 // Optionnel : return ici si tu veux arrêter le parcours après un return
                 return;
+            } else if (branch_instr->label == While) {
+                write_asm_while(branch_instr, file, global_tab, tab_funks, funcname);
             }
             branch_instr = branch_instr->nextSibling;
 
@@ -987,16 +1016,29 @@ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab,Symbol
         }
     }*/
     if(root->label == DeclFonct){
-        Node* branch_func_name = root->firstChild->firstChild->nextSibling;
-        Node* corps_fonc = root->firstChild->nextSibling->nextSibling;
-        if(branch_func_name){
-            //printf("présence de fonction hehe %s\n", branch_func_name->word);
-            //Cas du main // var globales
-            write_asm_func(file,branch_func_name->word,tab_funks);
-            parcours_corps_func(corps_fonc,file,global_tab,tab_funks,branch_func_name->word);
-            // Autres fonctions à venir
-            //parcours_corps_func(corps_fonc,file,global_tab);
+        Node* branch_func_name;
+        Node* corps_fonc;
+        Node* isVoid = root->firstChild;
+        if(isVoid->label == Void){
+            Node* branch_func_name = isVoid->firstChild;
+            Node* corps_fonc = root->firstChild->nextSibling->nextSibling;
+            if(corps_fonc){
+                write_asm_func(file,branch_func_name->word,tab_funks);
+                parcours_corps_func(corps_fonc,file,global_tab,tab_funks,branch_func_name->word);
+            }
+        } else {
+            branch_func_name = root->firstChild->firstChild->nextSibling;
+            corps_fonc = root->firstChild->nextSibling->nextSibling;
+            if(branch_func_name){
+                //printf("présence de fonction hehe %s\n", branch_func_name->word);
+                //Cas du main // var globales
+                write_asm_func(file,branch_func_name->word,tab_funks);
+                parcours_corps_func(corps_fonc,file,global_tab,tab_funks,branch_func_name->word);
+                // Autres fonctions à venir
+                //parcours_corps_func(corps_fonc,file,global_tab);
+            }
         }
+        
     } 
     parcours_arbre(root->firstChild,file,global_tab,tab_funks);
     parcours_arbre(root->nextSibling,file,global_tab,tab_funks);

@@ -5,9 +5,9 @@ int add(int a, int b, int c, int d, int e, char f) {
 	static int q;
 	char m;
 	m = 'c';
-	a = 4;
+	a = a + b + c + d + e  + f;
 	q = 1;
-	putint(a + 1);
+	putint(a);
     return 0;
 }
 
