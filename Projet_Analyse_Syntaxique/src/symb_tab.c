@@ -11,7 +11,6 @@
 #define RESIZE_FACTOR 2
 
 int global_offset = 0;
-int static_offset = 0;
 int local_offset;
 
 
@@ -104,40 +103,37 @@ void add_var(void* tab, TableType type, const char* name, char* str_type, int li
                   (*vars)[*index_tab].offset = global_offset;
                   global_offset++;
             }
-        } else if(type == LOCAL){
-            if (*index_tab == 0){
-                if(!strcmp(str_type,"int")){
+        } else if(type == LOCAL || type == VARS){
+            if(!state){
+                if(*index_tab == 0 && type == VARS){
                     local_offset = 4;
-                } else {
-                    local_offset = 1;
-                }
-                if(state){
-                    (*vars)[*index_tab].offset = static_offset;
-                    static_offset += 4;
-                } else {
-                    (*vars)[*index_tab].offset = local_offset;
-                    local_offset += 1;
-                }
-            } else {
-                if(!strcmp(str_type,"int")){
-                    (*vars)[*index_tab].size = 4;
-                    if(state){
-                        (*vars)[*index_tab].offset = static_offset;
-                        static_offset += 4;
-                    } else {
+                    if(!strcmp(str_type,"int")){
+                        printf("local int %s offset %d\n",name,local_offset);
+                        (*vars)[*index_tab].size = 4;
                         (*vars)[*index_tab].offset = local_offset;
-                        local_offset += 1;
+                        local_offset += 4;
+                        
+              
+                    } else if(!strcmp(str_type, "char")){
+                        local_offset = 1;
+                          (*vars)[*index_tab].size = 1;
+                          (*vars)[*index_tab].offset = local_offset;
+                          local_offset += 1;
+        
                     }
-                    
-          
-                } else if(!strcmp(str_type, "char")){
-                      (*vars)[*index_tab].size = 1;
-                      if(state){
-                        (*vars)[*index_tab].offset = static_offset;
-                        static_offset += 1;
-                    } else {
+                } else {
+                    if(!strcmp(str_type,"int")){
+                        (*vars)[*index_tab].size = 4;
                         (*vars)[*index_tab].offset = local_offset;
-                        local_offset += 1;
+                        local_offset += 4;
+                        
+              
+                    } else if(!strcmp(str_type, "char")){
+                        printf("local char %s\n",name);
+                          (*vars)[*index_tab].size = 1;
+                          (*vars)[*index_tab].offset = local_offset;
+                          local_offset += 1;
+        
                     }
                 }
             }

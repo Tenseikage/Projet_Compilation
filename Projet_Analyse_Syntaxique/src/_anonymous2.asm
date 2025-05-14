@@ -1,5 +1,7 @@
 section .bss
   TAB_GLOBAL resb 8
+  static_add_q resd 1
+  static_poppi_c resd 1
 global _start
 section .text
 extern show_registers
@@ -101,11 +103,19 @@ putint:
 add:
   push rbp
   mov rbp, rsp
-  sub rsp, 1
+  sub rsp, 32
+  mov dword [rbp-4], edi
+  mov dword [rbp-8], esi
+  mov dword [rbp-12], edx
+  mov dword [rbp-16], ecx
+  mov dword [rbp-20], r8d
+  mov byte [rbp-24], r9b
   mov al, 99 
-  mov byte [rbp-5], al
-  mov rax, 1
+  mov byte [rbp-25], al
+  mov rax, 4
   mov dword [rbp-4], eax
+  mov rax, 1
+  mov dword [static_add_q], eax
   mov eax, dword [rbp-4]
   push rax 
   mov rax, 1
@@ -117,6 +127,36 @@ add:
   sub rsp, 8
   call putint
   add rsp, 8
+  mov rax, 0
+  leave
+  ret
+poppi:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov dword [rbp-4], edi
+  mov dword [rbp-8], esi
+  mov rax, 1
+  cmp rax, 0
+  je  .Lelse_1
+
+  mov rax, 2
+  push rax
+  mov rax, 3
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov dword [static_poppi_c], eax
+  jmp .Lend_if_1
+
+.Lelse_1:
+  mov dil,113
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+.Lend_if_1:
+
   mov rax, 0
   leave
   ret
@@ -139,11 +179,6 @@ main:
   call add
   add rsp, 8
   mov [TAB_GLOBAL + 0], eax
-  mov eax, dword [TAB_GLOBAL + 0]
-  mov rdi, rax
-  sub rsp, 8
-  call putint
-  add rsp, 8
   mov rax, 1
   push rax
   mov rax, 2
@@ -168,10 +203,12 @@ main:
   sub rsp, 8
   call putchar
   add rsp, 8
-  mov eax, dword [TAB_GLOBAL + 4]
+  mov rax, 1
   mov rdi, rax
+  mov rax, 2
+  mov rsi, rax
   sub rsp, 8
-  call putint
+  call poppi
   add rsp, 8
   mov rax, 0
   leave

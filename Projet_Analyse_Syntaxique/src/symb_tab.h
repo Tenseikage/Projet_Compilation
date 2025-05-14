@@ -2,7 +2,8 @@
 #define __SYMB_TAB_H__
 #define IDENT_LENGTH 128
 
-
+extern int global_offset;
+extern int local_offset;
 
 
 // Donnée d'une variable
@@ -14,6 +15,7 @@ typedef struct datas {
 	int size; // Nombre d'octets utilisé par la variable
 	int offset; // position dans le segment de mémoire
 	int is_affected; // 
+	//int is_param;
 } Data;
 
 

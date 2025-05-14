@@ -24,7 +24,7 @@ void write_end_asm_file(FILE *file);
  * Initialisation du tableau contenant les variables globales
  */
 
- void write_asm_tab_global(FILE* file,Symbol_table_global* global_tab);
+ void write_asm_tab_global_static(FILE* file,Symbol_table_global* global_tab,Symbol_table_functions* tab_funks);
 
 
  void write_builtin_funcs(FILE* file);

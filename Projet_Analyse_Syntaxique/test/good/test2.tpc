@@ -1,20 +1,33 @@
 int res;
 int baba;
 
-int add(int a, int b, int c, int d, int e, int f) {
-	int q;
+int add(int a, int b, int c, int d, int e, char f) {
+	static int q;
 	char m;
 	m = 'c';
+	a = 4;
 	q = 1;
-	putint(q+1);
+	putint(a + 1);
     return 0;
+}
+
+int poppi(int a,int b){
+	static int c;
+	if(1){
+		c = 2 + 3;
+		//putint(c);
+	} else {
+		putchar('q');
+	}
+	return 0;
 }
 
 int main(void) {
     res = add(1, 2, 3, 4, 5, 6);
-    putint(res); // Affiche 21
+    //putint(res); // Affiche 21
 	baba = 1 + 2 * 3 + 4;
 	putchar('\n');
-	putint(baba);
+	poppi(1,2);
+	//putint(baba);
     return 0;
 }

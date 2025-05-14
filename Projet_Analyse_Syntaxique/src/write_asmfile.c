@@ -141,21 +141,7 @@ int get_total_global_size(Symbol_table_global* global_tab){
     return total_global_size;
 }
 
-int get_total_local_size_by_func(Symbol_table_functions* tab, const char* funcname) {
-    if (!tab || !funcname) return 0;
-    //printf("index tab %d \n",tab->index_tab);
-    for (int i = 0; i < tab->index_tab; i++) {
-        if (!strcmp(tab->tab_funcs[i].name, funcname)) {
-            Symbol_table_locale* local_tab = tab->tab_funcs[i].local_tab;
-            int total = 0;
-            for (int j = 0; j < local_tab->index_tab; j++) {
-                total += local_tab->vars[j].size;
-            }
-            return total;
-        }
-    }
-    return 0; // Fonction non trouvée ou pas de variables locales
-}
+
 
 
 int get_var_global_offset(const char* str_ident, Symbol_table_global* global_tab) {
@@ -183,6 +169,52 @@ int get_var_local_offset_by_func(Symbol_table_functions* tab, const char* funcna
         }
     }
     return -1; // Variable non trouvée
+}
+
+
+
+int get_var_static_offset_by_func(Symbol_table_functions* tab, const char* funcname, const char* varname) {
+    if (!tab || !funcname || !varname) return -1;
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (!strcmp(tab->tab_funcs[i].name, funcname)) {
+            Symbol_table_locale* local_tab = tab->tab_funcs[i].local_tab;
+            for (int j = 0; j < local_tab->index_tab; j++) {
+                if (local_tab->vars[j].isStatic) {
+                    if (!strcmp(local_tab->vars[j].name, varname)) {
+                        //printf("offset var %d %s %s\n", offset,funcname,varname);
+                        return local_tab->vars[j].offset;
+                    }
+        
+
+                }
+            }
+        }
+    }
+    return -1; // Variable static non trouvée
+}
+
+int get_total_local_and_param_offset(Symbol_table_functions* tab, const char* funcname) {
+    if (!tab || !funcname) return 0;
+    int total = 0;
+    // Chercher la fonction
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (!strcmp(tab->tab_funcs[i].name, funcname)) {
+            // 1. Additionner la taille des paramètres
+            for (int j = 0; j < tab->tab_funcs[i].index_tabv; j++) {
+                total += tab->tab_funcs[i].vars[j].size;
+            }
+            // 2. Additionner la taille des variables locales
+            Symbol_table_locale* local_tab = tab->tab_funcs[i].local_tab;
+            for (int k = 0; k < local_tab->index_tab; k++) {
+                // Ne pas compter les variables statiques (stockées ailleurs)
+                if (!local_tab->vars[k].isStatic) {
+                    total += local_tab->vars[k].size;
+                }
+            }
+            break;
+        }
+    }
+    return total;
 }
 
 Symbol_table_locale* get_local_tab_by_func(Symbol_table_functions* tab, const char* funcname) {
@@ -226,53 +258,94 @@ void declVarsGlobal(Node* root,int *byte_length_glob_var){
 
 // mode = 0 : lecture (mov eax, ...)
 // mode = 1 : écriture (mov [...], eax)
-void gen_mov_var(FILE* file, const char* varname, const char* funcname,Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, int mode) {
-    int offset = get_var_local_offset_by_func(tab_funks, funcname, varname);
-    if (offset >= 0) {
-        // Variable locale
-        Symbol_table_locale* local_tab = get_local_tab_by_func(tab_funks, funcname);
-        const char* var_type = get_var_type(local_tab, LOCAL, varname);
-        if (!strcmp(var_type, "int")) {
-            if (mode == 0) {
-                // Lecture
-                fprintf(file, "  mov eax, dword [rbp-%d]\n", offset);
-            } else {
-                // Écriture
-                fprintf(file, "  mov dword [rbp-%d], eax\n", offset);
-            }
-        } else if (!strcmp(var_type, "char")) {
-            if (mode == 0) {
-                // Lecture
-                fprintf(file, "  mov al, byte [rbp-%d]\n", offset);
-            } else {
-                // Écriture
-                printf("char offset %d %s \n",offset,varname);
-                fprintf(file, "  mov byte [rbp-%d], al\n", offset);
-            }
-        }
-    } else {
-        // Variable globale
-        offset = get_var_global_offset(varname, global_tab);
-        if (offset >= 0) {
-            // Pour les globales, il faut aussi vérifier le type
-            const char* var_type = get_var_type(global_tab, GLOBAL, varname);
-            if (!strcmp(var_type, "int")) {
-                if (mode == 0) {
-                    fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
-                } else {
-                    fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset);
-                }
-            } else if (!strcmp(var_type, "char")) {
-                if (mode == 0) {
-                    fprintf(file, "  mov al, byte [TAB_GLOBAL + %d]\n", offset);
-                } else {
-                    fprintf(file, "  mov byte [TAB_GLOBAL + %d], al\n", offset);
+void gen_mov_var(FILE* file, const char* varname, const char* funcname, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, int mode) {
+    // 1. Chercher si c'est un paramètre de fonction
+    for (int i = 0; i < tab_funks->index_tab; i++) {
+        if (!strcmp(tab_funks->tab_funcs[i].name, funcname)) {
+            Symbol_table_function* func = &tab_funks->tab_funcs[i];
+            for (int j = 0; j < func->index_tabv; j++) {
+                if (!strcmp(func->vars[j].name, varname)) {
+                    int offset = func->vars[j].offset;
+                    const char* var_type = func->vars[j].type;
+                    if (!strcmp(var_type, "int")) {
+                        if (mode == 0)
+                            fprintf(file, "  mov eax, dword [rbp-%d]\n", offset);
+                        else
+                            fprintf(file, "  mov dword [rbp-%d], eax\n", offset);
+                    } else if (!strcmp(var_type, "char")) {
+                        if (mode == 0)
+                            fprintf(file, "  mov al, byte [rbp-%d]\n", offset);
+                        else
+                            fprintf(file, "  mov byte [rbp-%d], al\n", offset);
+                    }
+                    return;
                 }
             }
-        } else {
-            fprintf(stderr, "Erreur : variable '%s' non trouvée\n", varname);
+            break;
         }
     }
+
+    // 2. Chercher si c'est une variable locale normale/statique (déjà présent dans ton code)
+    int offset = get_var_local_offset_by_func(tab_funks, funcname, varname);
+    if (offset >= 0) {
+        Symbol_table_locale* local_tab = get_local_tab_by_func(tab_funks, funcname);
+        const char* var_type = get_var_type(local_tab, LOCAL, varname);
+        int is_static = 0;
+        for (int i = 0; i < local_tab->index_tab; i++) {
+            if (!strcmp(local_tab->vars[i].name, varname)) {
+                is_static = local_tab->vars[i].isStatic;
+                break;
+            }
+        }
+        if (is_static) {
+            if (!strcmp(var_type, "int")) {
+                if (mode == 0)
+                    fprintf(file, "  mov eax, dword [static_%s_%s]\n", funcname, varname);
+                else
+                    fprintf(file, "  mov dword [static_%s_%s], eax\n", funcname, varname);
+            } else if (!strcmp(var_type, "char")) {
+                if (mode == 0)
+                    fprintf(file, "  mov al, byte [static_%s_%s]\n", funcname, varname);
+                else
+                    fprintf(file, "  mov byte [static_%s_%s], al\n", funcname, varname);
+            }
+            return;
+        } else {
+            if (!strcmp(var_type, "int")) {
+                if (mode == 0)
+                    fprintf(file, "  mov eax, dword [rbp-%d]\n", offset);
+                else
+                    fprintf(file, "  mov dword [rbp-%d], eax\n", offset);
+            } else if (!strcmp(var_type, "char")) {
+                if (mode == 0)
+                    fprintf(file, "  mov al, byte [rbp-%d]\n", offset);
+                else
+                    fprintf(file, "  mov byte [rbp-%d], al\n", offset);
+            }
+            return;
+        }
+    }
+
+    // 3. Sinon, chercher si c'est une variable globale
+    offset = get_var_global_offset(varname, global_tab);
+    if (offset >= 0) {
+        const char* var_type = get_var_type(global_tab, GLOBAL, varname);
+        if (!strcmp(var_type, "int")) {
+            if (mode == 0)
+                fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
+            else
+                fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset);
+        } else if (!strcmp(var_type, "char")) {
+            if (mode == 0)
+                fprintf(file, "  mov al, byte [TAB_GLOBAL + %d]\n", offset);
+            else
+                fprintf(file, "  mov byte [TAB_GLOBAL + %d], al\n", offset);
+        }
+        return;
+    }
+
+    // 4. Erreur si non trouvée
+    fprintf(stderr, "Erreur : variable '%s' non trouvée\n", varname);
 }
 char decode_escape_sequence(const char* s) {
     if (s[1] == '\\') {
@@ -609,15 +682,38 @@ void write_asm_if_test(Node* root, FILE* file, Symbol_table_global* global_tab,S
     //fprintf(file, ".Lif_%d:\n", label_cond);
 }
 
+void write_static_labels(FILE* file, Symbol_table_functions* tab_funks) {
+    if (!file || !tab_funks) return;
+    for (int i = 0; i < tab_funks->index_tab; i++) {
+        const char* funcname = tab_funks->tab_funcs[i].name;
+        Symbol_table_locale* local_tab = tab_funks->tab_funcs[i].local_tab;
+        for (int j = 0; j < local_tab->index_tab; j++) {
+            if (local_tab->vars[j].isStatic) {
+                const char* varname = local_tab->vars[j].name;
+                const char* vartype = local_tab->vars[j].type;
+                if (!strcmp(vartype, "int")) {
+                    fprintf(file, "  static_%s_%s resd 1\n", funcname, varname);
+                } else if (!strcmp(vartype, "char")) {
+                    fprintf(file, "  static_%s_%s resb 1\n", funcname, varname);
+                }
+                // Ajoute d'autres types si besoin
+            }
+        }
+    }
+}
 
-void write_asm_tab_global(FILE* file,Symbol_table_global* global_tab){
+
+void write_asm_tab_global_static(FILE* file,Symbol_table_global* global_tab,Symbol_table_functions* tab_funks){
     if (!file) {
         fprintf(stderr, "Erreur : fichier non existant\n");
         exit(EXIT_FAILURE);
     }
     int byte_global = get_total_global_size(global_tab);
+    //int byte_static = get_total_static_offset(tab_funks);
+   // printf(" staticdsksl %d \n",byte_static);
     fprintf(file,"section .bss\n");
     fprintf(file, "  TAB_GLOBAL resb %d\n",byte_global);
+    write_static_labels(file,tab_funks);
 
 }
 void write_asm_file_and_built_funcs(FILE *file) {
@@ -641,6 +737,21 @@ void write_asm_file_and_built_funcs(FILE *file) {
     
 }
 
+Data* get_func_params(Symbol_table_functions* tab, const char* funcname, int* nb_params) {
+    if (!tab || !funcname) {
+        if (nb_params) *nb_params = 0;
+        return NULL;
+    }
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (strcmp(tab->tab_funcs[i].name, funcname) == 0) {
+            if (nb_params) *nb_params = tab->tab_funcs[i].index_tabv;
+            return tab->tab_funcs[i].vars;
+        }
+    }
+    if (nb_params) *nb_params = 0;
+    return NULL;
+}
+
 
 
 void write_asm_func(FILE* file, const char* funcname, Symbol_table_functions* tab_funks) {
@@ -648,10 +759,40 @@ void write_asm_func(FILE* file, const char* funcname, Symbol_table_functions* ta
         fprintf(file, "%s:\n", funcname);
         fprintf(file, "  push rbp\n");
         fprintf(file, "  mov rbp, rsp\n");
-        int local_size = get_total_local_size_by_func(tab_funks, funcname);
-        if (local_size > 0) {
-            fprintf(file, "  sub rsp, %d\n", local_size);
+        int total_local_offset = get_total_local_and_param_offset(tab_funks,funcname);
+        if (total_local_offset > 0) {
+            fprintf(file, "  sub rsp, %d\n", ((total_local_offset + 15) /16)* 16);
         }
+        // Initialisation des paramètres (exemple pour int)
+        int nb_params = 0;
+        Data* vars_params = get_func_params(tab_funks, funcname, &nb_params);
+        int param_count = 0;
+        while (vars_params && param_count < nb_params && param_count < 6){
+            int offset = vars_params[param_count].offset;
+            if (!strcmp(vars_params[param_count].type, "int")) {
+                switch(param_count) {
+                    case 0: fprintf(file, "  mov dword [rbp-%d], edi\n", offset); break;
+                    case 1: fprintf(file, "  mov dword [rbp-%d], esi\n", offset); break;
+                    case 2: fprintf(file, "  mov dword [rbp-%d], edx\n", offset); break;
+                    case 3: fprintf(file, "  mov dword [rbp-%d], ecx\n", offset); break;
+                    case 4: fprintf(file, "  mov dword [rbp-%d], r8d\n", offset); break;
+                    case 5: fprintf(file, "  mov dword [rbp-%d], r9d\n", offset); break;
+                }
+            } else if (!strcmp(vars_params[param_count].type, "char")) {
+                switch(param_count) {
+                    case 0: fprintf(file, "  mov byte [rbp-%d], dil\n", offset); break;
+                    case 1: fprintf(file, "  mov byte [rbp-%d], sil\n", offset); break;
+                    case 2: fprintf(file, "  mov byte [rbp-%d], dl\n", offset); break;
+                    case 3: fprintf(file, "  mov byte [rbp-%d], cl\n", offset); break;
+                    case 4: fprintf(file, "  mov byte [rbp-%d], r8b\n", offset); break;
+                    case 5: fprintf(file, "  mov byte [rbp-%d], r9b\n", offset); break;
+                }
+            }
+            param_count++;
+        }
+        
+
+        
     }
 }
 
@@ -692,7 +833,7 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab,
                     //int offset_ident = get_var_global_offset(str_ident,global_tab);
                     Node* right_expr = branch_instr->firstChild;
                     if(right_expr){
-                        parcours_expr_droite(right_expr,file,global_tab,tab_funks,funcname,1);
+                        parcours_expr_droite(right_expr,file,global_tab,tab_funks,funcname,0);
                         //fprintf(file, "  pop rax\n");
                         //fprintf(file, "%s \n", str_ident);
                         //fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);

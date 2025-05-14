@@ -148,7 +148,7 @@ int main(int argc,char *argv[]) {
                 fprintf(stderr, "Erreur à l'ouverture du fichier\n");
                 return 3;
         }
-        write_asm_tab_global(file,global_tab);
+        write_asm_tab_global_static(file,global_tab,tab_funcs);
         write_asm_file_and_built_funcs(file);
         parcours_arbre(root,file,global_tab,tab_funcs);
         write_end_asm_file(file);
