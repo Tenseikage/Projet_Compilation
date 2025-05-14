@@ -157,41 +157,31 @@ _start:
   pop rax
   mov [TAB_GLOBAL + 23], eax
 
-  mov eax, dword [TAB_GLOBAL + 4]
+  mov eax, 1
   cmp rax, 0
-  je  .Lelse_0
+  je  .Lelse_1
 
-  push 3
+  mov rdi, 99
+  call putchar
+  jmp .Lend_if_1
+
+.Lelse_1:
+.Lend_if_1:
+
+  sub rsp, 8
+  call getint
+  add rsp, 8
+  push rax
 
   pop rax
   mov [TAB_GLOBAL + 12], eax
-
-  jmp .Lend_if_0
-
-.Lelse_0:
-  push 4
-
-  pop rax
-  mov [TAB_GLOBAL + 12], eax
-
-.Lend_if_0:
 
   mov rdi, 10
   call putchar
   mov edi, [TAB_GLOBAL + 12]
   call putint
-  mov rdi, 10
+  mov rdi, 99
   call putchar
-  push 3
-
-  pop rax
-  mov [TAB_GLOBAL + 12], eax
-
-  push 4
-
-  pop rax
-  mov [TAB_GLOBAL + 12], eax
-
   mov rax, 60
   xor rdi, rdi
   syscall

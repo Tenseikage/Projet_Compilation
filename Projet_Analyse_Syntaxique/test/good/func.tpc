@@ -9,27 +9,31 @@ int magma(void){
     return 0;
 }
     
-/*int main(void)  {
-   produit=24;
-   quotient=24/12;
-   letter='c';
-   digit='0';
-   uppercase=letter+('A'-'a');
-   reste=getint();
-   magma();
-   putchar('\n');
-   putint(reste);
-   return 0;
-}*/
-
 int main(void)  {
+   produit=24;
+    quotient=24/12;
+    letter='c';
+    digit='0';
+    uppercase=letter+('A'-'a');
+    if(1){
+            putchar('c');
+    }
+    reste=getint();
+    magma();
+    putchar('\n');
+    putint(reste);
+    return 0;
+}
+
+/*int main(void)  {
     produit=24;
     quotient=24/12;
     letter='c';
     digit='0';
     uppercase=letter+('A'-'a');
-    if(produit){
-            reste = 3;
+    if(1){
+            reste = !(produit == 24 || reste > 58);
+            //x=!(x==y||x>z).
     } else {
             reste = 4;
     }
@@ -38,6 +42,7 @@ int main(void)  {
    putchar('\n');
    putint(reste);
    putchar('\n');
+   //putchar(uppercase);
    //putint(5);
    return 0;
-}
+}*/
