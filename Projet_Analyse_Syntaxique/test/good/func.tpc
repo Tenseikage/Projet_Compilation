@@ -9,7 +9,7 @@ int magma(void){
     return 0;
 }
     
-int main(void)  {
+/*int main(void)  {
    produit=24;
     quotient=24/12;
     letter='c';
@@ -23,15 +23,15 @@ int main(void)  {
     putchar('\n');
     putint(reste);
     return 0;
-}
+}*/
 
-/*int main(void)  {
+int main(void)  {
     produit=24;
     quotient=24/12;
     letter='c';
     digit='0';
     uppercase=letter+('A'-'a');
-    if(1){
+    if(!(produit - 24 + 1) || 1 && 0){
             reste = !(produit == 24 || reste > 58);
             //x=!(x==y||x>z).
     } else {
@@ -45,4 +45,4 @@ int main(void)  {
    //putchar(uppercase);
    //putint(5);
    return 0;
-}*/
+}

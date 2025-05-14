@@ -401,8 +401,9 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
 
     // Expressions arithmétiques simples
     if (root->label == Addsub || root->label == divstar) {
-        write_asm_condexp(root->firstChild, file, global_tab);
-        write_asm_condexp(root->firstChild->nextSibling, file, global_tab);
+        parcours_expr_droite(root->firstChild, file, global_tab);
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab);
+        //fprintf(file, "  push rax\n"); // Empile le résultat gauche
         fprintf(file, "  pop rcx\n");
         fprintf(file, "  pop rax\n");
         if (strcmp(root->word, "+") == 0)
@@ -415,7 +416,6 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
             fprintf(file, "  xor rdx, rdx\n");
             fprintf(file, "  div rcx\n");
         }
-        fprintf(file, "  push rax\n");
         return;
     }
     if (root->label == ident) {
@@ -424,7 +424,7 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
         return;
     }
     if (root->label == Num) {
-        fprintf(file, "  mov eax, %d\n", root->value);
+        fprintf(file, "  mov rax, %d\n", root->value);
         return;
     }
 }
@@ -477,7 +477,7 @@ void write_asm_file_and_built_funcs(FILE *file) {
 }
 
 void write_asm_main(FILE* file){
-    fprintf(file, "_start:\n");
+    fprintf(file, "main:\n");
 }
 
 void write_asm_func(FILE*  file, const char* funcname){
@@ -490,6 +490,10 @@ void write_asm_func(FILE*  file, const char* funcname){
 
 void write_end_asm_file(FILE *file) {
     //fprintf(file, "  sub rsp, 8\n");     // Aligner la pile sur 16 octets
+    fprintf(file, "_start:\n");
+    fprintf(file, "  sub rsp, 8\n");
+    fprintf(file, "  call main\n");
+    fprintf(file, "  add rsp, 8\n");
     fprintf(file, "  mov rax, 60\n");    // syscall: exit
     fprintf(file, "  xor rdi, rdi\n");   // Code de retour 0
     fprintf(file, "  syscall\n");        // Appel système
@@ -570,6 +574,8 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
                 }
             } else if (branch_instr->label == If) {
                 // 1) écrire le test
+                _if_label++;
+                _else_label++;
                 Node* cond = branch_instr->firstChild;
                 Node* then_block  = branch_instr->firstChild->nextSibling;
                 Node* else_block = branch_instr->nextSibling;
@@ -602,6 +608,15 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
                 // passer au suivant
                 //branch_instr = branch_instr->nextSibling;
                 //continue;
+            } else if (branch_instr->label == Return) {
+                Node* expr = branch_instr->firstChild;
+                if (expr) {
+                    parcours_expr_droite(expr, file, global_tab); // calcule Exp, résultat sur la pile
+                    fprintf(file, "  pop rax\n"); // place le résultat dans rax (convention d'appel)
+                }
+                fprintf(file, "  ret\n");
+                // Optionnel : return ici si tu veux arrêter le parcours après un return
+                return;
             }
             branch_instr = branch_instr->nextSibling;
 
@@ -699,6 +714,15 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                     //return;
                 }
                 fprintf(file, ".Lend_if_%d:\n\n", _if_label);
+            } else if (branch_instr->label == Return) {
+                Node* expr = branch_instr->firstChild;
+                if (expr) {
+                    parcours_expr_droite(expr, file, global_tab); // calcule Exp, résultat sur la pile
+                    fprintf(file, "  pop rax\n"); // place le résultat dans rax (convention d'appel)
+                }
+                fprintf(file, "  ret\n");
+                // Optionnel : return ici si tu veux arrêter le parcours après un return
+                return;
             }
             branch_instr = branch_instr->nextSibling;
 
