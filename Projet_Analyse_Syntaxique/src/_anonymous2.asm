@@ -1,5 +1,5 @@
 section .bss
-  TAB_GLOBAL resb 4
+  TAB_GLOBAL resb 8
 global _start
 section .text
 extern show_registers
@@ -98,37 +98,72 @@ putint:
     pop r12
     pop rbx
     ret
-caca:
-  mov rax, 5
-  push rax
-
-  pop rax
-  mov [TAB_GLOBAL + 0], eax
-
+add:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 1
+  mov al, 99 
+  mov byte [rbp-5], al
+  mov rax, 1
+  mov dword [rbp-4], eax
   mov rax, 0
+  leave
   ret
 main:
+  push rbp
+  mov rbp, rsp
+  mov rax, 1
+  mov rdi, rax
+  mov rax, 2
+  mov rsi, rax
+  mov rax, 3
+  mov rdx, rax
+  mov rax, 4
+  mov rcx, rax
+  mov rax, 5
+  mov r8, rax
+  mov rax, 6
+  mov r9, rax
   sub rsp, 8
-  call caca
+  call add
   add rsp, 8
+  mov [TAB_GLOBAL + 0], eax
   mov eax, dword [TAB_GLOBAL + 0]
   mov rdi, rax
   sub rsp, 8
   call putint
   add rsp, 8
-  mov rax, 25
+  mov rax, 1
   push rax
-  mov rax, 32
+  mov rax, 2
+  push rax
+  mov rax, 3
+  push rax
+  pop rcx
+  pop rax
+  imul rax, rcx
   push rax
   pop rcx
   pop rax
   add rax, rcx
   push rax
-  mov rax, 10
+  mov rax, 4
   push rax
   pop rcx
   pop rax
-  sub rax, rcx
+  add rax, rcx
+  mov [TAB_GLOBAL + 4], eax
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  mov eax, dword [TAB_GLOBAL + 4]
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
+  mov rax, 0
+  leave
   ret
 _start:
   sub rsp, 8

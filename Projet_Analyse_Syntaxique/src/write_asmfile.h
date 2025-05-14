@@ -17,7 +17,7 @@ void write_end_asm_file(FILE *file);
  * qui y est représenté
  */
 
- void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab);
+ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab,Symbol_table_functions* tab_funks);
 
 
 /**

@@ -5,6 +5,7 @@
 #include "tree.h"
 #include "write_asmfile.h"
 #include "symb_tab.h"
+#include "semantics.h"
 
 //extern Node* root; 
 
@@ -14,7 +15,7 @@ static int _false_label = 0;
 static int _true_label = 0;
 static int cond_elem_count = 0;
 //Fonctions s'appelant mutuellement
-void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab);
+void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,Symbol_table_functions* tab_funks,char* funcname);
 
 void write_asm_getchar(FILE* file) {
     fprintf(file,
@@ -140,6 +141,23 @@ int get_total_global_size(Symbol_table_global* global_tab){
     return total_global_size;
 }
 
+int get_total_local_size_by_func(Symbol_table_functions* tab, const char* funcname) {
+    if (!tab || !funcname) return 0;
+    //printf("index tab %d \n",tab->index_tab);
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (!strcmp(tab->tab_funcs[i].name, funcname)) {
+            Symbol_table_locale* local_tab = tab->tab_funcs[i].local_tab;
+            int total = 0;
+            for (int j = 0; j < local_tab->index_tab; j++) {
+                total += local_tab->vars[j].size;
+            }
+            return total;
+        }
+    }
+    return 0; // Fonction non trouvée ou pas de variables locales
+}
+
+
 int get_var_global_offset(const char* str_ident, Symbol_table_global* global_tab) {
     for (int i = 0; i < global_tab->index_tab; i++) {
         //printf("mehhh %s\n", global_tab->vars[i].name);
@@ -151,6 +169,32 @@ int get_var_global_offset(const char* str_ident, Symbol_table_global* global_tab
     //fprintf(stderr, "Erreur : Variable globale '%s' non trouvée dans la table des symboles.\n", str_ident);
     //exit(EXIT_FAILURE);
 }
+
+int get_var_local_offset_by_func(Symbol_table_functions* tab, const char* funcname, const char* varname) {
+    if (!tab || !funcname || !varname) return -1;
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (!strcmp(tab->tab_funcs[i].name, funcname)) {
+            Symbol_table_locale* local_tab = tab->tab_funcs[i].local_tab;
+            for (int j = 0; j < local_tab->index_tab; j++) {
+                if (strcmp(local_tab->vars[j].name, varname) == 0) {
+                    return local_tab->vars[j].offset;
+                }
+            }
+        }
+    }
+    return -1; // Variable non trouvée
+}
+
+Symbol_table_locale* get_local_tab_by_func(Symbol_table_functions* tab, const char* funcname) {
+    if (!tab || !funcname) return NULL;
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (strcmp(tab->tab_funcs[i].name, funcname) == 0) {
+            return tab->tab_funcs[i].local_tab;
+        }
+    }
+    return NULL; // Fonction non trouvée
+}
+
 
 void declVarsGlobal(Node* root,int *byte_length_glob_var){
     if(!root) return;
@@ -179,6 +223,57 @@ void declVarsGlobal(Node* root,int *byte_length_glob_var){
 
 }
 
+
+// mode = 0 : lecture (mov eax, ...)
+// mode = 1 : écriture (mov [...], eax)
+void gen_mov_var(FILE* file, const char* varname, const char* funcname,Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, int mode) {
+    int offset = get_var_local_offset_by_func(tab_funks, funcname, varname);
+    if (offset >= 0) {
+        // Variable locale
+        Symbol_table_locale* local_tab = get_local_tab_by_func(tab_funks, funcname);
+        const char* var_type = get_var_type(local_tab, LOCAL, varname);
+        if (!strcmp(var_type, "int")) {
+            if (mode == 0) {
+                // Lecture
+                fprintf(file, "  mov eax, dword [rbp-%d]\n", offset);
+            } else {
+                // Écriture
+                fprintf(file, "  mov dword [rbp-%d], eax\n", offset);
+            }
+        } else if (!strcmp(var_type, "char")) {
+            if (mode == 0) {
+                // Lecture
+                fprintf(file, "  mov al, byte [rbp-%d]\n", offset);
+            } else {
+                // Écriture
+                printf("char offset %d %s \n",offset,varname);
+                fprintf(file, "  mov byte [rbp-%d], al\n", offset);
+            }
+        }
+    } else {
+        // Variable globale
+        offset = get_var_global_offset(varname, global_tab);
+        if (offset >= 0) {
+            // Pour les globales, il faut aussi vérifier le type
+            const char* var_type = get_var_type(global_tab, GLOBAL, varname);
+            if (!strcmp(var_type, "int")) {
+                if (mode == 0) {
+                    fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
+                } else {
+                    fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset);
+                }
+            } else if (!strcmp(var_type, "char")) {
+                if (mode == 0) {
+                    fprintf(file, "  mov al, byte [TAB_GLOBAL + %d]\n", offset);
+                } else {
+                    fprintf(file, "  mov byte [TAB_GLOBAL + %d], al\n", offset);
+                }
+            }
+        } else {
+            fprintf(stderr, "Erreur : variable '%s' non trouvée\n", varname);
+        }
+    }
+}
 char decode_escape_sequence(const char* s) {
     if (s[1] == '\\') {
         switch (s[2]) {
@@ -196,7 +291,7 @@ char decode_escape_sequence(const char* s) {
 }
 
 
-void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_tab,int push_result) {
+void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_tab,Symbol_table_functions* tab_funks,char* funcname, int push_result) {
     //printf("I'm here yaaa \n");
     if (!root) {
         //printf("Nigga u loose !!! \n");
@@ -221,11 +316,13 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
     }
 
     if (root->label == ident) {
+        //varname =  root->word
         //printf("mot cherché %s \n",root->word);
         Node* branch = root->firstChild;
         if(!branch){
-            int offset = get_var_global_offset(root->word, global_tab);
-            fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
+            //int offset = get_var_global_offset(root->word, global_tab);
+            //fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", offset);
+            gen_mov_var(file,root->word,funcname,global_tab,tab_funks,0);
             if(push_result){
                 fprintf(file, "  push rax \n");
             }
@@ -244,8 +341,8 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
     }
 
     if (root->label == divstar) {
-        parcours_expr_droite(root->firstChild, file, global_tab,1);
-        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1);
+        parcours_expr_droite(root->firstChild, file, global_tab,tab_funks,funcname,1);
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,tab_funks,funcname,1);
         fprintf(file, "  pop rcx\n"); 
         fprintf(file, "  pop rax\n");
 
@@ -266,8 +363,8 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
     // Si le nœud est un opérateur d'addition ou soustraction
     if (root->label == Addsub) {
         // Générer le code pour les opérandes gauche et droite
-        parcours_expr_droite(root->firstChild, file, global_tab,1); // Opérande gauche
-        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1); // Opérande droite
+        parcours_expr_droite(root->firstChild, file, global_tab,tab_funks,funcname,1); // Opérande gauche
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,tab_funks,funcname,1); // Opérande droite
 
         // Dépilez les deux opérandes et effectuez l'opération
         fprintf(file, "  pop rcx\n"); // Deuxième opérande
@@ -286,7 +383,7 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         return;
     } else if (root->label == And || root->label == Or || root->label == Not ||
         root->label == Eq || root->label == Order) {
-        write_asm_condexp(root, file, global_tab);
+        write_asm_condexp(root, file, global_tab,tab_funks,funcname);
         fprintf(file, "  push rax\n"); // Empile la valeur 0 ou 1
         return;
     }else if (root->label == ident && root->firstChild && root->firstChild->label == Arguments) {
@@ -295,13 +392,13 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         int arg_count = 0;
         while (arg && arg_count < 6) {
             if (strcmp(root->word, "putchar") == 0 && arg_count == 0) {
-                fprintf(file, "  mov dil, %d\n", decode_escape_sequence(arg->word));
+                fprintf(file, "  mov dil,%d\n", decode_escape_sequence(arg->word));
                 fprintf(file, "  sub rsp, 8\n");
                 fprintf(file, "  call putchar\n");
                 fprintf(file, "  add rsp, 8\n");
                 return;
             } else {
-                parcours_expr_droite(arg, file, global_tab, 0); // résultat dans rax
+                parcours_expr_droite(arg, file, global_tab,tab_funks,funcname,0); // résultat dans rax
                 switch(arg_count) {
                     case 0: fprintf(file, "  mov rdi, rax\n"); break;
                     case 1: fprintf(file, "  mov rsi, rax\n"); break;
@@ -311,7 +408,7 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
                     case 5: fprintf(file, "  mov r9, rax\n"); break;
                 }
             }
-
+            arg_count++;
             arg = arg->nextSibling;
             
         }
@@ -332,7 +429,7 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
 }
 
 
-void write_asm_cmp_expr(Node* root, FILE* file, Symbol_table_global* global_tab) {
+void write_asm_cmp_expr(Node* root, FILE* file, Symbol_table_global* global_tab,Symbol_table_functions* tab_funks,char *funcname) {
     int lbl_true  = _true_label++;
     int lbl_false = _false_label++;
     int lbl_end   = _if_label++;
@@ -340,8 +437,8 @@ void write_asm_cmp_expr(Node* root, FILE* file, Symbol_table_global* global_tab)
 
 
     // 1) Générer le code pour les deux opérandes (arithmétiques simples)
-    parcours_expr_droite(root->firstChild, file, global_tab,1);
-    parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1);
+    parcours_expr_droite(root->firstChild, file, global_tab,tab_funks,funcname,1);
+    parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,tab_funks,funcname,1);
 
     // 2) Dépiler et comparer
     fprintf(file,
@@ -383,7 +480,7 @@ void write_asm_cmp_expr(Node* root, FILE* file, Symbol_table_global* global_tab)
 }
 
 
-void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) {
+void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,Symbol_table_functions* tab_funks,char* funcname) {
     if (!root) return;
     // Cas opérateurs booléens
     if (root->label == And) {
@@ -392,7 +489,7 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
 
         // Générer la première condition
         if(root->firstChild){
-            write_asm_condexp(root->firstChild, file, global_tab);
+            write_asm_condexp(root->firstChild, file, global_tab,tab_funks,funcname);
             fprintf(file,
                 "  cmp rax, 0\n"
                 "  je .Lfalse_%d\n", lbl_false);
@@ -401,7 +498,7 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
 
         // Générer la deuxième condition
         if(root->firstChild->nextSibling){
-            write_asm_condexp(root->firstChild->nextSibling, file, global_tab);
+            write_asm_condexp(root->firstChild->nextSibling,file,global_tab,tab_funks,funcname);
             fprintf(file,
                 "  cmp rax, 0\n"
                 "  je .Lfalse_%d\n", lbl_false);
@@ -421,13 +518,13 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
         int lbl_end = _if_label++;
 
         // Générer la première condition
-        write_asm_condexp(root->firstChild, file, global_tab);
+        write_asm_condexp(root->firstChild, file, global_tab,tab_funks,funcname);
         fprintf(file,
             "  cmp rax, 0\n"
             "  jne .Ltrue_%d\n", lbl_true);
 
         // Générer la deuxième condition
-        write_asm_condexp(root->firstChild->nextSibling, file, global_tab);
+        write_asm_condexp(root->firstChild->nextSibling, file, global_tab,tab_funks,funcname);
         fprintf(file,
             "  cmp rax, 0\n"
             "  jne .Ltrue_%d\n", lbl_true);
@@ -446,7 +543,7 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
         int lbl_true = _true_label++;
         int lbl_end = _if_label++;
 
-        write_asm_condexp(root->firstChild, file, global_tab);
+        write_asm_condexp(root->firstChild, file, global_tab,tab_funks,funcname);
         fprintf(file,
             "  cmp rax, 0\n"
             "  je .Ltrue_%d\n", lbl_true);
@@ -463,14 +560,14 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
     // Comparaisons
     if (root->label == Eq || root->label == Order) {
         //printf("oui rrr \n");
-        write_asm_cmp_expr(root, file, global_tab);
+        write_asm_cmp_expr(root, file, global_tab,tab_funks,funcname);
         return;
     }
 
     // Expressions arithmétiques simples
     if (root->label == Addsub || root->label == divstar) {
-        parcours_expr_droite(root->firstChild, file, global_tab,1);
-        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1);
+        parcours_expr_droite(root->firstChild, file, global_tab,tab_funks,funcname,1);
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,tab_funks,funcname,1);
         //fprintf(file, "  push rax\n"); // Empile le résultat gauche
         fprintf(file, "  pop rcx\n");
         fprintf(file, "  pop rax\n");
@@ -487,8 +584,8 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
         return;
     }
     if (root->label == ident) {
-        int global_offset = get_var_global_offset(root->word, global_tab);
-        fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", global_offset);
+        //fprintf(file, "  mov eax, dword [TAB_GLOBAL + %d]\n", global_offset); 
+        gen_mov_var(file,root->word,funcname,global_tab,tab_funks,0);
         return;
     }
     if (root->label == Num) {
@@ -498,12 +595,12 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
 }
 
 
-void write_asm_if_test(Node* root, FILE* file, Symbol_table_global* global_tab) {
+void write_asm_if_test(Node* root, FILE* file, Symbol_table_global* global_tab,Symbol_table_functions* tab_funks, char* funcname) {
     //printf("label cond blea %d \n", label_cond);
     // 1) On évalue l’expression conditionnelle
     cond_elem_count = 0;
     int else_label = _else_label;
-    write_asm_condexp(root, file, global_tab);
+    write_asm_condexp(root, file, global_tab,tab_funks,funcname);
     // 2) On dépile et compare à zéro
     fprintf(file,
         "  cmp rax, 0\n"
@@ -544,13 +641,17 @@ void write_asm_file_and_built_funcs(FILE *file) {
     
 }
 
-void write_asm_main(FILE* file){
-    fprintf(file, "main:\n");
-}
 
-void write_asm_func(FILE*  file, const char* funcname){
+
+void write_asm_func(FILE* file, const char* funcname, Symbol_table_functions* tab_funks) {
     if(funcname){
-        fprintf(file,"%s:\n",funcname);
+        fprintf(file, "%s:\n", funcname);
+        fprintf(file, "  push rbp\n");
+        fprintf(file, "  mov rbp, rsp\n");
+        int local_size = get_total_local_size_by_func(tab_funks, funcname);
+        if (local_size > 0) {
+            fprintf(file, "  sub rsp, %d\n", local_size);
+        }
     }
 }
 
@@ -571,7 +672,7 @@ void write_end_asm_file(FILE *file) {
 
 
 
-void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab){
+void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab,Symbol_table_functions* tab_funks, char* funcname){
     if(!root) return;
     if(root->label == SuiteInstr){
         Node * branch_instr = root->firstChild;
@@ -582,21 +683,20 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
                     //char* str_ident = branch_instr->word;
                     //Node* arg = ident_branch->firstChild;
                     //int nb_args = 0;
-                    parcours_expr_droite(branch_instr, file, global_tab, 0);
+                    parcours_expr_droite(branch_instr, file, global_tab,tab_funks,funcname, 0);
                     
                     
                 } else {
                     char* str_ident = branch_instr->word;
                     //printf("word instr %s \n", branch_instr->word);
-                    int offset_ident = get_var_global_offset(str_ident,global_tab);
+                    //int offset_ident = get_var_global_offset(str_ident,global_tab);
                     Node* right_expr = branch_instr->firstChild;
                     if(right_expr){
-                        parcours_expr_droite(right_expr,file,global_tab,1);
-                        fprintf(file,"\n");
-                        fprintf(file, "  pop rax\n");
+                        parcours_expr_droite(right_expr,file,global_tab,tab_funks,funcname,1);
+                        //fprintf(file, "  pop rax\n");
                         //fprintf(file, "%s \n", str_ident);
-                        fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);
-                        fprintf(file,"\n");
+                        //fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);
+                        gen_mov_var(file,str_ident,funcname,global_tab,tab_funks,1);
                     }
                 }
                 
@@ -609,13 +709,13 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
                 Node* else_block = branch_instr->nextSibling;
                 if(cond->label == Exp){
                     //printf("Yaa exp \n");
-                    write_asm_if_test(cond->firstChild, file, global_tab);
+                    write_asm_if_test(cond->firstChild, file, global_tab,tab_funks,funcname);
                 }
                 // 2) code du then
                 //Node* then_block = branch_instr->nextSibling;
                 if(then_block->label == SuiteInstr){
                     //printf("ouii papar \n");
-                    parcours_instr_cond(then_block, file, global_tab);
+                    parcours_instr_cond(then_block, file, global_tab,tab_funks,funcname);
                     //return;
                 }
                 // 3) fin du if / else
@@ -623,19 +723,20 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
                 fprintf(file, "  jmp .Lend_if_%d\n\n", _if_label);
                 fprintf(file, ".Lelse_%d:\n", _else_label);
                 if (else_block->label == Else && else_block) {
-                    parcours_instr_cond(else_block, file, global_tab);
+                    parcours_instr_cond(else_block, file, global_tab,tab_funks,funcname);
                     //return;
                 }
                 fprintf(file, ".Lend_if_%d:\n\n", _if_label);
             } else if (branch_instr->label == Return) {
                 Node* expr = branch_instr->firstChild;
                 if (expr) {
-                    parcours_expr_droite(expr, file, global_tab,0); // calcule Exp, résultat sur la pile
+                    parcours_expr_droite(expr, file, global_tab,tab_funks,funcname,0); // calcule Exp, résultat sur la pile
                     //fprintf(file, "  pop rax\n"); // place le résultat dans rax (convention d'appel)
                 } else {
                     // RETURN ; sans expression
                     // Rien à faire, juste ret
                 }
+                fprintf(file, "  leave\n");
                 fprintf(file, "  ret\n");
                 // Optionnel : return ici si tu veux arrêter le parcours après un return
                 return;
@@ -644,13 +745,13 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
 
         }
     }
-    parcours_instr_cond(root->firstChild,file,global_tab);
-    parcours_instr_cond(root->nextSibling,file,global_tab);
+    parcours_instr_cond(root->firstChild,file,global_tab,tab_funks,funcname);
+    parcours_instr_cond(root->nextSibling,file,global_tab,tab_funks,funcname);
 }
 
 
 
-void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab){
+void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname){
     //cas main 
     if(!root) return;
     if(root->label == SuiteInstr){
@@ -662,21 +763,22 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                     //char* str_ident = branch_instr->word;
                     //Node* arg = ident_branch->firstChild;
                     //int nb_args = 0;
-                    parcours_expr_droite(branch_instr, file, global_tab, 0);
+                    parcours_expr_droite(branch_instr, file, global_tab,tab_funks,funcname, 0);
                     
                     
                 } else {
                     char* str_ident = branch_instr->word;
                     //printf("word instr %s \n", branch_instr->word);
-                    int offset_ident = get_var_global_offset(str_ident,global_tab);
+                    //int offset_ident = get_var_global_offset(str_ident,global_tab);
                     Node* right_expr = branch_instr->firstChild;
                     if(right_expr){
-                        parcours_expr_droite(right_expr,file,global_tab,1);
-                        fprintf(file,"\n");
-                        fprintf(file, "  pop rax\n");
+                        parcours_expr_droite(right_expr,file,global_tab,tab_funks,funcname,0);
+                        //fprintf(file,"\n");
+                        //fprintf(file, "  pop rax\n");
                         //fprintf(file, "%s \n", str_ident);
-                        fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);
-                        fprintf(file,"\n");
+                        //fprintf(file, "  mov [TAB_GLOBAL + %d], eax\n", offset_ident);
+                        gen_mov_var(file,str_ident,funcname,global_tab,tab_funks,1);
+                        //fprintf(file,"\n");
                     }
                 }
                 
@@ -689,13 +791,13 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                 Node* else_block = branch_instr->nextSibling;
                 if(cond->label == Exp){
                     //printf("Yaa exp \n");
-                    write_asm_if_test(cond->firstChild, file, global_tab);
+                    write_asm_if_test(cond->firstChild, file, global_tab,tab_funks,funcname);
                 }
                 // 2) code du then
                 //Node* then_block = branch_instr->nextSibling;
                 if(then_block->label == SuiteInstr){
                     //printf("ouii papar \n");
-                    parcours_instr_cond(then_block, file, global_tab);
+                    parcours_instr_cond(then_block, file, global_tab,tab_funks,funcname);
                     //return;
                 }
                 // 3) fin du if / else
@@ -703,19 +805,20 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                 fprintf(file, "  jmp .Lend_if_%d\n\n", _if_label);
                 fprintf(file, ".Lelse_%d:\n", _else_label);
                 if (else_block->label == Else && else_block) {
-                    parcours_instr_cond(else_block, file, global_tab);
+                    parcours_instr_cond(else_block, file, global_tab,tab_funks,funcname);
                     //return;
                 }
                 fprintf(file, ".Lend_if_%d:\n\n", _if_label);
             } else if (branch_instr->label == Return) {
                 Node* expr = branch_instr->firstChild;
                 if (expr) {
-                    parcours_expr_droite(expr, file, global_tab,0); // calcule Exp, résultat sur la pile
+                    parcours_expr_droite(expr, file, global_tab,tab_funks,funcname,0); // calcule Exp, résultat sur la pile
                     //fprintf(file, "  pop rax\n"); // place le résultat dans rax (convention d'appel)
                 } else {
                     // RETURN ; sans expression
                     // Rien à faire, juste ret
                 }
+                fprintf(file, "  leave\n");
                 fprintf(file, "  ret\n");
                 // Optionnel : return ici si tu veux arrêter le parcours après un return
                 return;
@@ -725,13 +828,13 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
         }
         
     }
-    parcours_corps_func(root->firstChild,file,global_tab);
-    parcours_corps_func(root->nextSibling,file,global_tab);
+    parcours_corps_func(root->firstChild,file,global_tab,tab_funks,funcname);
+    parcours_corps_func(root->nextSibling,file,global_tab,tab_funks,funcname);
 }
 
 
 
-void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab) {
+void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab,Symbol_table_functions* tab_funks) {
     if (!root) return;
     /*if(root->label == DeclVars){
         Node* branch = root->firstChild;
@@ -748,18 +851,14 @@ void parcours_arbre(Node* root,FILE* file,Symbol_table_global* global_tab) {
         if(branch_func_name){
             //printf("présence de fonction hehe %s\n", branch_func_name->word);
             //Cas du main // var globales
-            if(!strcmp(branch_func_name->word,"main")){
-                write_asm_main(file);
-            } else {
-                write_asm_func(file,branch_func_name->word);
-            }
-            parcours_corps_func(corps_fonc,file,global_tab);
+            write_asm_func(file,branch_func_name->word,tab_funks);
+            parcours_corps_func(corps_fonc,file,global_tab,tab_funks,branch_func_name->word);
             // Autres fonctions à venir
             //parcours_corps_func(corps_fonc,file,global_tab);
         }
     } 
-    parcours_arbre(root->firstChild,file,global_tab);
-    parcours_arbre(root->nextSibling,file,global_tab);
+    parcours_arbre(root->firstChild,file,global_tab,tab_funks);
+    parcours_arbre(root->nextSibling,file,global_tab,tab_funks);
 }
 
 

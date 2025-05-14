@@ -217,7 +217,8 @@ Instr:
 
     |  RETURN Exp ';' {  $$ = makeNode(Return); addChild($$, $2); }
 
-    |  RETURN ';' { $$ = makeNode(Return); }
+    |  RETURN ';' { $$ = makeNode(Return);
+       addChild($$,makeNode(Void)); }
 
     |  '{' SuiteInstr '}' { $$ = $2; }
 

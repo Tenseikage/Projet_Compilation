@@ -34,4 +34,6 @@ void is_main_in_code(Symbol_table_functions* tab_funks);
 
 void same_var_name_func(Symbol_table_functions*tab);
 
+const char* get_var_type(void* tab, TableType type, const char* name);
+
 #endif
