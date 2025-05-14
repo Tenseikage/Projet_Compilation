@@ -1,4 +1,6 @@
-
+void caca(void){
+	return;
+}
 
 int main(void){
 	return 25 + 32 - 10;

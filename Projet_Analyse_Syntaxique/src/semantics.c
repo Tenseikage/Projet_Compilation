@@ -57,6 +57,19 @@ void check_param_local_vars(Symbol_table_functions* tab){
     }
 }
 
+const char* get_func_return_type(Symbol_table_functions* tab, const char* funcname) {
+    if (!tab || !funcname) {
+        return NULL;
+    }
+    for (int i = 0; i < tab->index_tab; i++) {
+        if (strcmp(tab->tab_funcs[i].name, funcname) == 0) {
+            return tab->tab_funcs[i].returnType;
+        }
+    }
+    return NULL; // Fonction non trouvée
+}
+
+
 const char* get_var_type(void* tab, TableType type, const char* name) {
     int index_tab;
     Data* vars;
@@ -422,142 +435,143 @@ void add_to_return_list(List_Right* return_list, const char* type) {
     return_list->index++;
 }
 
-void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname) {
+void check_return_func(Node* root, Symbol_table_global* global_tab, Symbol_table_functions* tab_funks, char* funcname, const char* funcsignType) {
     if (!root) return;
 
-    int index_tab = tab_funks->index_tab;
-    Symbol_table_function* funcs = tab_funks->tab_funcs;
+    //int index_tab = tab_funks->index_tab;
+    //Symbol_table_function* funcs = tab_funks->tab_funcs;
 
-    for (int i = 0; i < index_tab; i++) {
+    Node* branch = root->firstChild;
+    if (branch) {
+        // Gestion des expressions complexes
+        if (branch->label == Addsub || branch->label == divstar || branch->label == Or || branch->label == And || branch->label == Eq || branch->label == Order) {
+            Node* left = branch->firstChild;
+            Node* right = branch->firstChild->nextSibling;
+
+            // Vérifier les opérandes gauche et droit
+            if (left) {
+                const char* left_type = calculate_expression_type(left, global_tab, tab_funks, funcname, 0);
+                //printf("left type %s \n", left_type);
+                if(left_type){
+                    if(!strcmp("void",left_type)){
+                        error_void_non_ignore(left->lineno);
+                    }
+                   
+                } 
+                check_return_func(left, global_tab, tab_funks, funcname,funcsignType);
+                return;
+                
+                
+            }
+            if (right) {
+                const char* right_type = calculate_expression_type(right, global_tab, tab_funks, funcname, 0);
+                //printf("right type %s \n", right_type);
+                if(right_type){
+                    if(!strcmp("void",right_type)){
+                        error_void_non_ignore(right->lineno);
+                    }
+
+                } 
+                check_return_func(right, global_tab, tab_funks, funcname,funcsignType);
+                return;
+            }
+        }
+
+        // Gestion des constantes numériques
+        if (branch->label == Num) {
+            //printf("tatata  %d %d\n", branch->value, branch->lineno);
+            if (!strcmp("char", funcsignType)) {
+                warn_ret_int_func_char(root->lineno);
+            } else if (!strcmp("void", funcsignType)) {
+                printf("teee \n");
+                error_ret_value_func_void(root->lineno);
+            }
+        }
+
+        // Gestion des identifiants
+        else if (branch->label == ident) {
+            Node* minibranch = branch->firstChild;
+            if (minibranch) {
+                if (minibranch->label == Arguments) {
+                    int nb_params = 0;
+                    Node* branch_args = minibranch->firstChild;
+                    while (branch_args) {
+                        nb_params++;
+                        branch_args = branch_args->nextSibling;
+                    }
+                    char* func_returntype = is_func_in_tab(tab_funks, branch->word);
+                    int func_params = nb_params_func(tab_funks, branch->word);
+
+                    if (func_returntype) {
+                        if (nb_params < func_params) {
+                            error_func_toofewargs(branch->word, minibranch->lineno);
+                        } else if (nb_params > func_params) {
+                            error_func_toomanyargs(branch->word, minibranch->lineno);
+                        }
+                    } else {
+                        warn_implicit_func_declare(branch->word, minibranch->lineno);
+                    }
+                } else if (minibranch->label == Void) {
+                    char* func_returntype = is_func_in_tab(tab_funks, branch->word);
+                    char* func_returntype_body = is_func_in_tab(tab_funks, funcname); // retour fonction
+                    if (func_returntype) {
+                        if (strcmp(func_returntype, func_returntype_body) == 0) {
+                            // Rien à signaler
+                        } else {
+                            error_retour_incomp(func_returntype_body, func_returntype, minibranch->lineno);
+                        }
+                    } else {
+                        warn_implicit_func_declare(branch->word, minibranch->lineno);
+                    }
+                }
+            } else {
+                int found = 0;
+                const char* left_type = calculate_expression_type(branch, global_tab, tab_funks, funcname, 0);
+                //const char* funcsignType = funcs[i].returnType;
+                //printf("left type %s %s %s\n", left_type, branch->word, funcsignType);
+                if (is_var_in_table(global_tab, GLOBAL, branch->word)) {
+                    found = 1;
+                }
+                for (int i = 0; i < tab_funks->index_tab; i++) {
+                    if (!strcmp(tab_funks->tab_funcs[i].name, funcname)) {
+                        if (is_var_in_table(tab_funks->tab_funcs[i].local_tab, LOCAL, branch->word)) {
+                            found = 1;
+                        }
+                        for (int j = 0; j < tab_funks->tab_funcs[i].index_tabv; j++) {
+                            if (!strcmp(tab_funks->tab_funcs[i].vars[j].name, branch->word)) {
+                                found = 1;
+                                left_type = tab_funks->tab_funcs[i].vars[j].type;
+                            }
+                        }
+                    }
+                }
+                if (!found) {
+                    error_undeclare_var(branch->word, branch->lineno);
+                } else {
+                    if (strcmp(left_type, "int") && !strcmp(funcsignType, "void")) {
+                        error_ret_value_func_void(root->lineno);
+                    } else if(strcmp(left_type, "char") && !strcmp(funcsignType, "void")){
+                        error_ret_value_func_void(root->lineno);
+                    } 
+                }
+            }
+        }
+    } else {
+        // Cas où le return est vide
+        if (strcmp(funcsignType, "void") != 0) {
+            //fprintf(stderr, "\033[1;31mErreur\033[0m: Retour vide dans une fonction de type '%s' (ligne %d).\n", funcsignType, root->lineno);
+            error_ret_void_func(funcsignType,root->lineno);
+        }
+    }
+
+    /*for (int i = 0; i < index_tab; i++) {
         if (!strcmp(funcs[i].name, funcname)) {
             // funcSignType = retour de la fonction
             char* funcsignType = funcs[i].returnType;
             //printf("func %s \n", funcsignType);
-            Node* branch = root->firstChild;
-
-            if (branch) {
-                // Gestion des expressions complexes
-                if (branch->label == Addsub || branch->label == divstar || branch->label == Or || branch->label == And || branch->label == Eq || branch->label == Order) {
-                    Node* left = branch->firstChild;
-                    Node* right = branch->firstChild->nextSibling;
-
-                    // Vérifier les opérandes gauche et droit
-                    if (left) {
-                        const char* left_type = calculate_expression_type(left, global_tab, tab_funks, funcname, 0);
-                        //printf("left type %s \n", left_type);
-                        if(left_type){
-                            if(!strcmp("void",left_type)){
-                                error_void_non_ignore(left->lineno);
-                            }
-                           
-                        } 
-                        check_return_func(left, global_tab, tab_funks, funcname);
-                        
-                        
-                    }
-                    if (right) {
-                        const char* right_type = calculate_expression_type(right, global_tab, tab_funks, funcname, 0);
-                        //printf("right type %s \n", right_type);
-                        if(right_type){
-                            if(!strcmp("void",right_type)){
-                                error_void_non_ignore(right->lineno);
-                            }
-
-                        } 
-                        check_return_func(right, global_tab, tab_funks, funcname);
-                    }
-                }
-
-                // Gestion des constantes numériques
-                if (branch->label == Num) {
-                    //printf("tatata  %d %d\n", branch->value, branch->lineno);
-                    if (!strcmp("char", funcsignType)) {
-                        warn_ret_int_func_char(root->lineno);
-                    } else if (!strcmp("void", funcsignType)) {
-                        error_ret_value_func_void(root->lineno);
-                    }
-                }
-
-                // Gestion des identifiants
-                else if (branch->label == ident) {
             
-
-                    Node* minibranch = branch->firstChild;
-                    if (minibranch) {
-                        if (minibranch->label == Arguments) {
-                            int nb_params = 0;
-                            Node* branch_args = minibranch->firstChild;
-                            while (branch_args) {
-                                nb_params++;
-                                branch_args = branch_args->nextSibling;
-                            }
-                            char* func_returntype = is_func_in_tab(tab_funks, branch->word);
-                            int func_params = nb_params_func(tab_funks, branch->word);
-
-                            if (func_returntype) {
-                                if (nb_params < func_params) {
-                                    error_func_toofewargs(branch->word, minibranch->lineno);
-                                } else if (nb_params > func_params) {
-                                    error_func_toomanyargs(branch->word, minibranch->lineno);
-                                }
-                            } else {
-                                warn_implicit_func_declare(branch->word, minibranch->lineno);
-                            }
-                        } else if (minibranch->label == Void) {
-                            char* func_returntype = is_func_in_tab(tab_funks, branch->word);
-                            char* func_returntype_body = is_func_in_tab(tab_funks, funcname); // retour fonction
-                            if (func_returntype) {
-                                if (strcmp(func_returntype, func_returntype_body) == 0) {
-                                    // Rien à signaler
-                                } else {
-                                    error_retour_incomp(func_returntype_body, func_returntype, minibranch->lineno);
-                                }
-                            } else {
-                                warn_implicit_func_declare(branch->word, minibranch->lineno);
-                            }
-                        }
-                    } else {
-                        int found = 0;
-                        const char* left_type = calculate_expression_type(branch, global_tab, tab_funks, funcname, 0);
-                        const char* funcsignType = funcs[i].returnType;
-                        //printf("left type %s %s %s\n", left_type, branch->word, funcsignType);
-                        if (is_var_in_table(global_tab, GLOBAL, branch->word)) {
-                            found = 1;
-                        }
-                        for (int i = 0; i < tab_funks->index_tab; i++) {
-                            if (!strcmp(tab_funks->tab_funcs[i].name, funcname)) {
-                                if (is_var_in_table(tab_funks->tab_funcs[i].local_tab, LOCAL, branch->word)) {
-                                    found = 1;
-                                }
-                                for (int j = 0; j < tab_funks->tab_funcs[i].index_tabv; j++) {
-                                    if (!strcmp(tab_funks->tab_funcs[i].vars[j].name, branch->word)) {
-                                        found = 1;
-                                        left_type = tab_funks->tab_funcs[i].vars[j].type;
-                                    }
-                                }
-                            }
-                        }
-                        if (!found) {
-                            error_undeclare_var(branch->word, branch->lineno);
-                        } else {
-                            if (strcmp(left_type, "int") && !strcmp(funcsignType, "void")) {
-                                error_ret_value_func_void(root->lineno);
-                            } else if(strcmp(left_type, "char") && !strcmp(funcsignType, "void")){
-                                error_ret_value_func_void(root->lineno);
-                            } 
-                        }
-                    }
-                }
-            } else {
-                // Cas où le return est vide
-                if (strcmp(funcsignType, "void") != 0) {
-                    //fprintf(stderr, "\033[1;31mErreur\033[0m: Retour vide dans une fonction de type '%s' (ligne %d).\n", funcsignType, root->lineno);
-                    error_ret_void_func(funcsignType,root->lineno);
-                    semantic_errors++;
-                }
-            }
         }
-    }
+    }*/
 }
 
 
@@ -664,7 +678,8 @@ void check_left_instr(Node* root, Symbol_table_global* global_tab, Symbol_table_
     } if(root->label == Return){
         Node* return_next = root->nextSibling;
         returnhere = 1;
-        check_return_func(root,global_tab,tab_funks,funcname);
+        const char* funcsignType = get_func_return_type(tab_funks,funcname);
+        check_return_func(root,global_tab,tab_funks,funcname,funcsignType);
         if(return_next){
             return; // ignore la suite;
         }

@@ -89,7 +89,7 @@ void error_ret_value_func_void(int lineno){
 
 
 void error_ret_void_func(const char* funcsignType,int lineno){
-	fprintf(stderr, "\033[1;31Erreur\033[0m: Retour void dans une fonction de retour  %s (ligne %d).\n",funcsignType,lineno);
+	fprintf(stderr, "\033[1;31mErreur\033[0m: Retour void dans une fonction de retour  %s (ligne %d).\n",funcsignType,lineno);
     semantic_errors++;
 	 
 }

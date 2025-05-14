@@ -182,7 +182,7 @@ void declVarsGlobal(Node* root,int *byte_length_glob_var){
 
 
 
-void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_tab) {
+void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_tab,int push_result) {
     //printf("I'm here yaaa \n");
     if (!root) {
         //printf("Nigga u loose !!! \n");
@@ -192,7 +192,9 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
     if (root->label == Num) {
         //printf("Num !!\n");
         //printf("Root value %d \n", root->value);
-        fprintf(file, "  push %d\n", root->value); 
+        fprintf(file, "  mov rax, %d\n", root->value);
+        if (push_result)
+            fprintf(file, "  push rax\n");
         return;
     }
 
@@ -220,8 +222,8 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
     }
 
     if (root->label == divstar) {
-        parcours_expr_droite(root->firstChild, file, global_tab);
-        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab);
+        parcours_expr_droite(root->firstChild, file, global_tab,1);
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1);
         fprintf(file, "  pop rcx\n"); 
         fprintf(file, "  pop rax\n");
 
@@ -240,8 +242,8 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
     // Si le nœud est un opérateur d'addition ou soustraction
     if (root->label == Addsub) {
         // Générer le code pour les opérandes gauche et droite
-        parcours_expr_droite(root->firstChild, file, global_tab); // Opérande gauche
-        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab); // Opérande droite
+        parcours_expr_droite(root->firstChild, file, global_tab,1); // Opérande gauche
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1); // Opérande droite
 
         // Dépilez les deux opérandes et effectuez l'opération
         fprintf(file, "  pop rcx\n"); // Deuxième opérande
@@ -261,6 +263,13 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         write_asm_condexp(root, file, global_tab);
         fprintf(file, "  push rax\n"); // Empile la valeur 0 ou 1
         return;
+    } else if (root->label == ident && root->firstChild && root->firstChild->label == Void) {
+        // Appel de fonction sans arguments
+        fprintf(file, "  sub rsp, 8\n"); // Alignement pile si besoin
+        fprintf(file, "  call %s\n", root->word);
+        fprintf(file, "  add rsp, 8\n");
+        fprintf(file, "  push rax\n"); // Empile le résultat pour une expression
+        return;
     }
 }
 
@@ -272,8 +281,8 @@ void write_asm_cmp_expr(Node* root, FILE* file, Symbol_table_global* global_tab)
 
 
     // 1) Générer le code pour les deux opérandes (arithmétiques simples)
-    parcours_expr_droite(root->firstChild, file, global_tab);
-    parcours_expr_droite(root->firstChild->nextSibling, file, global_tab);
+    parcours_expr_droite(root->firstChild, file, global_tab,1);
+    parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1);
 
     // 2) Dépiler et comparer
     fprintf(file,
@@ -401,8 +410,8 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab) 
 
     // Expressions arithmétiques simples
     if (root->label == Addsub || root->label == divstar) {
-        parcours_expr_droite(root->firstChild, file, global_tab);
-        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab);
+        parcours_expr_droite(root->firstChild, file, global_tab,1);
+        parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,1);
         //fprintf(file, "  push rax\n"); // Empile le résultat gauche
         fprintf(file, "  pop rcx\n");
         fprintf(file, "  pop rax\n");
@@ -494,8 +503,8 @@ void write_end_asm_file(FILE *file) {
     fprintf(file, "  sub rsp, 8\n");
     fprintf(file, "  call main\n");
     fprintf(file, "  add rsp, 8\n");
+    fprintf(file, "  mov rdi, rax\n");
     fprintf(file, "  mov rax, 60\n");    // syscall: exit
-    fprintf(file, "  xor rdi, rdi\n");   // Code de retour 0
     fprintf(file, "  syscall\n");        // Appel système
     //fprintf(file, "  add rsp, 8\n");     // Restaurer la pile
 }
@@ -532,7 +541,7 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
                     Node* right_expr = branch_instr->firstChild;
                     //parcours_operators(rig)
                     if(right_expr){
-                        parcours_expr_droite(right_expr,file,global_tab);
+                        parcours_expr_droite(right_expr,file,global_tab,1);
                         fprintf(file,"\n");
                         fprintf(file, "  pop rax\n");
                         //fprintf(file, "%s \n", str_ident);
@@ -611,7 +620,7 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
             } else if (branch_instr->label == Return) {
                 Node* expr = branch_instr->firstChild;
                 if (expr) {
-                    parcours_expr_droite(expr, file, global_tab); // calcule Exp, résultat sur la pile
+                    parcours_expr_droite(expr, file, global_tab,0); // calcule Exp, résultat sur la pile
                     fprintf(file, "  pop rax\n"); // place le résultat dans rax (convention d'appel)
                 }
                 fprintf(file, "  ret\n");
@@ -678,7 +687,7 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
                     int offset_ident = get_var_global_offset(str_ident,global_tab);
                     Node* right_expr = branch_instr->firstChild;
                     if(right_expr){
-                        parcours_expr_droite(right_expr,file,global_tab);
+                        parcours_expr_droite(right_expr,file,global_tab,1);
                         fprintf(file,"\n");
                         fprintf(file, "  pop rax\n");
                         //fprintf(file, "%s \n", str_ident);
@@ -717,7 +726,7 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
             } else if (branch_instr->label == Return) {
                 Node* expr = branch_instr->firstChild;
                 if (expr) {
-                    parcours_expr_droite(expr, file, global_tab); // calcule Exp, résultat sur la pile
+                    parcours_expr_droite(expr, file, global_tab,0); // calcule Exp, résultat sur la pile
                     fprintf(file, "  pop rax\n"); // place le résultat dans rax (convention d'appel)
                 }
                 fprintf(file, "  ret\n");
