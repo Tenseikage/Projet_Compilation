@@ -157,19 +157,10 @@ _start:
   pop rax
   mov [TAB_GLOBAL + 23], eax
 
-  mov eax, dword [TAB_GLOBAL + 4]
-  cmp eax, 0
-  je  .Lelse_0
-
-  mov rcx, 24
+  mov eax, 0
   cmp rax, 0
   je  .Lelse_0
 
-  sub rax, rcx
-  cmp rax, 0
-  je  .Lelse_0      ; si égal → else
-
-  pop rax
   cmp rax, 0
   je  .Lelse_0
 

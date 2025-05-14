@@ -692,7 +692,7 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
             funcname = branch_func->firstChild->word;
         }
     }
-    if (root->label ==  Instr) {
+    if (root->label ==  SuiteInstr) {
         int returnhere = 0;
         //printf("instr here \n");
         List_Right* return_list = malloc(sizeof(List_Right));

@@ -9,6 +9,7 @@
 //extern Node* root; 
 
 static int _if_label = 0;
+static int cond_elem_count = 0;
 
 void write_asm_getchar(FILE* file) {
     fprintf(file,
@@ -226,6 +227,7 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,i
    
            return;
        } else if(root->label == ident){
+            cond_elem_count++;
             Node* branch = root->firstChild;
             if(!branch){
                 int global_offset = get_var_global_offset(root->word,global_tab);
@@ -238,7 +240,12 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,i
                 
             } 
         } else if(root->label == Num){
-            fprintf(file, "  mov rcx, %d\n", root->value);
+            cond_elem_count++;
+            if(cond_elem_count > 1){
+                fprintf(file, "  mov ecx, %d\n", root->value);
+            } else {
+                fprintf(file, "  mov eax, %d\n", root->value);
+            }
             // 2) comparer à 0 et sauter vers .Lelse si égal
             fprintf(file, "  cmp rax, 0\n");
             fprintf(file, "  je  .Lelse_%d\n\n", label_cond);
@@ -266,10 +273,10 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,i
 void write_asm_if_test(Node* root, FILE* file, Symbol_table_global* global_tab) {
     int label_cond = _if_label++;
     // 1) On évalue l’expression conditionnelle
+    cond_elem_count = 0;
     write_asm_condexp(root, file, global_tab,label_cond);
     // 2) On dépile et compare à zéro
     fprintf(file,
-        "  pop rax\n"
         "  cmp rax, 0\n"
         "  je  .Lelse_%d\n\n", label_cond);
 
@@ -428,7 +435,7 @@ char decode_escape_sequence(const char* s) {
 
 void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab){
     if(!root) return;
-    if(root->label == Instr){
+    if(root->label == SuiteInstr){
         Node * branch_instr = root->firstChild;
         while(branch_instr){
             if(branch_instr->label == ident){
@@ -527,7 +534,7 @@ void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* global_tab)
 void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab){
     //cas main 
     if(!root) return;
-    if(root->label == Instr){
+    if(root->label == SuiteInstr){
         Node * branch_instr = root->firstChild;
         while(branch_instr){
             if(branch_instr->label == ident){
@@ -592,7 +599,7 @@ void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* global_tab)
             
                 // 2) code du then
                 //Node* then_block = branch_instr->nextSibling;
-                if(then_block->label == Instr){
+                if(then_block->label == SuiteInstr){
                     parcours_instr_cond(then_block, file, global_tab);
                     //return;
                 }

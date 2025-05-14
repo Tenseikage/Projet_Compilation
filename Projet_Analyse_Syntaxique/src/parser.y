@@ -170,7 +170,7 @@ DeclVarsLocale:
 
 SuiteInstr:
        SuiteInstr Instr { $$ = $1; addChild($$, $2); }
-    | { $$ = makeNode(Instr); }
+    | { $$ = makeNode(SuiteInstr); }
     ;
 
 Instr:

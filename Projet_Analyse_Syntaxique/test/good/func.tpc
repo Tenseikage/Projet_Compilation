@@ -28,7 +28,7 @@ int main(void)  {
    letter='c';
    digit='0';
    uppercase=letter+('A'-'a');
-   if(produit - 24){
+   if(0){
         reste = 3;
    } else {
         reste = 4;
