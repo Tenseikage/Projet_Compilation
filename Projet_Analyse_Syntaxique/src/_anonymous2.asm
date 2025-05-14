@@ -158,16 +158,6 @@ _start:
   mov [TAB_GLOBAL + 23], eax
 
   mov eax, dword [TAB_GLOBAL + 4]
-  cmp eax, 0
-  je  .Lelse_0
-
-  mov ecx, 2
-  idiv rcx
-  mov rax, rdx
-  mov ecx, 1
-  add rax, rcx
-  mov ecx, 0
-  imul rax, rcx
   cmp rax, 0
   je  .Lelse_0
 
@@ -190,6 +180,8 @@ _start:
   call putchar
   mov edi, [TAB_GLOBAL + 12]
   call putint
+  mov rdi, 10
+  call putchar
   push 3
 
   pop rax

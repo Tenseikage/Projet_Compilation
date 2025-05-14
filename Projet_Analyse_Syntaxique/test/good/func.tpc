@@ -23,19 +23,21 @@ int magma(void){
 }*/
 
 int main(void)  {
-   produit=24;
-   quotient=24/12;
-   letter='c';
-   digit='0';
-   uppercase=letter+('A'-'a');
-   if(((produit % 2) + 1)* 0){
-        reste = 3;
-   } else {
-        reste = 4;
-   }
+    produit=24;
+    quotient=24/12;
+    letter='c';
+    digit='0';
+    uppercase=letter+('A'-'a');
+    if(produit){
+            reste = 3;
+    } else {
+            reste = 4;
+    }
    //reste=getint();
    magma();
    putchar('\n');
    putint(reste);
+   putchar('\n');
+   //putint(5);
    return 0;
 }
