@@ -106,6 +106,17 @@ add:
   mov byte [rbp-5], al
   mov rax, 1
   mov dword [rbp-4], eax
+  mov eax, dword [rbp-4]
+  push rax 
+  mov rax, 1
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
   mov rax, 0
   leave
   ret

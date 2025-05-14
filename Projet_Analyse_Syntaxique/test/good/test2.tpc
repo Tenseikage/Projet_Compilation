@@ -6,6 +6,7 @@ int add(int a, int b, int c, int d, int e, int f) {
 	char m;
 	m = 'c';
 	q = 1;
+	putint(q+1);
     return 0;
 }
 
