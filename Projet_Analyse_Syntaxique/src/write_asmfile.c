@@ -203,7 +203,7 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,i
     if (!root) return;
     //int label_cond = _if_label++;
     //printf("Condexp pooo \n");
-    if (root->label == Addsub) {
+    if (root->label == Addsub || root->label == divstar) {
            //printf("BBBbBB \n");
            // génération récursive des deux sous‐expressions
            write_asm_condexp(root->firstChild, file, global_tab,label_cond);
@@ -213,17 +213,22 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,i
            //fprintf(file, "  pop rax            ; lhs\n");
    
            // 3) appliquer l’opérateur  
-           if (strcmp(root->word, "+") == 0) {
-               fprintf(file, "  add rax, rcx\n");
-           } else /* '-' */ {
-               fprintf(file, "  sub rax, rcx\n");
-           }
+            if (strcmp(root->word, "+") == 0) {
+                fprintf(file, "  add rax, rcx\n");
+            } else if (!strcmp(root->word,"-")) /* '-' */ {
+                fprintf(file, "  sub rax, rcx\n");
+            } else if (strcmp(root->word, "*") == 0) {
+                fprintf(file, "  imul rax, rcx\n");
+            } else if (strcmp(root->word, "/") == 0) {
+                fprintf(file, "  xor rdx, rdx\n");
+                fprintf(file, "  div rcx\n");
+            } else if(!strcmp(root->word, "%")){
+                printf("rerrr \n");
+                fprintf(file, "  idiv rcx\n");
+                fprintf(file, "  mov rax, rdx\n");
+            }
    
            // 4) tester le résultat non-nul  
-           fprintf(file,
-               "  cmp rax, 0\n"
-               "  je  .Lelse_%d      ; si égal → else\n\n",
-               label_cond);
    
            return;
        } else if(root->label == ident){
@@ -247,8 +252,6 @@ void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* global_tab,i
                 fprintf(file, "  mov eax, %d\n", root->value);
             }
             // 2) comparer à 0 et sauter vers .Lelse si égal
-            fprintf(file, "  cmp rax, 0\n");
-            fprintf(file, "  je  .Lelse_%d\n\n", label_cond);
             return;
         }
 
