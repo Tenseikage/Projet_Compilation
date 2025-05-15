@@ -466,7 +466,8 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         Node* arg = root->firstChild->firstChild;
         int arg_count = 0;
         while (arg && arg_count < 6) {
-            if (strcmp(root->word, "putchar") == 0 && arg_count == 0) {
+            if (strcmp(root->word, "putchar") == 0 && arg_count == 0 && arg->label== Character) {
+                printf("tatatat gtflfl \n");
                 fprintf(file, "  mov dil,%d\n", decode_escape_sequence(arg->word));
                 fprintf(file, "  sub rsp, 8\n");
                 fprintf(file, "  call putchar\n");

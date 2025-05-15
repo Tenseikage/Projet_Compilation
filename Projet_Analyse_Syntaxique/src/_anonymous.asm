@@ -154,6 +154,16 @@ add:
   mov rax, 0
   leave
   ret
+blab:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov byte [rbp-1], dil
+  mov al, 97 
+  mov byte [rbp-2], al
+  mov al, byte [rbp-1]
+  leave
+  ret
 poppi:
   push rbp
   mov rbp, rsp
@@ -187,6 +197,7 @@ poppi:
 main:
   push rbp
   mov rbp, rsp
+  sub rsp, 16
   mov rax, 1
   mov rdi, rax
   mov rax, 2
@@ -233,6 +244,17 @@ main:
   mov rsi, rax
   sub rsp, 8
   call poppi
+  add rsp, 8
+  mov al, 98 
+  mov rdi, rax
+  sub rsp, 8
+  call blab
+  add rsp, 8
+  mov byte [rbp-12], al
+  mov al, byte [rbp-12]
+  mov rdi, rax
+  sub rsp, 8
+  call putchar
   add rsp, 8
   mov rax, 0
   leave

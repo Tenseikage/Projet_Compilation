@@ -93,7 +93,7 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
 /**
  * Vérifie qu'une variable est dans la table des symboles
  */
-int is_var_in_table(void* tab, TableType type, const char* name);
+int is_var_in_table(void* tab, TableType type, char* name);
 
 
 char* is_func_in_tab(Symbol_table_functions* tab, const char* funcname);

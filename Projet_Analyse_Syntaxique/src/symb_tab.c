@@ -14,7 +14,7 @@ int global_offset = 0;
 int local_offset;
 
 
-int is_var_in_table(void* tab, TableType type, const char* name) {
+int is_var_in_table(void* tab, TableType type, char* name) {
     int index_tab;
 	Data* vars;
 	if (type == LOCAL){
@@ -43,7 +43,7 @@ int is_var_in_table(void* tab, TableType type, const char* name) {
     return 0; 
 }
 
-void add_var(void* tab, TableType type, const char* name, char* str_type, int lineno,int state) {
+void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,int state) {
     int* table_size;
     int* index_tab;
     Data** vars;
