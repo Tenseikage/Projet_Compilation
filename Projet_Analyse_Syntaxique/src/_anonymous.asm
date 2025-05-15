@@ -1,7 +1,5 @@
 section .bss
-  TAB_GLOBAL resb 8
-  static_add_q resd 1
-  static_poppi_c resd 1
+  TAB_GLOBAL resb 27
 global _start
 section .text
 extern show_registers
@@ -100,161 +98,265 @@ putint:
     pop r12
     pop rbx
     ret
-add:
+magma:
   push rbp
   mov rbp, rsp
-  sub rsp, 32
+  mov eax, dword [TAB_GLOBAL + 0]
+  push rax 
+  mov rax, 14
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov [TAB_GLOBAL + 0], eax
+  mov eax, dword [TAB_GLOBAL + 0]
+  cmp rax, 0
+  je  .Lelse_1
+
+  mov rax, 15
+  mov [TAB_GLOBAL + 0], eax
+  jmp .Lend_if_1
+
+.Lelse_1:
+.Lend_if_1:
+
+  mov rax, 0
+  leave
+  ret
+baba:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
   mov dword [rbp-4], edi
-  mov dword [rbp-8], esi
-  mov dword [rbp-12], edx
-  mov dword [rbp-16], ecx
-  mov dword [rbp-20], r8d
-  mov byte [rbp-24], r9b
-  mov al, 99 
-  mov byte [rbp-25], al
+  mov rax, 0
+  mov dword [rbp-8], eax
   mov eax, dword [rbp-4]
-  push rax 
-  mov eax, dword [rbp-8]
-  push rax 
-  pop rcx
-  pop rax
-  add rax, rcx
-  push rax
-  mov eax, dword [rbp-12]
-  push rax 
-  pop rcx
-  pop rax
-  add rax, rcx
-  push rax
-  mov eax, dword [rbp-16]
-  push rax 
-  pop rcx
-  pop rax
-  add rax, rcx
-  push rax
-  mov eax, dword [rbp-20]
-  push rax 
-  pop rcx
-  pop rax
-  add rax, rcx
-  push rax
-  mov al, byte [rbp-24]
-  push rax 
-  pop rcx
-  pop rax
-  add rax, rcx
-  mov dword [rbp-4], eax
+  cmp rax, 0
+  je .Lfalse_0
   mov rax, 1
-  mov dword [static_add_q], eax
+  cmp rax, 0
+  je .Lfalse_0
+  mov rax, 1
+  jmp .Lend_2
+.Lfalse_0:
+  mov rax, 0
+.Lend_2:
+  cmp rax, 0
+  je  .Lelse_2
+
   mov eax, dword [rbp-4]
   mov rdi, rax
   sub rsp, 8
   call putint
   add rsp, 8
-  mov rax, 0
-  leave
-  ret
-blab:
-  push rbp
-  mov rbp, rsp
-  sub rsp, 16
-  mov byte [rbp-1], dil
-  mov al, 97 
-  mov byte [rbp-2], al
-  mov al, byte [rbp-1]
-  leave
-  ret
-poppi:
-  push rbp
-  mov rbp, rsp
-  sub rsp, 16
-  mov dword [rbp-4], edi
-  mov dword [rbp-8], esi
-  mov rax, 1
-  cmp rax, 0
-  je  .Lelse_1
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  jmp .Lend_if_3
 
-  mov rax, 2
+.Lelse_2:
+.Lend_if_3:
+
+.Lwhile_start_0:
+  mov eax, dword [rbp-8]
+  push rax 
+  mov rax, 5
   push rax
-  mov rax, 3
+  pop rcx            ; rhs
+  pop rax            ; lhs
+  cmp rax, rcx       ; comparer lhs vs rhs
+  jl .Ltrue_0
+  jmp .Lfalse_1
+.Ltrue_0:
+  mov rax, 1
+  jmp .Lend_3
+.Lfalse_1:
+  mov rax, 0
+.Lend_3:
+  cmp rax, 0
+  je .Lwhile_end_0
+  mov rax, 5
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  mov eax, dword [rbp-8]
+  push rax 
+  mov rax, 1
   push rax
   pop rcx
   pop rax
   add rax, rcx
-  mov dword [static_poppi_c], eax
-  jmp .Lend_if_1
-
-.Lelse_1:
-  mov dil,113
-  sub rsp, 8
-  call putchar
-  add rsp, 8
-.Lend_if_1:
-
+  mov dword [rbp-8], eax
+  jmp .Lwhile_start_0
+.Lwhile_end_0:
   mov rax, 0
   leave
   ret
 main:
   push rbp
   mov rbp, rsp
-  sub rsp, 16
-  mov rax, 1
-  mov rdi, rax
-  mov rax, 2
-  mov rsi, rax
-  mov rax, 3
-  mov rdx, rax
-  mov rax, 4
-  mov rcx, rax
-  mov rax, 5
-  mov r8, rax
-  mov rax, 6
-  mov r9, rax
-  sub rsp, 8
-  call add
-  add rsp, 8
-  mov [TAB_GLOBAL + 0], eax
-  mov rax, 1
-  push rax
-  mov rax, 2
-  push rax
-  mov rax, 3
-  push rax
-  pop rcx
-  pop rax
-  imul rax, rcx
-  push rax
-  pop rcx
-  pop rax
-  add rax, rcx
-  push rax
-  mov rax, 4
-  push rax
-  pop rcx
-  pop rax
-  add rax, rcx
+  mov rax, 24
   mov [TAB_GLOBAL + 4], eax
+  mov rax, 24
+  push rax
+  mov rax, 12
+  push rax
+  pop rcx
+  pop rax
+  xor rdx, rdx
+  div rcx
+  mov [TAB_GLOBAL + 8], eax
+  mov al, 99 
+  mov byte [TAB_GLOBAL + 20], al
+  mov al, 48 
+  mov byte [TAB_GLOBAL + 21], al
+  mov al, byte [TAB_GLOBAL + 20]
+  push rax 
+  mov al, 65 
+  push rax 
+  mov al, 97 
+  push rax 
+  pop rcx
+  pop rax
+  sub rax, rcx
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov [TAB_GLOBAL + 23], eax
+  mov eax, dword [TAB_GLOBAL + 4]
+  push rax 
+  mov rax, 24
+  push rax
+  pop rcx
+  pop rax
+  sub rax, rcx
+  push rax
+  mov rax, 1
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  cmp rax, 0
+  je .Ltrue_2
+  mov rax, 0
+  jmp .Lend_6
+.Ltrue_2:
+  mov rax, 1
+.Lend_6:
+  cmp rax, 0
+  jne .Ltrue_1
+  mov rax, 1
+  cmp rax, 0
+  je .Lfalse_2
+  mov rax, 0
+  cmp rax, 0
+  je .Lfalse_2
+  mov rax, 1
+  jmp .Lend_7
+.Lfalse_2:
+  mov rax, 0
+.Lend_7:
+  cmp rax, 0
+  jne .Ltrue_1
+  mov rax, 0
+  jmp .Lend_5
+.Ltrue_1:
+  mov rax, 1
+.Lend_5:
+  cmp rax, 0
+  je  .Lelse_3
+
+  mov eax, dword [TAB_GLOBAL + 4]
+  push rax 
+  mov rax, 24
+  push rax
+  pop rcx            ; rhs
+  pop rax            ; lhs
+  cmp rax, rcx       ; comparer lhs vs rhs
+  je .Ltrue_5
+  jmp .Lfalse_3
+.Ltrue_5:
+  mov rax, 1
+  jmp .Lend_10
+.Lfalse_3:
+  mov rax, 0
+.Lend_10:
+  cmp rax, 0
+  jne .Ltrue_4
+  mov eax, dword [TAB_GLOBAL + 12]
+  push rax 
+  mov rax, 58
+  push rax
+  pop rcx            ; rhs
+  pop rax            ; lhs
+  cmp rax, rcx       ; comparer lhs vs rhs
+  jg .Ltrue_6
+  jmp .Lfalse_4
+.Ltrue_6:
+  mov rax, 1
+  jmp .Lend_11
+.Lfalse_4:
+  mov rax, 0
+.Lend_11:
+  cmp rax, 0
+  jne .Ltrue_4
+  mov rax, 0
+  jmp .Lend_9
+.Ltrue_4:
+  mov rax, 1
+.Lend_9:
+  cmp rax, 0
+  je .Ltrue_3
+  mov rax, 0
+  jmp .Lend_8
+.Ltrue_3:
+  mov rax, 1
+.Lend_8:
+  push rax
+  mov [TAB_GLOBAL + 12], eax
+  jmp .Lend_if_12
+
+.Lelse_3:
+  mov rax, 4
+  mov [TAB_GLOBAL + 12], eax
+.Lend_if_12:
+
+  sub rsp, 8
+  call magma
+  add rsp, 8
   mov dil,10
   sub rsp, 8
   call putchar
   add rsp, 8
-  mov rax, 1
-  mov rdi, rax
-  mov rax, 2
-  mov rsi, rax
-  sub rsp, 8
-  call poppi
-  add rsp, 8
-  mov al, 98 
+  mov eax, dword [TAB_GLOBAL + 12]
   mov rdi, rax
   sub rsp, 8
-  call blab
+  call putint
   add rsp, 8
-  mov byte [rbp-12], al
-  mov al, byte [rbp-12]
-  mov rdi, rax
+  mov dil,10
   sub rsp, 8
   call putchar
+  add rsp, 8
+  mov eax, dword [TAB_GLOBAL + 0]
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  mov rax, 2
+  mov rdi, rax
+  sub rsp, 8
+  call baba
   add rsp, 8
   mov rax, 0
   leave

@@ -461,6 +461,18 @@ void display_symb_tab(void* tab, TableType type) {
 }
 
 
+void display_final_symtab(Symbol_table_global* global_tab,Symbol_table_functions* tab_funcs){
+    printf("========Table des Symboles=====================\n");
+    printf("\n");
+    display_symb_tab(global_tab, GLOBAL);
+    printf("============================================\n");
+    printf("Fonctions et variables locales \n");
+    printf("============================================\n");
+    display_symb_tab(tab_funcs, FUNCTION);
+    printf("============================================\n");
+}
+
+
 void free_local_table(Symbol_table_locale* tab) {
     if (tab) {
         if (tab->vars) {

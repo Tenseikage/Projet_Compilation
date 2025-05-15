@@ -467,7 +467,6 @@ void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* global_ta
         int arg_count = 0;
         while (arg && arg_count < 6) {
             if (strcmp(root->word, "putchar") == 0 && arg_count == 0 && arg->label== Character) {
-                printf("tatatat gtflfl \n");
                 fprintf(file, "  mov dil,%d\n", decode_escape_sequence(arg->word));
                 fprintf(file, "  sub rsp, 8\n");
                 fprintf(file, "  call putchar\n");
@@ -758,7 +757,6 @@ Data* get_func_params(Symbol_table_functions* tab, const char* funcname, int* nb
 
 void write_asm_func(FILE* file, const char* funcname, Symbol_table_functions* tab_funks) {
     if(funcname){
-        printf("funcname %s \n",funcname);
         fprintf(file, "%s:\n", funcname);
         fprintf(file, "  push rbp\n");
         fprintf(file, "  mov rbp, rsp\n");

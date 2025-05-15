@@ -1,4 +1,19 @@
-int 			a;
-int 		main(void){
 
+
+
+int fact(int n){
+	if(n == 0){
+		return 1;
+	} else {
+		return n * fact(n - 1);
+	}
+}
+
+
+int main(void){
+	int a;
+	a = fact(3);
+	putint(a);
+	putchar('\n');
+	return 0;
 }

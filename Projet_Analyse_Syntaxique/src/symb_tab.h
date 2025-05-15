@@ -101,5 +101,7 @@ char* is_func_in_tab(Symbol_table_functions* tab, const char* funcname);
 
 int nb_params_func(Symbol_table_functions* tab, const char* funcname);
 
+void display_final_symtab(Symbol_table_global* global_tab,Symbol_table_functions* tab_funcs);
+
 
 #endif

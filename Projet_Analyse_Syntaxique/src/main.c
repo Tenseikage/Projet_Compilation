@@ -12,153 +12,75 @@
 
 extern Node* root;
 
+int main(int argc, char *argv[])
+{
 
+    int choice = args_choice(argc,argv);
+    switch (choice){
+        case 0:
+            return 0;
+        break;
 
-/*int main(int argc, char *argv[]) {
-    Symbol_table_global* global_tab = init_table(GLOBAL);
-    Symbol_table_functions* tab_funcs = init_symb_tab_func();
-    char* funcname = NULL;
-    if (args_choice(argc, argv) == 1) {
-        if (!yyparse()) {
-            root_copy = root;
-            //printf("Word : %d \n", root_copy->lineno);
-            printTree(root);
-            int index = 0;
-            printf("\n");
-            fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
-            fill_symb_tab(global_tab, GLOBAL, root);
-
-            // Stocker les résultats des fonctions de vérification
-            int param_error = check_param_local_vars(tab_funcs);
-            int name_error = check_name_func_global(tab_funcs, global_tab);
-
-            // Vérifiez si l'une des deux fonctions retourne 1 (indiquant une erreur)
-            if (param_error || name_error) {
-                if (param_error) {
-                    fprintf(stderr, "\033[1;31mErreur\033[0m: Conflit entre les paramètres et les variables locales.\n");
-                }
-                if (name_error) {
-                    fprintf(stderr, "\033[1;31mErreur\033[0m: Conflit entre les noms de fonctions et les variables globales.\n");
-                }
+        case 1:
+            if(!yyparse()){
+                printTree(root);
+                deleteTree(root);
+                return 0;
             } else {
-                // Partie table des symboles
-                printf("========Table des Symboles=====================\n");
-                printf("\n");
-                display_symb_tab(global_tab, GLOBAL);
-                printf("============================================\n");
-                printf("Fonctions et variables locales \n");
-                printf("============================================\n");
-                display_symb_tab(tab_funcs, FUNCTION);
-                printf("============================================\n");
-
-                // Vérification des variables et paramètres utilisés
-                check_variables(root, global_tab, tab_funcs,funcname);
-                printf("length var globales %d \n", parcours_var_globales(root,0));
+                return 1;
             }
-            deleteTree(root);
-            free_all_tables(global_tab, tab_funcs);
-            return 0;
-        } else {
-            fprintf(stderr, "Affichage de l'arbre impossible ! \n");
-            free_all_tables(global_tab, tab_funcs);
-            return 1;
-        }
-    } else {
-        int parse_result = yyparse();
-        free_all_tables(global_tab, tab_funcs);
-        return parse_result;
-    }
-}*/
- 
+        break;
 
-/*int main(int argc, char *argv[]) {
-    Symbol_table_global* global_tab = init_table(GLOBAL);
-    Symbol_table_functions* tab_funcs = init_symb_tab_func();
-    char* funcname = NULL;
-    //int byte_global = 0;
-    if (args_choice(argc, argv) == 1){
-        if(!yyparse()){
-            printTree(root);
-            deleteTree(root);
-            free_all_tables(global_tab, tab_funcs);
-            return 0;
+        case 2:
+            if(!yyparse()){
+                Symbol_table_global* global_tab = init_table(GLOBAL);
+                Symbol_table_functions* tab_funcs = init_symb_tab_func();
+                int index = 0;
+                fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
+                fill_symb_tab(global_tab, GLOBAL, root);
+                display_final_symtab(global_tab,tab_funcs);
+                free_all_tables(global_tab,tab_funcs);
+                return 0;
 
-        } else {
-            fprintf(stderr, "Affichage de l'arbre impossible ! \n");
-            free_all_tables(global_tab, tab_funcs);
-            return 1;
-        }
-    } else {
-        if(!yyparse()){
-            int index = 0;
-            fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
-            fill_symb_tab(global_tab, GLOBAL, root);
-            // Stocker les résultats des fonctions de vérification
-            is_main_in_code(tab_funcs) ;
-            check_param_local_vars(tab_funcs);
-            check_name_func_global(tab_funcs, global_tab);
-            check_variables(root, global_tab, tab_funcs,funcname);
-            check_unitialized_vars(tab_funcs,global_tab);
-            if (semantic_errors > 0){
-                free_all_tables(global_tab, tab_funcs);
-                return 2;
+            } else {
+                return 1;
             }
-            free_all_tables(global_tab, tab_funcs);
-            return 0;
-        } else {
-            free_all_tables(global_tab, tab_funcs);
-            return 1;
-        }
     
-    }
-}*/
+    default:
+           if(!yyparse()){
+                Symbol_table_global* global_tab = init_table(GLOBAL);
+                Symbol_table_functions* tab_funcs = init_symb_tab_func();
+                char* funcname = NULL;
+                int index = 0;
+                fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
+                fill_symb_tab(global_tab, GLOBAL, root);
+                same_var_name_func(tab_funcs);
+                is_main_in_code(tab_funcs);
+                check_param_local_vars(tab_funcs);
+                check_name_func_global(tab_funcs, global_tab);
+                check_variables(root, global_tab, tab_funcs,funcname);
+                check_unitialized_vars(tab_funcs,global_tab);
+                if(semantic_errors > 0){
+                    deleteTree(root);
+                    free_all_tables(global_tab, tab_funcs);
+                    return 2;
+                }
+                FILE* file = fopen("./src/_anonymous.asm", "w");
+                if (!file) {
+                        fprintf(stderr, "Erreur à l'ouverture du fichier\n");
+                        return 3;
+                }
+                write_asm_tab_global_static(file,global_tab,tab_funcs);
+                write_asm_file_and_built_funcs(file);
+                parcours_arbre(root,file,global_tab,tab_funcs);
+                write_end_asm_file(file);
+                fclose(file);
+                free_all_tables(global_tab, tab_funcs);
+                return 0;
 
-int main(int argc,char *argv[]) {
-    // Afficher l'arbre fait planter le bac à sable
-    Symbol_table_global* global_tab = init_table(GLOBAL);
-    Symbol_table_functions* tab_funcs = init_symb_tab_func();
-    char* funcname = NULL;
-    if(!yyparse()){
-        int index = 0;
-        fill_symb_tab_func(tab_funcs, FUNCTION, root, &index);
-        fill_symb_tab(global_tab, GLOBAL, root);
-        printTree(root);
-        /*printf("========Table des Symboles=====================\n");
-        printf("\n");
-        display_symb_tab(global_tab, GLOBAL);
-        printf("============================================\n");
-        printf("Fonctions et variables locales \n");
-        printf("============================================\n");
-        display_symb_tab(tab_funcs, FUNCTION);
-        printf("============================================\n");
-        */
-        same_var_name_func(tab_funcs);
-        is_main_in_code(tab_funcs);
-        check_param_local_vars(tab_funcs);
-        check_name_func_global(tab_funcs, global_tab);
-        check_variables(root, global_tab, tab_funcs,funcname);
-        check_unitialized_vars(tab_funcs,global_tab);
-        if(semantic_errors > 0){
-            deleteTree(root);
-            free_all_tables(global_tab, tab_funcs);
-            return 2;
-        }
-        FILE* file = fopen("./src/_anonymous.asm", "w");
-        if (!file) {
-                fprintf(stderr, "Erreur à l'ouverture du fichier\n");
-                return 3;
-        }
-        write_asm_tab_global_static(file,global_tab,tab_funcs);
-        write_asm_file_and_built_funcs(file);
-        parcours_arbre(root,file,global_tab,tab_funcs);
-        write_end_asm_file(file);
-        fclose(file);
-        free_all_tables(global_tab, tab_funcs);
-        deleteTree(root);
-        return 0;
-    } else {
-        free_all_tables(global_tab, tab_funcs);
-        return 1;
+            } else {
+                return 1;
+            }
+        break;
     }
 }
-
