@@ -141,12 +141,6 @@ void error_same_var_func(int lineno){
 	semantic_errors++;
 }
 
-//void error_type_main
-/*oid error_condition_ident(int lineno){
-	fprintf(stderr, "\033[1;31mErreur\033[0m: La condition du 'if' doit être de type 'int' (ligne %d).\n",lineno);
-	semantic_errors++;
-
-}*/
 
 
 

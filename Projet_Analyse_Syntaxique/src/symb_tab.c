@@ -32,7 +32,6 @@ int is_var_in_table(void* tab, TableType type, char* name) {
     }
 	for (int i = 0; i < index_tab; i++) {
         if(name){
-            //printf("mot recherché %s", vars[i].name);
             if (strcmp(vars[i].name, name) == 0) {
                 return vars[i].lineno; 
             }
@@ -43,7 +42,7 @@ int is_var_in_table(void* tab, TableType type, char* name) {
     return 0; 
 }
 
-void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,int state) {
+static void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,int state) {
     int* table_size;
     int* index_tab;
     Data** vars;
@@ -67,7 +66,6 @@ void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,i
         index_tab = &sym_tab->index_tab;
         funcs = &sym_tab->tab_funcs;
     } else {
-        //printf("oui infunc\n");
         Symbol_table_function* func = (Symbol_table_function*)tab;
         table_size = &func->tabv_size;
         index_tab = &func->index_tabv;
@@ -86,13 +84,11 @@ void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,i
         }
         if ((lineno_found = is_var_in_table(tab, type, name))) {
             error_var_exists(lineno_found);
-            //exit(EXIT_FAILURE);
         }
         strcpy((*vars)[*index_tab].name, name);
         (*vars)[*index_tab].type = str_type;
-        (*vars)[*index_tab].is_affected = 0; // Variable pas affecté
+        (*vars)[*index_tab].is_affected = 0;
         if(type == GLOBAL){
-            //printf("mf is global yaaa \n");
             if(!strcmp(str_type,"int")){
                 (*vars)[*index_tab].size = 4;
                 (*vars)[*index_tab].offset = global_offset;
@@ -108,7 +104,6 @@ void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,i
                 if(*index_tab == 0 && type == VARS){
                     local_offset = 4;
                     if(!strcmp(str_type,"int")){
-                        printf("local int %s offset %d\n",name,local_offset);
                         (*vars)[*index_tab].size = 4;
                         (*vars)[*index_tab].offset = local_offset;
                         local_offset += 4;
@@ -129,7 +124,6 @@ void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,i
                         
               
                     } else if(!strcmp(str_type, "char")){
-                        printf("local char %s\n",name);
                           (*vars)[*index_tab].size = 1;
                           (*vars)[*index_tab].offset = local_offset;
                           local_offset += 1;
@@ -153,7 +147,6 @@ void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,i
             }
         }
         strcpy((*funcs)[*index_tab].name, name);
-        //printf("retour type fonction fdp !! %s \n", str_type);
         (*funcs)[*index_tab].returnType = str_type;
         (*funcs)[*index_tab].local_tab = init_table(LOCAL);
         (*funcs)[*index_tab].vars = malloc(NB_VARS* sizeof(Data));
@@ -165,12 +158,11 @@ void add_var(void* tab, TableType type, char* name, char* str_type, int lineno,i
 }
 
 
-void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
+static void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
     if(!root) return;
     if(root->label == type){
         Node* branch = root->nextSibling;
         if (branch->label == ident){
-            //printf("tname %s, type %s \n",branch->word,root->word);
             add_var(tab,types,branch->word,root->word,branch->lineno,0);
         }
         
@@ -180,7 +172,7 @@ void fill_param_funcs(Symbol_table_function* tab,TableType types, Node* root){
     
 
 
-void fill_vars_global(void* tab,TableType types, Node* root){
+static void fill_vars_global(void* tab,TableType types, Node* root){
     if (!root) return;
     if(root->label == type){
         Node* branch = root->firstChild;
@@ -197,12 +189,10 @@ void fill_vars_global(void* tab,TableType types, Node* root){
 
 }
 
-void fill_vars_locale(void* tab, TableType types, Node* root, int staticity) {  //
-    //if (!root) return;
+static void fill_vars_locale(void* tab, TableType types, Node* root, int staticity) { 
     if(root->label == type){
         Node* branch = root->firstChild;
         if (branch->label == ident){
-            //printf("Mot branche %s , type branche %s  ligne %d\n", branch->word, root->word, root->lineno);
             while (branch){
                 add_var(tab,types,branch->word,root->word,branch->lineno,staticity);
                 branch = branch->nextSibling;
@@ -258,20 +248,16 @@ int nb_params_func(Symbol_table_functions* tab, const char* funcname){
 
 void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root, int* index){
     if(!root) return;
-    //printf("yaya \n");
     if(root->label == DeclFonct){
         Node* branch_func = root->firstChild;
         if(branch_func->label == EnTeteFonct){
             char* funcname = branch_func->firstChild->nextSibling->word;
             char* return_type = branch_func->firstChild->word;
-            //printf("funcname %s \n", funcname);
-            //printf("return type %s \n", return_type);
             if(!is_func_in_tab(tab,funcname)){
                 add_var(tab, types, funcname,return_type, branch_func->lineno,0);
                 (*index)++;
             } else {
                 error_function_exists(funcname,branch_func->lineno);
-                //return;
             }
         } else if(branch_func->label == Void){
             char* funcname = branch_func->firstChild->word;
@@ -313,7 +299,6 @@ void fill_symb_tab_func(Symbol_table_functions* tab,TableType types, Node* root,
 
 
 void* init_table(TableType type) {
-    //Tables de symboles locales / globales
     void* tab;
     if (type == LOCAL) {
         tab = malloc(sizeof(Symbol_table_locale));
@@ -346,7 +331,6 @@ void* init_table(TableType type) {
 }
 
 Symbol_table_functions* init_symb_tab_func(void) {
-    // Allocation pour une seule table de symboles pour une fonction
     Symbol_table_functions* tab = malloc(sizeof(Symbol_table_functions));
     if (!tab) {
         fprintf(stderr, "Erreur d'allocation de mémoire 7\n");
@@ -367,7 +351,6 @@ Symbol_table_functions* init_symb_tab_func(void) {
         tab->tab_funcs[i].index_tabv = 0;
         if (!tab->tab_funcs[i].local_tab) {
             fprintf(stderr, "Erreur d'allocation de mémoire 9\n");
-            // Libérer la mémoire allouée précédemment
             for (int j = 0; j < i; j++) {
                 free(tab->tab_funcs[j].local_tab);
                 free(tab->tab_funcs[j].vars);
@@ -395,7 +378,7 @@ Symbol_table_functions* init_symb_tab_func(void) {
 
 
 
-void display_local_tab(Symbol_table_locale* tab) {
+static void display_local_tab(Symbol_table_locale* tab) {
     if (!tab) {
         fprintf(stderr, "Erreur : la table locale est NULL\n");
         return;
@@ -404,7 +387,6 @@ void display_local_tab(Symbol_table_locale* tab) {
     Data* vars = tab->vars;
     
    if(tab->index_tab > 0){
-        printf("oui  %d\n", tab->index_tab);
         printf("===Variables locales de la fonction=== \n");
         for (int i = 0; i < tab->index_tab; i++) {
             printf("Identifiant : %s, Type : %s, Statique : %d\n", vars[i].name, vars[i].type, vars[i].isStatic);
@@ -412,7 +394,7 @@ void display_local_tab(Symbol_table_locale* tab) {
    }
 }
 
-void display_params(Symbol_table_function* func){
+static void display_params(Symbol_table_function* func){
     Data* vars = func->vars;
     if(func->index_tabv > 0){
         printf("==Paramètres de fonction==\n");
@@ -437,7 +419,6 @@ void display_symb_tab(void* tab, TableType type) {
             printf("===Variables Globales===\n");
             for (int i = 0; i < index_tab; i++) {
                 printf("Nom : %s, Type : %s taille\n", vars[i].name, vars[i].type);
-                //printf("Nom : %s, Type : %s taille (octets) %d, offset %d\n", vars[i].name, vars[i].type, vars[i].size,vars[i].offset);
             }
             printf("\n");
         }
@@ -473,7 +454,7 @@ void display_final_symtab(Symbol_table_global* global_tab,Symbol_table_functions
 }
 
 
-void free_local_table(Symbol_table_locale* tab) {
+static void free_local_table(Symbol_table_locale* tab) {
     if (tab) {
         if (tab->vars) {
             free(tab->vars);
@@ -482,7 +463,7 @@ void free_local_table(Symbol_table_locale* tab) {
     }
 }
 
-void free_global_table(Symbol_table_global* tab) {
+static void free_global_table(Symbol_table_global* tab) {
     if (tab) {
         if (tab->vars) {
             free(tab->vars);
@@ -491,7 +472,7 @@ void free_global_table(Symbol_table_global* tab) {
     }
 }
 
-void free_function_table(Symbol_table_function* func) {
+static void free_function_table(Symbol_table_function* func) {
     if (func) {
         if (func->vars) {
             free(func->vars);
@@ -502,7 +483,7 @@ void free_function_table(Symbol_table_function* func) {
     }
 }
 
-void free_functions_table(Symbol_table_functions* tab) {
+static void free_functions_table(Symbol_table_functions* tab) {
     if (tab) {
         if (tab->tab_funcs) {
             for (int i = 0; i < tab->index_tab; i++) {
