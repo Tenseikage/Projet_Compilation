@@ -1,16 +1,34 @@
 #ifndef SEM_ERRORS_WARNS_H
 #define SEM_ERRORS_WARNS_H
 
+/**
+ * @author Christophe TARATIBU
+ */
 
 // Variables globales pour compter les erreurs et avertissements
 extern int semantic_warns;
 extern int semantic_errors;
 
-// Déclarations des fonctions pour les erreurs et avertissements
+/**
+ * Affiche une erreur de variable déja existante
+ * @param lineno : Numéro de ligne
+ */
 void error_var_exists(int lineno);
 
+
+/**
+ * Affiche une erreur de fonction déja existante
+ * @param funcname : Nom de la fonction
+ * @param lineno : Numéro de ligne
+ * 
+ */
 void error_function_exists(const char* funcname, int lineno);
 
+/**
+ *  Affiche une erreur de même définition variable globale / nom de fonction
+ *  @param line_var_global : ligne de la variable globale
+ *  
+ */
 void error_global_var_func(int line_var_global, int line_func);
 
 void error_same_var_param_func(const char* varname, int var_line);
