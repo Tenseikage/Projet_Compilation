@@ -27,7 +27,5 @@ void write_end_asm_file(FILE *file);
  void write_asm_tab_global_static(FILE* file,Symbol_table_global* global_tab,Symbol_table_functions* tab_funks);
 
 
- void write_builtin_funcs(FILE* file);
-
 
 #endif

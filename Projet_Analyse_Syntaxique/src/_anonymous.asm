@@ -2,7 +2,6 @@ section .bss
   TAB_GLOBAL resb 27
 global _start
 section .text
-extern show_registers
 extern exit
 
 
@@ -163,9 +162,9 @@ baba:
   push rax 
   mov rax, 5
   push rax
-  pop rcx            ; rhs
-  pop rax            ; lhs
-  cmp rax, rcx       ; comparer lhs vs rhs
+  pop rcx
+  pop rax
+  cmp rax, rcx
   jl .Ltrue_0
   jmp .Lfalse_1
 .Ltrue_0:
@@ -277,9 +276,9 @@ main:
   push rax 
   mov rax, 24
   push rax
-  pop rcx            ; rhs
-  pop rax            ; lhs
-  cmp rax, rcx       ; comparer lhs vs rhs
+  pop rcx
+  pop rax
+  cmp rax, rcx
   je .Ltrue_5
   jmp .Lfalse_3
 .Ltrue_5:
@@ -294,9 +293,9 @@ main:
   push rax 
   mov rax, 58
   push rax
-  pop rcx            ; rhs
-  pop rax            ; lhs
-  cmp rax, rcx       ; comparer lhs vs rhs
+  pop rcx
+  pop rax
+  cmp rax, rcx
   jg .Ltrue_6
   jmp .Lfalse_4
 .Ltrue_6:
