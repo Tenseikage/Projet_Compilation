@@ -1,5 +1,5 @@
 section .bss
-  TAB_GLOBAL resb 0
+  TAB_GLOBAL resb 22
 global _start
 section .text
 extern exit
@@ -97,23 +97,175 @@ putint:
     pop r12
     pop rbx
     ret
-main:
+magma:
   push rbp
   mov rbp, rsp
-  sub rsp, 16
-  mov eax, dword [rbp-8]
+  mov eax, dword [TAB_GLOBAL + 0]
+  push rax 
+  mov rax, 14
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov [TAB_GLOBAL + 0], eax
+  mov eax, dword [TAB_GLOBAL + 0]
   cmp rax, 0
   je  .Lelse_1
 
-  mov rax, 0
-  mov dword [rbp-8], eax
+  mov rax, 15
+  mov [TAB_GLOBAL + 0], eax
+  mov eax, dword [TAB_GLOBAL + 0]
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
   jmp .Lend_if_1
 
 .Lelse_1:
 .Lend_if_1:
 
   mov rax, 0
+  leave
+  ret
+baba:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov dword [rbp-4], edi
+  mov rax, 0
   mov dword [rbp-8], eax
+  mov eax, dword [rbp-4]
+  cmp rax, 0
+  je .Lfalse_0
+  mov rax, 1
+  cmp rax, 0
+  je .Lfalse_0
+  mov rax, 1
+  jmp .Lend_2
+.Lfalse_0:
+  mov rax, 0
+.Lend_2:
+  cmp rax, 0
+  je  .Lelse_2
+
+  mov eax, dword [rbp-4]
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  jmp .Lend_if_3
+
+.Lelse_2:
+.Lend_if_3:
+
+.Lwhile_start_0:
+  mov eax, dword [rbp-8]
+  push rax 
+  mov rax, 5
+  push rax
+  pop rcx
+  pop rax
+  cmp rax, rcx
+  jl .Ltrue_0
+  jmp .Lfalse_1
+.Ltrue_0:
+  mov rax, 1
+  jmp .Lend_3
+.Lfalse_1:
+  mov rax, 0
+.Lend_3:
+  cmp rax, 0
+  je .Lwhile_end_0
+  mov rax, 5
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  mov eax, dword [rbp-8]
+  push rax 
+  mov rax, 1
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov dword [rbp-8], eax
+  jmp .Lwhile_start_0
+.Lwhile_end_0:
+  mov rax, 0
+  leave
+  ret
+main:
+  push rbp
+  mov rbp, rsp
+  mov rax, 24
+  mov [TAB_GLOBAL + 4], eax
+  mov rax, 24
+  push rax
+  mov rax, 12
+  push rax
+  pop rcx
+  pop rax
+  xor rdx, rdx
+  div rcx
+  mov [TAB_GLOBAL + 8], eax
+  mov al, 99 
+  mov byte [TAB_GLOBAL + 16], al
+  mov al, 48 
+  mov byte [TAB_GLOBAL + 17], al
+  mov al, byte [TAB_GLOBAL + 16]
+  push rax 
+  mov al, 65 
+  push rax 
+  mov al, 97 
+  push rax 
+  pop rcx
+  pop rax
+  sub rax, rcx
+  push rax
+  pop rcx
+  pop rax
+  add rax, rcx
+  mov [TAB_GLOBAL + 18], eax
+  mov rax, 1
+  cmp rax, 0
+  je  .Lelse_3
+
+  mov dil,99
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  jmp .Lend_if_5
+
+.Lelse_3:
+.Lend_if_5:
+
+  sub rsp, 8
+  call getint
+  add rsp, 8
+  mov [TAB_GLOBAL + 12], eax
+  sub rsp, 8
+  call magma
+  add rsp, 8
+  mov dil,10
+  sub rsp, 8
+  call putchar
+  add rsp, 8
+  mov eax, dword [TAB_GLOBAL + 12]
+  mov rdi, rax
+  sub rsp, 8
+  call putint
+  add rsp, 8
+  mov rax, 0
+  leave
+  ret
 _start:
   sub rsp, 8
   call main
