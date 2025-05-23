@@ -11,6 +11,8 @@ void help(char* data){
     fprintf(stdout,"usage : %s ./tpcc [OPTIONS] File.tpc \n", data);
     fprintf(stdout,"-t, --tree : Affichage de l'arbre \n");
     fprintf(stdout,"-h, --help : Affiche l'aide\n");
+    fprintf(stdout,"-s, --symtabs : Affiche les tables de symboles\n");
+    fprintf(stdout,"-c, --compile : Compile le code et affiche le code assembleur\n");
     fprintf(stdout,"Les autres options seront ignorés\n");
 }
 
@@ -22,12 +24,13 @@ int args_choice(int argc, char* argv[]) {
         {"help",    no_argument, 0, 'h'},
         {"tree",    no_argument, 0, 't'},
         {"symtabs", no_argument, 0, 's'},
-        {0, 0, 0, 0}
+        {"compile", no_argument, 0, 'c'},
+
     };
 
     opterr = 0;
 
-    while ((opt = getopt_long(argc, argv, "hts", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "htcs", long_options, NULL)) != -1) {
         switch (opt) {
             case 'h':
                 help(argv[0]);
@@ -36,6 +39,8 @@ int args_choice(int argc, char* argv[]) {
                 return 1;
             case 's':
                 return 2;
+            case 'c':
+                return 3;
             case '?':
                 if (optopt) {
                     fprintf(stderr, "\033[1;31mErreur\033[0m: Option inconnue : -%c\n", optopt);

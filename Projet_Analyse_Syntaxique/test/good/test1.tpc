@@ -1,14 +1,17 @@
 
-int pipi;
-
 
 int caca(void){
-	pipi = 5;
 	return 0;
 }
 
+void boom(void){
+	return;
+}
+
 int main(void){
-	caca();
-	putint(pipi);
+	int a;
+	int b;
+	a = 1;
+	b = 1;
 	return 25 + 32 - 10;
 }

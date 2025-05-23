@@ -1,0 +1,13 @@
+
+
+char kyoto(char a){
+	a = a + 'A' + 'a';
+	return a;
+}
+
+
+int main(void){
+	char q;
+	q = kyoto('a','b');
+	return 0;
+}

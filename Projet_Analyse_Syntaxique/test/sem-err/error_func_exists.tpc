@@ -1,0 +1,14 @@
+
+
+int cat(void){
+	return 0;
+}
+
+char cat(void){
+	return 'c';
+}
+
+
+int main(void){
+	return 0;
+}

@@ -1,0 +1,9 @@
+int a;
+void piu(void){
+
+}
+
+int main(void){
+	a = piu();
+	return 0;
+}

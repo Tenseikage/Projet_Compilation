@@ -145,6 +145,13 @@ char* is_func_in_tab(Symbol_table_functions* tab, const char* funcname);
  */
 int nb_params_func(Symbol_table_functions* tab, const char* funcname);
 
+
+/**
+ * Ajoute des fonctions natives à la table des symboles
+ * @param tab_funcs : Table des symboles des fonctions
+ */
+void add_native_functions(Symbol_table_functions* tab_funcs,int* index);
+
 /**
  * Affiche la table des symboles
  * @param global_tab : Table des symboles globales

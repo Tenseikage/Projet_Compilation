@@ -1,0 +1,6 @@
+
+
+int main(void){
+	a = 25;
+	return 0;
+}

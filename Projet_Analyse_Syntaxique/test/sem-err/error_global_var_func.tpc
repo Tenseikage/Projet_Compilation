@@ -1,0 +1,11 @@
+
+int univ;
+
+void univ(void){
+
+}
+
+int main(void){
+	univ = 0;
+	return 0;
+}

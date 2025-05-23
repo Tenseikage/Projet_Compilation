@@ -56,6 +56,7 @@ static void add_var(void* tab, TableType type, char* name, char* str_type, int l
         index_tab = &sym_tab->index_tab;
         vars = &sym_tab->vars;
     } else if (type == GLOBAL) {
+
         Symbol_table_global* sym_tab = (Symbol_table_global*)tab;
         table_size = &sym_tab->table_size;
         index_tab = &sym_tab->index_tab;
@@ -150,6 +151,8 @@ static void add_var(void* tab, TableType type, char* name, char* str_type, int l
         (*funcs)[*index_tab].returnType = str_type;
         (*funcs)[*index_tab].local_tab = init_table(LOCAL);
         (*funcs)[*index_tab].vars = malloc(NB_VARS* sizeof(Data));
+        (*funcs)[*index_tab].tabv_size = NB_VARS;
+        (*funcs)[*index_tab].index_tabv = 0;
         (*funcs)[*index_tab].lineno = lineno;
         (*index_tab)++;
 
@@ -453,6 +456,16 @@ void display_final_symtab(Symbol_table_global* global_tab,Symbol_table_functions
     printf("============================================\n");
 }
 
+void add_native_functions(Symbol_table_functions* tab_funcs,int* index) {
+    add_var(tab_funcs, FUNCTION, "putchar", "void", 0, 0);
+    Symbol_table_function* f = &tab_funcs->tab_funcs[tab_funcs->index_tab - 1];
+    add_var(f, VARS, "c", "char", 0, 0);
+    add_var(tab_funcs, FUNCTION, "putint", "void", 0, 0);
+    f = &tab_funcs->tab_funcs[tab_funcs->index_tab - 1];
+    add_var(f, VARS, "i", "int", 0, 0);
+    add_var(tab_funcs, FUNCTION, "getchar", "char", 0, 0);
+    add_var(tab_funcs, FUNCTION, "getint", "int", 0, 0);
+}
 
 static void free_local_table(Symbol_table_locale* tab) {
     if (tab) {

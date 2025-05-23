@@ -11,7 +11,7 @@ int add(int a, int b, int c, int d, int e, char f) {
     return 0;
 }
 
-char blab(char q){
+char blab(char qadss){
 	char d;
 	d = 'a';
 	putint(52);
