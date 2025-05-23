@@ -13,7 +13,7 @@ extern int semantic_errors;
  * Affiche une erreur de variable déja existante
  * @param lineno : Numéro de ligne
  */
-void error_var_exists(int lineno);
+void error_var_exists(char* name,int lineno);
 
 
 /**
@@ -159,8 +159,11 @@ void error_retour_incomp(const char* funcbody_ret,const char* func_ret_type,int 
 void error_void_non_ignore(int lineno);
 
 /**
- * Affiche une erreur de même nom de variable
- * @param lineno : Numéro de ligne
+ * Affiche une erreur de même nom de variable / fonction
+ * @param name_func : Nom de la fonction
+ * @param lineno_func : Numéro de ligne de la fonction
+ * @param lineno_var : Numéro de ligne de la variable
+ * 
  */
-void error_same_var_func(int lineno);
+void error_same_var_func(char* name_func, int lineno_func,int lineno_var);
 #endif // SEM_ERRORS_WARNS_H

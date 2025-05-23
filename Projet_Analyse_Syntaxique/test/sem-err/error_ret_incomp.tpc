@@ -1,0 +1,14 @@
+int bird(void){
+	return 0;
+}
+
+
+
+void cactus(void){
+	return bird();
+}
+
+
+int main(void){
+	return 0;
+}

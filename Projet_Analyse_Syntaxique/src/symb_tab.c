@@ -84,12 +84,12 @@ static void add_var(void* tab, TableType type, char* name, char* str_type, int l
             }
         }
         if ((lineno_found = is_var_in_table(tab, type, name))) {
-            error_var_exists(lineno_found);
-        }
-        strcpy((*vars)[*index_tab].name, name);
-        (*vars)[*index_tab].type = str_type;
-        (*vars)[*index_tab].is_affected = 0;
-        if(type == GLOBAL){
+            error_var_exists(name,lineno_found);
+        } else {
+            strcpy((*vars)[*index_tab].name, name);
+            (*vars)[*index_tab].type = str_type;
+            (*vars)[*index_tab].is_affected = 0;
+            if(type == GLOBAL){
             if(!strcmp(str_type,"int")){
                 (*vars)[*index_tab].size = 4;
                 (*vars)[*index_tab].offset = global_offset;
@@ -100,44 +100,45 @@ static void add_var(void* tab, TableType type, char* name, char* str_type, int l
                   (*vars)[*index_tab].offset = global_offset;
                   global_offset++;
             }
-        } else if(type == LOCAL || type == VARS){
-            if(!state){
-                if(*index_tab == 0 && type == VARS){
-                    local_offset = 4;
-                    if(!strcmp(str_type,"int")){
-                        (*vars)[*index_tab].size = 4;
-                        (*vars)[*index_tab].offset = local_offset;
-                        local_offset += 4;
-                        
-              
-                    } else if(!strcmp(str_type, "char")){
-                        local_offset = 1;
-                          (*vars)[*index_tab].size = 1;
-                          (*vars)[*index_tab].offset = local_offset;
-                          local_offset += 1;
-        
-                    }
-                } else {
-                    if(!strcmp(str_type,"int")){
-                        (*vars)[*index_tab].size = 4;
-                        (*vars)[*index_tab].offset = local_offset;
-                        local_offset += 4;
-                        
-              
-                    } else if(!strcmp(str_type, "char")){
-                          (*vars)[*index_tab].size = 1;
-                          (*vars)[*index_tab].offset = local_offset;
-                          local_offset += 1;
-        
+            } else if(type == LOCAL || type == VARS){
+                if(!state){
+                    if(*index_tab == 0 && type == VARS){
+                        local_offset = 4;
+                        if(!strcmp(str_type,"int")){
+                            (*vars)[*index_tab].size = 4;
+                            (*vars)[*index_tab].offset = local_offset;
+                            local_offset += 4;
+                            
+                
+                        } else if(!strcmp(str_type, "char")){
+                            local_offset = 1;
+                            (*vars)[*index_tab].size = 1;
+                            (*vars)[*index_tab].offset = local_offset;
+                            local_offset += 1;
+            
+                        }
+                    } else {
+                        if(!strcmp(str_type,"int")){
+                            (*vars)[*index_tab].size = 4;
+                            (*vars)[*index_tab].offset = local_offset;
+                            local_offset += 4;
+                            
+                
+                        } else if(!strcmp(str_type, "char")){
+                            (*vars)[*index_tab].size = 1;
+                            (*vars)[*index_tab].offset = local_offset;
+                            local_offset += 1;
+            
+                        }
                     }
                 }
-            }
-            
+                
+            }  
+            (*vars)[*index_tab].isStatic = state;
+            (*vars)[*index_tab].lineno = lineno;
+            (*index_tab)++;
         }
-        
-        (*vars)[*index_tab].isStatic = state;
-        (*vars)[*index_tab].lineno = lineno;
-        (*index_tab)++;
+            
     }else if(type == FUNCTION) {
         if(*index_tab >= *table_size){
             *table_size *= RESIZE_FACTOR;

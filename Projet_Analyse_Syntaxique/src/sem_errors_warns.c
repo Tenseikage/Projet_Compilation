@@ -5,8 +5,8 @@
 int semantic_warns = 0;
 int semantic_errors = 0;
 
-void error_var_exists(int lineno){
-	fprintf(stderr, "\033[1;31mErreur \033[0m: la variable existe déjà en ligne : %d\n", lineno);
+void error_var_exists(char* name, int lineno){
+	fprintf(stderr, "\033[1;31mErreur \033[0m: la variable %s existe déjà en ligne : %d\n",name, lineno);
 	semantic_errors++;
 }
 
@@ -136,8 +136,8 @@ void error_void_non_ignore(int lineno){
 	semantic_errors++;
 }
 
-void error_same_var_func(int lineno){
-	fprintf(stderr,"\033[1;31mErreur\033[0m: Même nom de variable et de fonction (ligne %d) \n", lineno);
+void error_same_var_func(char* name_func, int lineno_func,int lineno_var){
+	fprintf(stderr,"\033[1;31mErreur\033[0m: Même nom de variable et de fonction. Nom %s : Fontion : (ligne %d), Variable : (ligne %d) \n", name_func, lineno_func, lineno_var);
 	semantic_errors++;
 }
 

@@ -1,0 +1,32 @@
+int a;
+
+void sun(int c){
+	static char m;
+	m = 'c';
+	return m;
+}
+
+int a(void){
+	return 0;
+}
+
+void albator(int c){
+	static int q;
+	q = 'm';
+	if(sun(1,2,3)){
+		return 1;
+	} else {
+		return;
+	}
+	return 'c';
+}
+
+char gatos(void){
+	return sun();
+}
+
+char main(void){
+	int a;
+	a = sun(1,2,3);
+	return 'e';
+}

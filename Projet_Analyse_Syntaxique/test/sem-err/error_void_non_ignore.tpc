@@ -1,0 +1,15 @@
+
+void baba(int c){
+	return;
+}
+
+char cats(void){
+	/* Les fonctions qui suivent dans une expression arithmétique ne 
+	sont pas bien vérifiés comme il se doit*/
+	return 'c' + baba(4);
+}
+
+
+int main(void){
+	return 0;
+}

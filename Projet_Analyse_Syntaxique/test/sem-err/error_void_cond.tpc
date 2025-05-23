@@ -1,0 +1,14 @@
+
+
+void poulet(void){
+	return;
+}
+
+int main(void){
+	if(poulet()){
+		return 0;
+	} else {
+		return 1;
+	}
+	return 0;
+}

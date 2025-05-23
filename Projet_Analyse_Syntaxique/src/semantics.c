@@ -28,9 +28,9 @@ void is_main_in_code(Symbol_table_functions* tab_funks) {
 
 void same_var_name_func(Symbol_table_functions*tab){
     for(int i = 0; i < tab->index_tab; i++){
-        for(int j = i + 1; j < tab->index_tab; j++){
-            if(!strcmp(tab->tab_funcs[i].name, tab->tab_funcs[j].name)){
-                error_same_var_func(tab->tab_funcs[i].lineno);
+        for(int j = 0; j < tab->tab_funcs[i].local_tab->index_tab; j++){
+            if(!strcmp(tab->tab_funcs[i].local_tab->vars[j].name, tab->tab_funcs[i].name)){
+                error_same_var_func(tab->tab_funcs[i].name,tab->tab_funcs[i].lineno,tab->tab_funcs[i].local_tab->vars[j].lineno);
             }
         }
     }
@@ -372,7 +372,6 @@ static void check_return_func(Node* root, Symbol_table_global* global_tab, Symbo
             if (!strcmp("char", funcsignType)) {
                 warn_ret_int_func_char(root->lineno);
             } else if (!strcmp("void", funcsignType)) {
-                printf("teee \n");
                 error_ret_value_func_void(root->lineno);
             }
         }
