@@ -708,6 +708,14 @@ static void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* glob
                 if(then_block->label == SuiteInstr){
                     parcours_instr_cond(then_block, file, global_tab,tab_funks,funcname);
                 
+                } 
+                if(then_block->label == Return){
+                    Node* expr = then_block->firstChild;
+                    if (expr) {
+                        parcours_expr_droite(expr, file, global_tab,tab_funks,funcname,0);
+                    }
+                    fprintf(file, "  leave\n"); 
+                    fprintf(file, "  ret\n");
                 }
                 fprintf(file, "  jmp .Lend_if_%d\n\n", _if_label);
                 fprintf(file, ".Lelse_%d:\n", _else_label);
@@ -729,7 +737,15 @@ static void parcours_instr_cond(Node* root, FILE* file,Symbol_table_global* glob
             }
             branch_instr = branch_instr->nextSibling;
 
-        }
+        } 
+    } else if(root->label == Return){
+            Node* expr = root->firstChild;
+            if (expr) {
+                parcours_expr_droite(expr, file, global_tab,tab_funks,funcname,0);
+            }
+            fprintf(file, "  leave\n");
+            fprintf(file, "  ret\n");
+
     }
     parcours_instr_cond(root->firstChild,file,global_tab,tab_funks,funcname);
     parcours_instr_cond(root->nextSibling,file,global_tab,tab_funks,funcname);
@@ -784,6 +800,15 @@ static void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* glob
                 }
                 if(then_block->label == SuiteInstr){
                     parcours_instr_cond(then_block, file, global_tab,tab_funks,funcname);   
+                }
+                if (then_block->label == Return) {
+    
+                    Node* expr = then_block->firstChild;
+                    if (expr) {
+                        parcours_expr_droite(expr, file, global_tab,tab_funks,funcname,0);
+                    }
+                    fprintf(file, "  leave\n");
+                    fprintf(file, "  ret\n");
                 }
                 fprintf(file, "  jmp .Lend_if_%d\n\n", _if_label);
                 fprintf(file, ".Lelse_%d:\n", _else_label);

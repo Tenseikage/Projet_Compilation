@@ -1,5 +1,5 @@
 
-
+// Fonction recursive (factorielle)
 
 int fact(int n){
 	if(n == 0){
@@ -12,7 +12,8 @@ int fact(int n){
 
 int main(void){
 	int a;
-	a = fact(3);
+    //a = fact(3) 6
+	a = fact(6); // 720
 	putint(a);
 	putchar('\n');
 	return 0;

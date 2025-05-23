@@ -15,8 +15,8 @@ EXE := asmtest
 AFLAGS := -nostartfiles -no-pie
 EXE := asmtest
 NASM := nasm
-ASM_SRCS := $(wildcard $(SRC)/*.asm)
-ASM_OBJS := $(patsubst $(SRC)/%.asm, $(OBJ)/%.o, $(ASM_SRCS))
+ASM_SRCS_ROOT := $(wildcard ./*.asm)
+ASM_OBJS_ROOT := $(patsubst ./%.asm, $(OBJ)/%.o, $(ASM_SRCS_ROOT))
 TARGET := $(EXE)
 
 .PHONY: all asm clean
@@ -80,10 +80,10 @@ $(SRC)/$(LEX).yy.c: $(SRC)/$(LEX).l
 
 asm: $(TARGET)
 
-$(TARGET): $(ASM_OBJS)
-	$(CC) $(CFLAGS) $(ASM_OBJS) -o $(TARGET) $(AFLAGS)
+$(TARGET): $(ASM_OBJS) $(ASM_OBJS_ROOT)
+	$(CC) $(CFLAGS) $(ASM_OBJS) $(ASM_OBJS_ROOT) -o $(TARGET) $(AFLAGS)
 
-$(OBJ)/%.o: $(SRC)/%.asm
+$(OBJ)/%.o: %.asm
 	$(NASM) -f elf64 $< -o $@
 
 # Nettoyage des fichiers générés

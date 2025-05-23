@@ -15,7 +15,7 @@ char blab(char qadss){
 	char d;
 	d = 'a';
 	putint(52);
-	return q;
+	return 'q';
 }
 
 int poppi(int a,int b){
@@ -32,12 +32,11 @@ int poppi(int a,int b){
 int main(void) {
 	char m;
     res = add(1, 2, 3, 4, 5, 6);
-    //putint(res); // Affiche 21
 	baba = 1 + 2 * 3 + 4;
 	putchar('\n');
 	poppi(1,2);
     m = blab('b');
 	putchar(m);
-	//putint(baba);
+	putchar('\n');
     return 0;
 }
