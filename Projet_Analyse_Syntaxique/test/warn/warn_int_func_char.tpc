@@ -1,0 +1,10 @@
+
+
+
+char piui(int a){
+	return 97;
+}
+
+int main(void){
+	return 0;
+}

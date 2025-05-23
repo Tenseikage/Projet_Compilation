@@ -40,10 +40,7 @@ void error_incomp_affect(const char* left_type,const char* func_ret_type,int lin
 
 }
 
-/*void error_implicit_func_declare(const char* funcname, int lineno){
-	fprintf(stderr, "\033[1;31mErreur\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
-	semantic_errors++;
-}*/
+
 void warn_implicit_func_declare(const char* funcname, int lineno){
 	fprintf(stderr, "\033[1;35mWarning\033[0m: Fonction %s appelée mais non déclarée (ligne %d).\n", funcname,lineno);
 	semantic_warns++;

@@ -1,0 +1,12 @@
+
+
+int main(void){
+	int a;
+	char b;
+	if(a){
+		a = 0;
+	} else {
+		
+	}
+
+}

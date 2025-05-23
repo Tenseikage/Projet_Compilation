@@ -97,24 +97,23 @@ putint:
     pop r12
     pop rbx
     ret
-cat:
-  push rbp
-  mov rbp, rsp
-  mov rax, 0
-  leave
-  ret
-cas:
-  push rbp
-  mov rbp, rsp
-  mov rax, 97
-  leave
-  ret
 main:
   push rbp
   mov rbp, rsp
+  sub rsp, 16
+  mov eax, dword [rbp-8]
+  cmp rax, 0
+  je  .Lelse_1
+
   mov rax, 0
-  leave
-  ret
+  mov dword [rbp-8], eax
+  jmp .Lend_if_1
+
+.Lelse_1:
+.Lend_if_1:
+
+  mov rax, 0
+  mov dword [rbp-8], eax
 _start:
   sub rsp, 8
   call main

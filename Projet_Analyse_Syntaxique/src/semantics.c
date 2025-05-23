@@ -571,6 +571,9 @@ void check_variables(Node* root, Symbol_table_global* global_tab, Symbol_table_f
             funcname = branch_func->firstChild->word;
         }
     }
+    if(root->label == Corps && !root->firstChild){
+        warn_no_return(funcname);
+    }
     if (root->label ==  SuiteInstr) {
         int returnhere = 0;
         check_left_instr(root->firstChild,global_tab,tab_funcs,funcname,returnhere);
