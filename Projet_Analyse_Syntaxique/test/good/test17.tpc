@@ -1,29 +1,22 @@
-int     a;
-char b;
-int       c;
+int a;
+int b;
+int c;
 
-int 
-sub(int a, int b){
-	return a - b;
-}
+// Simples opérations
 
-int 
-main(void){
-	int    a;
-	int      b;
-	char    e;
-	static int d;
-	static 
-	char c;
-	static char n;
-	d = d + sub(a,b);
-	c = 'd';
-	n = 'd';
-	e = '\t'; 
-	// commentaire
-	if (!(c ==    d)){
-		return 1;
-	}
+int main(void){
+	a = 1;
+	b = 2 * 4;
+	c = 4 * 378;
+	b  = a * 22;
+	c = a + b / 3;
+    putint(a);
+	putchar('\n');
+	putint(b);
+	putchar('\n');
+	putint(c);
+	putchar('\n');
 	return 0;
 
 }
+

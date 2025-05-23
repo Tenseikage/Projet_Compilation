@@ -215,11 +215,13 @@ static void check_right_instr(Node* root, Symbol_table_global* global_tab, Symbo
                     }
                     for (int i = 0; i < tab_funks->index_tab; i++) {
                         if (!strcmp(tab_funks->tab_funcs[i].name, word_func)) {
-                            if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
-                                error_incomp_affect(type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
-                                return;
+                            if (type_left){
+                                if(strcmp(tab_funks->tab_funcs[i].returnType,type_left)){
+                                    error_incomp_affect(type_left,tab_funks->tab_funcs[i].returnType,branch->lineno);
+                                    return;
+                                }
+                                found = 1;
                             }
-                            found = 1;
                             break;
                         }
                     }

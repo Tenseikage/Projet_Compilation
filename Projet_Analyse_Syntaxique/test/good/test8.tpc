@@ -1,6 +1,22 @@
-char a;
-char b;
-char c;
+int a;
+int b;
+
+//Multiple expressions booléennes
 int main(void){
+	static int m;
+	static int c;
+	a = 1;
+	b = 52;
+	c = 954;
+	m = 0;
+	if(!(m || a) && (!c || b)){
+		putchar('p');
+		putchar('\n');
+
+	} else {
+		putchar('s');
+		putchar('\n');
+	}
+	return 0;
 	
 }

@@ -6,7 +6,7 @@ global _start
 section .text
 extern exit
 
-
+; Ecrture sur la sortie standard
 
 getchar:
     sub rsp, 8

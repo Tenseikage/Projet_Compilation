@@ -2,7 +2,7 @@ int a;
 int b;
 int c;
 int d;
-
+// Affiche des caractères (affichage étrange)
 int babidi(int a, int b){
 	return 0;
 }
@@ -13,41 +13,47 @@ void dababy(int a){
 	char m;
 	m = 2 + 'c';
 	q = 1;
-	d();
+	putchar(m);
+	putchar('\n');
+	return ;
 }
 
 void zbilzbil(void){
-	return 1;
+	int num_1;
+	int num_2;
+	num_1 = getint();
+	num_2 = getint();
+	if ((-128 < num_1 && num_1 < 127) && (-128 < num_2 && num_2 < 127)){
+		putchar(num_1);
+		putchar('\n');
+		putchar(num_2);
+		putchar('\n');
+	} else {
+		putint(num_1);
+		putchar('\n');
+		putint(num_2);
+		putchar('\n');
+	}
+	return;
 }
 
-int zbilzbil(void){
-	return  0;
-}
 
-char pooop(int m, int q){
+
+char tactical_doggo(int m, int q){
 	return 97;
 }
 
 
 int main(void){
-	char a;
+	static int q;
 	a = 1;
 	b = a * 2;
 	c = a + b / 2;
 	q = 1;
-	a = zbilzbil();
-	pooop(1);
-	papa(1);
+	zbilzbil();
+	putchar(tactical_doggo(1,2));
+	putchar('\n');
+	return 0;
 
 }
 
-/*mov ebx, dword [TAB_GLOBAL]
-  mov r12d, dword [TAB_GLOBAL + 4]
-  mov r13d, dword [TAB_GLOBAL + 8]
-  sub rsp,8
-  call show_registers
-  add rsp,8*/
-
-
-// 1 Conversion assembleur
-// 2 typage 

@@ -1,13 +1,17 @@
 int a;
 int b;
 int c;
-/*                      Commentaire long 
 
-
-
-
-
-*/
+// OU logique et suite opérations
 int main(int a, int b){
-
+	a = 0;
+	b = 777;
+    c =  1;
+	if(a && b || c){
+		putint(75);
+	} else {
+		putint(2);
+		putchar('\n');
+	}
+	return 0;
 }

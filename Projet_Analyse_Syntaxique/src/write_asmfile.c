@@ -349,7 +349,11 @@ static void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* gl
         } else if (strcmp(root->word, "/") == 0) {
             fprintf(file, "  xor rdx, rdx\n"); 
             fprintf(file, "  div rcx\n");      
-        }
+        } else if (strcmp(root->word, "%") == 0) {
+            fprintf(file, "  xor rdx, rdx\n"); 
+            fprintf(file, "  div rcx\n");
+            fprintf(file, "  mov rax, rdx\n");
+        } 
 
         if(push_result){
            fprintf(file, "  push rax\n");
@@ -358,6 +362,16 @@ static void parcours_expr_droite(Node* root, FILE* file, Symbol_table_global* gl
     }
 
     if (root->label == Addsub) {
+        // Cette partie assembleur ne gère pas les nombre négatifs
+        /*if(root->firstChild && !root->firstChild->nextSibling){
+            printf("Negation detected: %s\n", root->word);
+            parcours_expr_droite(root->firstChild, file, global_tab,tab_funks,funcname,push_result);
+            fprintf(file, "  neg rax\n");
+            if(push_result){
+                fprintf(file, "  push rax\n");
+            }
+            return;
+        }*/
         parcours_expr_droite(root->firstChild, file, global_tab,tab_funks,funcname,1);
         parcours_expr_droite(root->firstChild->nextSibling, file, global_tab,tab_funks,funcname,1);
         fprintf(file, "  pop rcx\n"); 
@@ -530,6 +544,10 @@ static void write_asm_condexp(Node* root, FILE* file, Symbol_table_global* globa
         else if (strcmp(root->word, "/") == 0) {
             fprintf(file, "  xor rdx, rdx\n");
             fprintf(file, "  div rcx\n");
+        } else if (strcmp(root->word, "%") == 0) {
+            fprintf(file, "  xor rdx, rdx\n");
+            fprintf(file, "  div rcx\n");
+            fprintf(file, "  mov rax, rdx\n");
         }
         return;
     }
@@ -786,7 +804,10 @@ static void parcours_corps_func(Node* root, FILE* file,Symbol_table_global* glob
                     if(right_expr){
                         parcours_expr_droite(right_expr,file,global_tab,tab_funks,funcname,0);
                         gen_mov_var(file,str_ident,funcname,global_tab,tab_funks,1);
+
                     }
+
+                   
                 }
                 
             } else if (branch_instr->label == If) {

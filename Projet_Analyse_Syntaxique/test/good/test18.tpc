@@ -1,26 +1,30 @@
 int a;
-int b;
+char b;
 int c;
 
 
+/*Voici une 
+fonction de calcul du reste spéciale*/
+int mod(int a, int b){
+	if(b == 0){
+		return 0;
+	} else {
+		return a % (a + b);
+	}
+}
 
-int main(void){
-	a = 1;
-	b = 2 * 3;
-	c = 4 * 3;
-	//b  = a * 2;
-	//c = a + b / 3;
+int 
+main(void){
+	int a;
+	int b;
+	char e;
+	static int d;
+	static 
+	char c;
+	static char n;
+	d = d + mod(5,4);
+	putint(d);
+	putchar('\n');
 	return 0;
 
 }
-
-/*mov ebx, dword [TAB_GLOBAL]
-  mov r12d, dword [TAB_GLOBAL + 4]
-  mov r13d, dword [TAB_GLOBAL + 8]
-  sub rsp,8
-  call show_registers
-  add rsp,8*/
-
-
-// 1 Conversion assembleur
-// 2 typage 

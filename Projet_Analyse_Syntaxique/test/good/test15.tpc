@@ -1,26 +1,33 @@
 int a;
 char b;
 int c;
+//Mauvaise gestion des entiers signés (unsigned int ?)
+
 int add(int a, int b){
-	sub(a,b);
+	//a = sub(a,b);
 	return a + b;
 }
 
 int sub(int q, int m){
-	return 0;
+	return q - m;
 }
 
 int main(void){
 	int a;
 	int b;
-	char e;
 	static int d;
 	static char c;
 	static char n;
-	d = d + add(a,b);
+	// Les nombres nég
+	//a = -258;
+	a = 258;
+	b = 23;
+	d = add(a,b);
 	c = 'd';
 	n = 'd';
-	if (!(c == d)){
+	if (!(c != n)){
+        putint(d);
+		putchar('\n');
 		return 1;
 	}
 	return 0;

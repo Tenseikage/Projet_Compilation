@@ -1,7 +1,7 @@
 int a;
 char b;
 int c;
-
+// Simple soustraction d'entiers
 int sub(int a, int b){
 	return a - b;
 }
@@ -15,11 +15,13 @@ main(void){
 	static 
 	char c;
 	static char n;
-	d = d + sub(a,b);
+	d = d + sub(2,2);
 	c = 'd';
 	n = 'd';
 	e = '\t'; // commentaire
-	if (!(c ==    d)){
+	if (!(c == d)){
+		putint(d);
+		putchar('\n');
 		return 1;
 	}
 	return 0;
